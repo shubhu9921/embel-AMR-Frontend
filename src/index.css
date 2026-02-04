@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply text-slate-700 font-sans;
+  background-color: #d3d3d3;
+  font-family: 'Inter', sans-serif;
+}
