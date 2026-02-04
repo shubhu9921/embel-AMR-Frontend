@@ -153,7 +153,7 @@ export default function SolarPage() {
                 <div className="flex-1 lg:min-h-0 flex flex-col gap-5">
 
                     {/* Row 1: Charts & Alerts */}
-                    <div className="grid grid-cols-12 gap-5 h-auto lg:h-[450px] shrink-0">
+                    <div className="grid grid-cols-12 gap-5 h-auto lg:h-[500px] shrink-0">
 
                         {/* Charts Section */}
                         <div className="col-span-12 lg:col-span-9 bg-white rounded-xl p-5 border border-gray-100 shadow-md flex flex-col h-auto lg:h-full">
@@ -171,7 +171,13 @@ export default function SolarPage() {
                                         <BarChart data={currentData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                             <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} dy={10}>
-                                                <Label value="Time" offset={-5} position="insideBottom" style={{ fill: '#94a3b8', fontSize: '11px', fontWeight: 500 }} />
+                                                <Label
+                                                    content={({ viewBox }) => (
+                                                        <text x={viewBox.x + viewBox.width / 2} y={viewBox.y + viewBox.height} fill="#94a3b8" fontSize="11px" fontWeight={500} textAnchor="middle">
+                                                            <tspan dy="1em">Time</tspan>
+                                                        </text>
+                                                    )}
+                                                />
                                             </XAxis>
                                             <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false}>
                                                 <Label value="Generation (kWh)" angle={-90} position="insideLeft" style={{ fill: '#94a3b8', fontSize: '11px', fontWeight: 500 }} />

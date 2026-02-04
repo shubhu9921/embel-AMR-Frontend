@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Label,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import { Zap, Flame, Droplet, Sun, Gauge, List, Filter, Activity, CheckCircle2, AlertCircle, XCircle, Thermometer } from 'lucide-react';
@@ -182,38 +182,50 @@ export default function AnalysisPage() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
         {/* Main Graph Section (Bar Chart) - Takes 2/3 width */}
-        <div className="xl:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm h-[400px]">
+        <div className="xl:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm h-[450px] flex flex-col">
           <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
             <h3 className="text-lg font-bold text-gray-900">Consumption Trends</h3>
             <TimeFilter selected={timeRange} onChange={setTimeRange} />
           </div>
 
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }} barSize={32}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} dy={10} />
-              <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-              <Tooltip
-                cursor={{ fill: '#f8fafc' }}
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                itemStyle={{ fontSize: '12px', fontWeight: 600 }}
-              />
-              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }} barSize={32}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} dy={10}>
+                  <Label
+                    content={({ viewBox }) => (
+                      <text x={viewBox.x + viewBox.width / 2} y={viewBox.y + viewBox.height} fill="#64748b" fontSize="11px" fontWeight={500} textAnchor="middle">
+                        <tspan dy="1em">Time</tspan>
+                      </text>
+                    )}
+                  />
+                </XAxis>
+                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false}>
+                  <Label value="Consumption" angle={-90} position="insideLeft" style={{ fill: '#64748b', fontSize: '11px', fontWeight: 500 }} />
+                </YAxis>
+                <Tooltip
+                  cursor={{ fill: '#f8fafc' }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  itemStyle={{ fontSize: '12px', fontWeight: 600 }}
+                />
+                <Legend wrapperStyle={{ paddingTop: '20px' }} />
 
-              {(activeTab === 'All' || activeTab === 'Energy') &&
-                <Bar dataKey="Energy" fill={COLORS.Energy.bar} radius={[4, 4, 0, 0]} />}
-              {(activeTab === 'All' || activeTab === 'Gas') &&
-                <Bar dataKey="Gas" fill={COLORS.Gas.bar} radius={[4, 4, 0, 0]} />}
-              {(activeTab === 'All' || activeTab === 'Water') &&
-                <Bar dataKey="Water" fill={COLORS.Water.bar} radius={[4, 4, 0, 0]} />}
-              {(activeTab === 'All' || activeTab === 'Solar') &&
-                <Bar dataKey="Solar" fill={COLORS.Solar.bar} radius={[4, 4, 0, 0]} />}
-            </BarChart>
-          </ResponsiveContainer>
+                {(activeTab === 'All' || activeTab === 'Energy') &&
+                  <Bar dataKey="Energy" fill={COLORS.Energy.bar} radius={[4, 4, 0, 0]} />}
+                {(activeTab === 'All' || activeTab === 'Gas') &&
+                  <Bar dataKey="Gas" fill={COLORS.Gas.bar} radius={[4, 4, 0, 0]} />}
+                {(activeTab === 'All' || activeTab === 'Water') &&
+                  <Bar dataKey="Water" fill={COLORS.Water.bar} radius={[4, 4, 0, 0]} />}
+                {(activeTab === 'All' || activeTab === 'Solar') &&
+                  <Bar dataKey="Solar" fill={COLORS.Solar.bar} radius={[4, 4, 0, 0]} />}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Device Status Pie Chart - Takes 1/3 width */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm h-[400px] flex flex-col">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm h-[450px] flex flex-col">
           <h3 className="text-lg font-bold text-gray-900 mb-2">Device Status</h3>
           <div className="flex-1 min-h-0 relative">
             <ResponsiveContainer width="100%" height="100%">

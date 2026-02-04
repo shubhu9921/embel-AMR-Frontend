@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import {
     PieChart, Pie, Cell, ResponsiveContainer,
     AreaChart, Area, Tooltip, CartesianGrid, XAxis, YAxis,
-    BarChart, Bar
+    BarChart, Bar, Label
 } from "recharts";
 import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun } from "lucide-react";
 import { TimeFilter } from "./TimeFilter";
@@ -254,7 +254,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* -------------------- ROW 2: GRAPHS & ALERTS -------------------- */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[450px]">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[500px]">
 
                     {/* SYSTEM CONSUMPTION GRAPH (Multi-Resource) */}
                     <div className="lg:col-span-2 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col min-h-[400px] lg:h-full transition-shadow hover:shadow-lg">
@@ -315,7 +315,7 @@ export default function Dashboard() {
                         </div>
                         <div className="flex-1 w-full min-h-0">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={multiResourceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barGap={2}>
+                                <BarChart data={multiResourceData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }} barGap={2}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                     <XAxis
                                         dataKey="name"
@@ -323,12 +323,22 @@ export default function Dashboard() {
                                         axisLine={false}
                                         tickLine={false}
                                         dy={10}
-                                    />
+                                    >
+                                        <Label
+                                            content={({ viewBox }) => (
+                                                <text x={viewBox.x + viewBox.width / 2} y={viewBox.y + viewBox.height} fill="#94a3b8" fontSize="11px" fontWeight={500} textAnchor="middle">
+                                                    <tspan dy="1em">Time</tspan>
+                                                </text>
+                                            )}
+                                        />
+                                    </XAxis>
                                     <YAxis
                                         tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 500 }}
                                         axisLine={false}
                                         tickLine={false}
-                                    />
+                                    >
+                                        <Label value="Consumption" angle={-90} position="insideLeft" style={{ fill: '#94a3b8', fontSize: '11px', fontWeight: 500 }} />
+                                    </YAxis>
                                     <Tooltip
                                         contentStyle={{
                                             borderRadius: '16px',
