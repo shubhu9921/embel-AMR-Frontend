@@ -105,7 +105,7 @@ export default function Water() {
   ];
 
   return (
-    <div className="w-full h-full flex flex-col overflow-y-auto">
+    <div className="w-full h-full flex flex-col overflow-y-auto bg-gray-100">
       <MetersModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

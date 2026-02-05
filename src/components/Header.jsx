@@ -96,7 +96,7 @@ export default function Header({ activePage, setActivePage }) {
   ];
 
   return (
-    <header className="h-16 bg-[white] backdrop-blur-xl flex items-center px-4 sm:px-6 sticky top-0 z-50 justify-between transition-all duration-300 shadow-md">
+    <header className="h-16 bg-[white] backdrop-blur-xl flex items-center px-4 sm:px-6 sticky top-0 z-50 justify-between transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
       {/* Left: Search */}
       <div className="flex items-center gap-4 flex-shrink-0 relative z-50">
         {/* Desktop search */}
@@ -157,7 +157,7 @@ export default function Header({ activePage, setActivePage }) {
       </div>
 
       {/* Center: Resource shortcuts (Desktop only) */}
-      <div className="hidden md:flex flex-wrap items-center gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/10 max-w-full shadow-sm backdrop-blur-sm">
+      <div className="hidden md:flex flex-wrap items-center gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/10 max-w-full shadow-[0_4px_20px_rgba(251,146,60,0.15)] backdrop-blur-sm">
         <Resource
           icon={Sun}
           label="Solar"

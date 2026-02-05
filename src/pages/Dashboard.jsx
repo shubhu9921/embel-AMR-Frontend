@@ -112,7 +112,7 @@ export default function Dashboard() {
     ];
 
     return (
-        <main className="w-full flex flex-col gap-6 min-h-screen mb-20">
+        <main className="w-full flex flex-col gap-6 min-h-screen mb-20 bg-gray-100">
 
             {/* -------------------- HEADER (Floating Card Style) -------------------- */}
             <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-blue-50/90 mx-4 mt-4">
@@ -416,7 +416,7 @@ export default function Dashboard() {
                                 <X size={24} />
                             </button>
                         </div>
-                        <div className="flex-1 w-full bg-slate-50 relative">
+                        <div className="flex-1 w-full bg-white relative">
                             <MapContainer
                                 center={[21.7679, 78.8718]}
                                 zoom={5}

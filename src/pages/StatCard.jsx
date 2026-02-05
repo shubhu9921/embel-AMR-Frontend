@@ -2,11 +2,13 @@ import React from 'react';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 
 const colorClasses = {
-  blue: 'bg-white border-blue-100',
-  green: 'bg-white border-emerald-100',
-  purple: 'bg-white border-purple-100',
-  orange: 'bg-white border-orange-100',
-  red: 'bg-white border-red-100',
+  blue: 'bg-gradient-to-br from-white to-blue-100/60 border-blue-200',
+  green: 'bg-gradient-to-br from-white to-emerald-100/60 border-emerald-200',
+  purple: 'bg-gradient-to-br from-white to-purple-100/60 border-purple-200',
+  orange: 'bg-gradient-to-br from-white to-orange-100/60 border-orange-200',
+  red: 'bg-gradient-to-br from-white to-red-100/60 border-red-200',
+  cyan: 'bg-gradient-to-br from-white to-cyan-100/60 border-cyan-200',
+  amber: 'bg-gradient-to-br from-white to-amber-100/60 border-amber-200',
 };
 
 export function StatCard({

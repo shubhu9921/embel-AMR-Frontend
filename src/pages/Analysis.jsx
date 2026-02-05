@@ -95,7 +95,7 @@ export default function AnalysisPage() {
   }[activeTab];
 
   return (
-    <div className="w-full flex flex-col gap-6 p-4 md:p-6 mb-20">
+    <div className="w-full flex flex-col gap-6 p-4 md:p-6 mb-20 bg-gray-100">
 
       <MetersModal
         isOpen={isModalOpen}
@@ -132,7 +132,7 @@ export default function AnalysisPage() {
                   px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap
                   ${activeTab === tab
                     ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}
+                    : `text-gray-500 hover:${COLORS[tab].text} hover:${COLORS[tab].light}`}
                 `}
               >
                 {tab}
@@ -143,7 +143,7 @@ export default function AnalysisPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer group">
           <div className="flex items-center gap-2 text-indigo-600 mb-1">
             <Activity size={16} />

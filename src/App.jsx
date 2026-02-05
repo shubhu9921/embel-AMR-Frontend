@@ -11,6 +11,7 @@ import SolarPage from './pages/Solar';
 import AnalysisPage from "./pages/Analysis";
 import AlertsPage from "./pages/Alerts";
 import DevicesPage from "./pages/Devices";
+import SettingsPage from "./pages/Settings";
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -60,9 +61,7 @@ export default function App() {
           {activePage === 'Devices' && <DevicesPage />}
           {activePage === "Alerts" && <AlertsPage />}
           {activePage === "Analysis" && <AnalysisPage />}
-          {activePage === "Settings" && (
-            <div className="p-6">Settings Page Content</div>
-          )}
+          {activePage === "Settings" && <SettingsPage />}
         </main>
       </div>
     </div>

@@ -10,7 +10,7 @@ const users = [
 
 export default function UsersPage() {
   return (
-    <div className="w-full h-screen overflow-hidden flex flex-col bg-gray-50 p-2 gap-2">
+    <div className="w-full h-screen overflow-hidden flex flex-col bg-white p-2 gap-2">
       <div className="bg-white border-b border-gray-200 px-4 py-2 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>

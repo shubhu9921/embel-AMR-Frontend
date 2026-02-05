@@ -32,7 +32,7 @@ export default function Sidebar({
   return (
     <aside
       className={`
-        bg-[#0c2b65] transition-all duration-300 shadow-xl z-50
+        bg-white transition-all duration-300 shadow-[4px_0_24px_rgba(0,0,0,0.15)] z-50 border-r border-gray-100
         ${collapsed ? "w-20" : "w-64"}
         flex flex-col min-h-full
       `}
@@ -48,28 +48,28 @@ export default function Sidebar({
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className={`p-2 rounded-lg hover:bg-white/10 text-slate-300 transition-all ${collapsed ? 'mx-auto' : ''}`}
+          className={`p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-all ${collapsed ? 'mx-auto' : ''}`}
         >
           <Menu size={20} />
         </button>
       </div>
 
       {/* Menu */}
-      <nav className="flex-1 px-2 py-3 overflow-visible flex flex-col gap-1">
+      <nav className="flex-1 py-3 overflow-visible flex flex-col gap-1">
         {menu.map((item) => (
           <button
             key={item.name}
             onClick={() => setActivePage(item.name)}
             title={collapsed ? item.name : ""}
             className={`
-              flex items-center gap-3 w-full py-3 transition-all duration-200 group rounded-lg
-              ${collapsed ? "justify-center" : "px-3"}
+              flex items-center gap-3 w-full py-3 transition-all duration-200 group
+              ${collapsed ? "justify-center rounded-lg mx-2 w-auto" : "pl-3 rounded-r-full rounded-l-none mr-2"}
               ${activePage === item.name
-                ? "bg-orange-500 text-white font-bold shadow-md shadow-orange-900/20"
-                : "text-slate-300 font-medium hover:bg-white/10 hover:text-white"}
+                ? "bg-[#19325c] text-white font-bold border-l-4 border-[#ff6e00]"
+                : "text-slate-600 font-medium hover:bg-[#19325c] hover:text-white hover:font-bold border-l-4 border-transparent"}
             `}
           >
-            <item.icon size={20} className={activePage === item.name ? "text-white" : "text-slate-400 group-hover:text-white transition-colors"} />
+            <item.icon size={20} className={activePage === item.name ? "text-[#ff6e00]" : "text-slate-700 group-hover:text-[#ff6e00] transition-colors"} />
             {!collapsed && (
               <span className="text-sm">{item.name}</span>
             )}
@@ -78,7 +78,7 @@ export default function Sidebar({
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 shrink-0 text-center">
+      <div className="px-4 py-3 shrink-0 text-center bg-gray-100">
         <p className="text-xs text-slate-500/60">
           {collapsed ? "©" : "© 2026 Embel Tech"}
         </p>

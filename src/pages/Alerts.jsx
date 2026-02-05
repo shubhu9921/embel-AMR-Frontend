@@ -35,7 +35,7 @@ export default function AlertsPage() {
   );
 
   return (
-    <div className="w-full h-full flex flex-col bg-slate-50 overflow-hidden relative">
+    <div className="w-full h-full flex flex-col bg-gray-100 overflow-hidden relative">
 
       {/* Page Header */}
       <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-blue-50/90 mx-6 mt-6 mb-2">
@@ -73,14 +73,14 @@ export default function AlertsPage() {
 
         {/* Controls */}
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
             {['all', 'critical', 'warning', 'info', 'success'].map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
                 className={`capitalize px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${filterType === type
                   ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                  : 'bg-white text-gray-500 border-gray-200 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200'
                   }`}
               >
                 {type}
@@ -88,14 +88,16 @@ export default function AlertsPage() {
             ))}
           </div>
 
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
+          <div className="relative w-full sm:w-64 group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="text-slate-400 group-focus-within:text-orange-500 transition-colors" size={18} />
+            </div>
             <input
               type="text"
               placeholder="Search alerts..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-300 placeholder:text-slate-400 shadow-md shadow-orange-100 hover:shadow-orange-200 hover:border-orange-300 hover:bg-white"
             />
           </div>
         </div>
@@ -108,7 +110,7 @@ export default function AlertsPage() {
               return (
                 <div
                   key={alert.id}
-                  className={`group bg-white p-4 rounded-xl border-l-4 ${style.border.replace('border', 'border-l')} border-y border-r border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex gap-4 ${alert.read ? 'opacity-75 grayscale-[0.3]' : ''}`}
+                  className={`group bg-white p-4 rounded-xl border-l-4 ${style.border.replace('border', 'border-l')} border-y border-r border-gray-100 shadow-sm hover:shadow-md hover:bg-orange-50 transition-all duration-300 flex gap-4 ${alert.read ? 'opacity-75 grayscale-[0.3]' : ''}`}
                 >
                   {/* Icon */}
                   <div className={`w-10 h-10 rounded-full ${style.iconBg} flex items-center justify-center shrink-0`}>
