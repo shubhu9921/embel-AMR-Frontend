@@ -2,13 +2,13 @@ import React from 'react';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 
 const colorClasses = {
-  blue: 'bg-gradient-to-br from-white to-blue-100/60 border-blue-200',
-  green: 'bg-gradient-to-br from-white to-emerald-100/60 border-emerald-200',
-  purple: 'bg-gradient-to-br from-white to-purple-100/60 border-purple-200',
-  orange: 'bg-gradient-to-br from-white to-orange-100/60 border-orange-200',
-  red: 'bg-gradient-to-br from-white to-red-100/60 border-red-200',
-  cyan: 'bg-gradient-to-br from-white to-cyan-100/60 border-cyan-200',
-  amber: 'bg-gradient-to-br from-white to-amber-100/60 border-amber-200',
+  blue: 'border-blue-200',
+  green: 'border-emerald-200',
+  purple: 'border-purple-200',
+  orange: 'border-orange-200',
+  red: 'border-red-200',
+  cyan: 'border-cyan-200',
+  amber: 'border-amber-200',
 };
 
 export function StatCard({
@@ -25,7 +25,7 @@ export function StatCard({
   const isPositiveTrend = trend !== undefined && trend < 0;
 
   return (
-    <div className={`rounded-2xl shadow-sm border ${colorClasses[color] || 'bg-white border-gray-100'} ${compact ? 'p-3' : 'p-4'} transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer h-full flex flex-col justify-between relative overflow-hidden group`}>
+    <div className={`rounded-2xl shadow-sm border ${colorClasses[color] || 'border-gray-100'} bg-white ${compact ? 'p-3' : 'p-4'} transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50/50 hover:border-orange-200 cursor-pointer h-full flex flex-col justify-between relative overflow-hidden group`}>
 
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/40 to-transparent rounded-bl-3xl -mr-4 -mt-4 opacity-50 group-hover:opacity-100 transition-opacity"></div>

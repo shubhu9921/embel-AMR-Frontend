@@ -7,7 +7,7 @@ import {
     AreaChart, Area, Tooltip, CartesianGrid, XAxis, YAxis,
     BarChart, Bar, Label
 } from "recharts";
-import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun } from "lucide-react";
+import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun, Activity } from "lucide-react";
 import { TimeFilter } from "./TimeFilter";
 import { AlertsPanel } from "./AlertsPanel";
 
@@ -268,49 +268,33 @@ export default function Dashboard() {
 
                             <div className="flex flex-wrap items-center gap-2">
                                 {/* Resource Selector */}
-                                <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100">
+                                <div className="flex bg-white p-1 rounded-xl border border-gray-100 shadow-sm">
                                     {[
-                                        { id: 'All', label: 'All', icon: LayoutDashboard, color: 'text-gray-600', activeBg: 'bg-white shadow-sm' },
-                                        { id: 'Energy', label: 'Energy', icon: Zap, color: 'text-emerald-600', activeBg: 'bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100' },
-                                        { id: 'Gas', label: 'Gas', icon: Flame, color: 'text-orange-600', activeBg: 'bg-orange-50 text-orange-700 shadow-sm ring-1 ring-orange-100' },
-                                        { id: 'Water', label: 'Water', icon: Droplet, color: 'text-cyan-600', activeBg: 'bg-cyan-50 text-cyan-700 shadow-sm ring-1 ring-cyan-100' },
-                                        { id: 'Solar', label: 'Solar', icon: Sun, color: 'text-amber-600', activeBg: 'bg-amber-50 text-amber-700 shadow-sm ring-1 ring-amber-100' },
+                                        { id: 'All', label: 'All', icon: LayoutDashboard, activeBg: 'bg-indigo-600 text-white shadow-md', inactiveBg: 'hover:bg-indigo-50 text-gray-500' },
+                                        { id: 'Energy', label: 'Energy', icon: Zap, activeBg: 'bg-emerald-500 text-white shadow-md', inactiveBg: 'hover:bg-emerald-50 text-gray-500' },
+                                        { id: 'Gas', label: 'Gas', icon: Flame, activeBg: 'bg-orange-500 text-white shadow-md', inactiveBg: 'hover:bg-orange-50 text-gray-500' },
+                                        { id: 'Water', label: 'Water', icon: Droplet, activeBg: 'bg-cyan-500 text-white shadow-md', inactiveBg: 'hover:bg-cyan-50 text-gray-500' },
+                                        { id: 'Solar', label: 'Solar', icon: Sun, activeBg: 'bg-amber-500 text-white shadow-md', inactiveBg: 'hover:bg-amber-50 text-gray-500' },
                                     ].map(res => (
                                         <button
                                             key={res.id}
                                             onClick={() => setActiveResource(res.id)}
                                             className={`
-                                                flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all
+                                                flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all duration-300
                                                 ${activeResource === res.id
                                                     ? res.activeBg
-                                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200/50'
+                                                    : res.inactiveBg
                                                 }
                                             `}
                                         >
-                                            {res.id !== 'All' && <res.icon size={12} strokeWidth={2.5} />}
+                                            {res.id !== 'All' && <res.icon size={14} strokeWidth={2.5} />}
                                             {res.label}
                                         </button>
                                     ))}
                                 </div>
 
                                 {/* Time Filter */}
-                                <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100">
-                                    {['1D', '1W', '1M', '1Y'].map(range => (
-                                        <button
-                                            key={range}
-                                            onClick={() => setConsumptionTimeRange(range)}
-                                            className={`
-                                                px-3 py-1.5 text-xs font-bold rounded-lg transition-all
-                                                ${consumptionTimeRange === range
-                                                    ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5'
-                                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                                                }
-                                            `}
-                                        >
-                                            {range}
-                                        </button>
-                                    ))}
-                                </div>
+                                <TimeFilter selected={consumptionTimeRange} onChange={setConsumptionTimeRange} showAll={true} />
                             </div>
                         </div>
                         <div className="flex-1 w-full min-h-0">
@@ -385,9 +369,19 @@ export default function Dashboard() {
                         <span className="text-sm uppercase tracking-wide">Live System Parameters</span>
                     </div>
                     <div className="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
-                        {systemParameters.map((p, i) => (
-                            <div key={i} className="flex flex-col bg-white p-3 rounded-xl border border-gray-200 shadow-md hover:shadow-xl hover:-translate-y-1 hover:border-blue-300 transition-all duration-300 cursor-pointer group">
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1 group-hover:text-blue-600 transition-colors">{p.label}</span>
+                        {[
+                            { label: 'Grid Freq', value: '50.02 Hz', icon: Activity, color: 'emerald', theme: 'to-emerald-100/60' },
+                            { label: 'Water Pres', value: '3.4 bar', icon: Droplet, color: 'cyan', theme: 'to-cyan-100/60' },
+                            { label: 'Gas PSI', value: '2.1 psi', icon: Flame, color: 'orange', theme: 'to-orange-100/60' },
+                            { label: 'Solar Out', value: '4.2 kW', icon: Sun, color: 'amber', theme: 'to-amber-100/60' },
+                            { label: 'Avg Temp', value: '24°C', icon: Info, color: 'blue', theme: 'to-blue-100/60' },
+                            { label: 'Humidity', value: '45%', icon: Wind, color: 'indigo', theme: 'to-indigo-100/60' },
+                        ].map((p, i) => (
+                            <div key={i} className={`flex flex-col bg-gradient-to-br from-white ${p.theme} p-3 rounded-xl border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 hover:border-${p.color}-300 transition-all duration-300 cursor-pointer group`}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className={`text-[10px] text-gray-500 font-bold uppercase tracking-wider group-hover:text-${p.color}-600 transition-colors`}>{p.label}</span>
+                                    <p.icon className={`w-4 h-4 text-gray-400 group-hover:text-${p.color}-600 transition-colors`} />
+                                </div>
                                 <span className="text-sm font-mono font-extrabold text-gray-900">{p.value}</span>
                                 <div className="hidden group-hover:flex items-center gap-1 mt-1 animate-in fade-in slide-in-from-top-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>

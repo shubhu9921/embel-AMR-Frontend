@@ -89,18 +89,27 @@ export function AlertsPanel({ alerts, compact = false }) {
           >
             All
           </button>
-          {Object.keys(alertConfig).map(key => (
-            <button
-              key={key}
-              onClick={() => setActiveFilter(key)}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-all ${activeFilter === key
-                ? `${alertConfig[key].badgeBg} ${alertConfig[key].badgeText} border-transparent ring-1 ring-inset ring-black/5 shadow-sm`
-                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                }`}
-            >
-              {alertConfig[key].label}
-            </button>
-          ))}
+          {Object.keys(alertConfig).map(key => {
+            const hoverClass = {
+              info: 'hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200',
+              warning: 'hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200',
+              critical: 'hover:bg-red-50 hover:text-red-600 hover:border-red-200',
+              success: 'hover:bg-green-50 hover:text-green-600 hover:border-green-200',
+            }[key];
+
+            return (
+              <button
+                key={key}
+                onClick={() => setActiveFilter(key)}
+                className={`px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-all ${activeFilter === key
+                  ? `${alertConfig[key].badgeBg} ${alertConfig[key].badgeText} border-transparent ring-1 ring-inset ring-black/5 shadow-sm`
+                  : `bg-white text-gray-500 border-gray-200 ${hoverClass}`
+                  }`}
+              >
+                {alertConfig[key].label}
+              </button>
+            )
+          })}
         </div>
       </div>
 

@@ -144,7 +144,7 @@ export default function AnalysisPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer group">
+        <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
           <div className="flex items-center gap-2 text-indigo-600 mb-1">
             <Activity size={16} />
             <span className="text-xs font-bold uppercase tracking-wider">Total Devices</span>
@@ -152,7 +152,7 @@ export default function AnalysisPage() {
           <span className="text-2xl font-extrabold text-indigo-900">124</span>
           <span className="text-xs text-indigo-600 font-medium">+12 new installed</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer group">
+        <div className="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
           <div className="flex items-center gap-2 text-emerald-600 mb-1">
             <Activity size={16} />
             <span className="text-xs font-bold uppercase tracking-wider">Active</span>
@@ -160,7 +160,7 @@ export default function AnalysisPage() {
           <span className="text-2xl font-extrabold text-emerald-700">98</span>
           <span className="text-xs text-emerald-600 font-medium">Running normally</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-amber-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer group">
+        <div className="bg-white p-4 rounded-2xl border border-amber-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
           <div className="flex items-center gap-2 text-amber-600 mb-1">
             <AlertCircle size={16} />
             <span className="text-xs font-bold uppercase tracking-wider">Warnings</span>
@@ -168,7 +168,7 @@ export default function AnalysisPage() {
           <span className="text-2xl font-extrabold text-amber-700">21</span>
           <span className="text-xs text-amber-600 font-medium">Requires attention</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer group">
+        <div className="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
           <div className="flex items-center gap-2 text-rose-600 mb-1">
             <XCircle size={16} />
             <span className="text-xs font-bold uppercase tracking-wider">Offline</span>
@@ -185,7 +185,7 @@ export default function AnalysisPage() {
         <div className="xl:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm h-[450px] flex flex-col">
           <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
             <h3 className="text-lg font-bold text-gray-900">Consumption Trends</h3>
-            <TimeFilter selected={timeRange} onChange={setTimeRange} />
+            <TimeFilter selected={timeRange} onChange={setTimeRange} showAll={true} />
           </div>
 
           <div className="flex-1 min-h-0">

@@ -74,18 +74,28 @@ export default function AlertsPage() {
         {/* Controls */}
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-            {['all', 'critical', 'warning', 'info', 'success'].map((type) => (
-              <button
-                key={type}
-                onClick={() => setFilterType(type)}
-                className={`capitalize px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${filterType === type
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                  : 'bg-white text-gray-500 border-gray-200 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200'
-                  }`}
-              >
-                {type}
-              </button>
-            ))}
+            {['all', 'critical', 'warning', 'info', 'success'].map((type) => {
+              const hoverStyles = {
+                all: 'hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300',
+                critical: 'hover:bg-red-50 hover:text-red-600 hover:border-red-200',
+                warning: 'hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200',
+                info: 'hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200',
+                success: 'hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200',
+              };
+
+              return (
+                <button
+                  key={type}
+                  onClick={() => setFilterType(type)}
+                  className={`capitalize px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${filterType === type
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                    : `bg-white text-gray-500 border-gray-200 ${hoverStyles[type]}`
+                    }`}
+                >
+                  {type}
+                </button>
+              )
+            })}
           </div>
 
           <div className="relative w-full sm:w-64 group">
