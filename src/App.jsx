@@ -12,8 +12,14 @@ import AnalysisPage from "./pages/Analysis";
 import AlertsPage from "./pages/Alerts";
 import DevicesPage from "./pages/Devices";
 import SettingsPage from "./pages/Settings";
+import ReportsPage from "./pages/Reports";
+import BillingPage from "./pages/Billing";
+import PayloadsPage from "./pages/Payloads";
+import LoginPage from "./pages/Login";
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('isAuthenticated') === 'true');
+  const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || 'Admin');
   const [collapsed, setCollapsed] = useState(false);
   const [activePage, setActivePage] = useState("Dashboard");
 
@@ -31,6 +37,26 @@ export default function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const handleLogin = (role) => {
+    setIsAuthenticated(true);
+    setUserRole(role);
+    setActivePage("Dashboard");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userRole');
+    setIsAuthenticated(false);
+    setUserRole('Admin'); // Reset to default
+    setActivePage("Dashboard");
+  };
+
+
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar (desktop only, collapsible) */}
@@ -39,6 +65,8 @@ export default function App() {
         setCollapsed={setCollapsed}
         activePage={activePage}
         setActivePage={setActivePage}
+        userRole={userRole}
+        onLogout={handleLogout}
       />
 
       {/* Main content */}
@@ -62,6 +90,9 @@ export default function App() {
           {activePage === "Alerts" && <AlertsPage />}
           {activePage === "Analysis" && <AnalysisPage />}
           {activePage === "Settings" && <SettingsPage />}
+          {activePage === "Reports" && <ReportsPage />}
+          {activePage === "Billing" && <BillingPage />}
+          {activePage === "Payloads" && <PayloadsPage />}
         </main>
       </div>
     </div>

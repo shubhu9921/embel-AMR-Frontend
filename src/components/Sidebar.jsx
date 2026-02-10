@@ -9,10 +9,28 @@ import {
   Sun,
   Menu,
   Settings,
-  LineChart
+  LineChart,
+  FileText,
+  CreditCard,
+  Database,
+  LogOut
 } from "lucide-react";
 
-const menu = [
+const adminMenu = [
+  { name: "Dashboard", icon: LayoutDashboard },
+  { name: "Water", icon: Droplet },
+  { name: "Gas", icon: Flame },
+  { name: "Energy", icon: Zap },
+  { name: "Devices", icon: Cpu },
+  { name: "Users", icon: Users },
+  { name: "Reports", icon: FileText },
+  { name: "Billing", icon: CreditCard },
+  { name: "Payloads", icon: Database },
+  { name: "Alerts", icon: Bell },
+  { name: "Settings", icon: Settings }
+];
+
+const userMenu = [
   { name: "Dashboard", icon: LayoutDashboard },
   { name: "Gas", icon: Flame },
   { name: "Water", icon: Droplet },
@@ -23,12 +41,18 @@ const menu = [
   { name: "Settings", icon: Settings }
 ];
 
+// Menu selection logic moved inside component or uses prop
+
 export default function Sidebar({
   collapsed,
   setCollapsed,
   activePage,
-  setActivePage
+  setActivePage,
+  userRole,
+  onLogout
 }) {
+  const menu = (userRole === "Admin" || userRole === "Super Admin") ? adminMenu : userMenu;
+
   return (
     <aside
       className={`
@@ -77,12 +101,31 @@ export default function Sidebar({
         ))}
       </nav>
 
+
+
+      {/* Logout Button */}
+      <div className="px-2 py-2 border-t border-gray-100">
+        <button
+          onClick={onLogout}
+          title={collapsed ? "Logout" : ""}
+          className={`
+            flex items-center gap-3 w-full py-3 transition-all duration-200 group rounded-lg hover:bg-red-50
+            ${collapsed ? "justify-center" : "pl-3"}
+          `}
+        >
+          <LogOut size={20} className="text-slate-600 group-hover:text-red-600 transition-colors" />
+          {!collapsed && (
+            <span className="text-sm font-medium text-slate-600 group-hover:text-red-600">Logout</span>
+          )}
+        </button>
+      </div>
+
       {/* Footer */}
       <div className="px-4 py-3 shrink-0 text-center bg-gray-100">
         <p className="text-xs text-slate-500/60">
           {collapsed ? "©" : "© 2026 Embel Tech"}
         </p>
       </div>
-    </aside>
+    </aside >
   );
 }
