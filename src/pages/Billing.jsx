@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     FileText,
     Search,
@@ -10,7 +10,9 @@ import {
     CreditCard,
     Clock,
     AlertCircle,
-    CheckCircle
+    CheckCircle,
+    ChevronDown,
+    Receipt
 } from 'lucide-react';
 import BillingDetailsModal from './BillingDetailsModal';
 
@@ -21,7 +23,8 @@ const initialInvoices = [
         email: 'john@amr.com',
         phone: '+91 98765 43210',
         meter: 'MTR-001',
-        type: 'SOLAR',
+        resourceType: 'SOLAR',
+        type: 'Generation',
         amount: '₹5,310',
         date: '2025-01-15',
         status: 'Paid',
@@ -38,7 +41,8 @@ const initialInvoices = [
         email: 'alice@amr.com',
         phone: '+91 98765 43211',
         meter: 'MTR-003',
-        type: 'WATER',
+        resourceType: 'WATER',
+        type: 'Usage',
         amount: '₹1,416',
         date: '2025-01-20',
         status: 'Pending',
@@ -48,20 +52,49 @@ const initialInvoices = [
         subtotal: '₹1,200',
         tax: '₹216 (18% GST)'
     },
-    { id: 'INV-2025-003', customer: 'Bob Wilson', email: 'bob@amr.com', meter: 'MTR-004', type: 'ELECTRIC', amount: '₹10,502', date: '2025-01-10', status: 'Overdue' },
-    { id: 'INV-2025-004', customer: 'Charlie Brown', email: 'charlie@amr.com', meter: 'MTR-006', type: 'WATER', amount: '₹1,121', date: '2025-01-25', status: 'Pending' },
-    { id: 'INV-2025-005', customer: 'David Lee', email: 'david@amr.com', meter: 'MTR-007', type: 'ELECTRIC', amount: '₹7,316', date: '2025-01-18', status: 'Paid' },
-    { id: 'INV-2024-089', customer: 'Emma Wilson', email: 'emma@amr.com', meter: 'MTR-008', type: 'GAS', amount: '₹4,012', date: '2024-12-30', status: 'Paid' },
+    { id: 'INV-2025-003', customer: 'Bob Wilson', email: 'bob@amr.com', meter: 'MTR-004', resourceType: 'ELECTRIC', type: 'Consumption', amount: '₹10,502', date: '2025-01-10', status: 'Overdue' },
+    { id: 'INV-2025-004', customer: 'Charlie Brown', email: 'charlie@amr.com', meter: 'MTR-006', resourceType: 'WATER', type: 'Maintenance', amount: '₹1,121', date: '2025-01-25', status: 'Pending' },
+    { id: 'INV-2025-005', customer: 'David Lee', email: 'david@amr.com', meter: 'MTR-007', resourceType: 'ELECTRIC', type: 'Billing', amount: '₹7,316', date: '2025-01-18', status: 'Paid' },
+    { id: 'INV-2024-089', customer: 'Emma Wilson', email: 'emma@amr.com', meter: 'MTR-008', resourceType: 'GAS', type: 'Consumption', amount: '₹4,012', date: '2024-12-30', status: 'Paid' },
 ];
 
 export default function BillingPage() {
     const [invoices] = useState(initialInvoices);
     const [searchTerm, setSearchTerm] = useState("");
-    const [showFilters, setShowFilters] = useState(false);
     const [filterStatus, setFilterStatus] = useState("All");
     const [filterType, setFilterType] = useState("All");
+    const [filterMeter, setFilterMeter] = useState("All");
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Dropdown states
+    const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
+    const [isTypeFilterOpen, setIsTypeFilterOpen] = useState(false);
+    const [isMeterFilterOpen, setIsMeterFilterOpen] = useState(false);
+
+    // Refs for click outside
+    const statusFilterRef = useRef(null);
+    const typeFilterRef = useRef(null);
+    const meterFilterRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (statusFilterRef.current && !statusFilterRef.current.contains(event.target)) {
+                setIsStatusFilterOpen(false);
+            }
+            if (typeFilterRef.current && !typeFilterRef.current.contains(event.target)) {
+                setIsTypeFilterOpen(false);
+            }
+            if (meterFilterRef.current && !meterFilterRef.current.contains(event.target)) {
+                setIsMeterFilterOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const handleViewInvoice = (invoice) => {
         setSelectedInvoice(invoice);
@@ -73,249 +106,343 @@ export default function BillingPage() {
             inv.id.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = filterStatus === "All" || inv.status === filterStatus;
         const matchesType = filterType === "All" || inv.type === filterType;
-        return matchesSearch && matchesStatus && matchesType;
+        const matchesMeter = filterMeter === "All" || inv.resourceType === filterMeter;
+        return matchesSearch && matchesStatus && matchesType && matchesMeter;
     });
 
-    const getTypeColor = (type) => {
+    const getResourceTypeColor = (type) => {
         switch (type) {
-            case 'SOLAR': return 'bg-amber-100 text-amber-700';
-            case 'WATER': return 'bg-blue-100 text-blue-700';
-            case 'ELECTRIC': return 'bg-purple-100 text-purple-700';
-            case 'GAS': return 'bg-orange-100 text-orange-700';
-            default: return 'bg-gray-100 text-gray-700';
+            case 'SOLAR': return 'bg-amber-100 text-amber-700 border-amber-200';
+            case 'WATER': return 'bg-blue-100 text-blue-700 border-blue-200';
+            case 'ELECTRIC': return 'bg-purple-100 text-purple-700 border-purple-200';
+            case 'GAS': return 'bg-orange-100 text-orange-700 border-orange-200';
+            default: return 'bg-gray-100 text-gray-700 border-gray-200';
         }
     };
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Paid': return 'bg-green-100 text-green-700';
-            case 'Pending': return 'bg-amber-100 text-amber-700';
-            case 'Overdue': return 'bg-red-100 text-red-700';
-            default: return 'bg-gray-100 text-gray-700';
+            case 'Paid': return 'bg-green-50 text-green-700 border-green-200';
+            case 'Pending': return 'bg-orange-50 text-orange-700 border-orange-200';
+            case 'Overdue': return 'bg-red-50 text-red-700 border-red-200';
+            default: return 'bg-gray-50 text-gray-700 border-gray-200';
         }
     };
 
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'Paid': return <CheckCircle className="w-5 h-5 text-green-600" />;
-            case 'Pending': return <Clock className="w-5 h-5 text-amber-600" />;
-            case 'Overdue': return <AlertCircle className="w-5 h-5 text-red-600" />;
-            default: return null;
-        }
-    };
+    // Calculate totals
+    const totalBilling = "₹" + invoices.reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
+    const totalPaid = "₹" + invoices.filter(i => i.status === 'Paid').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
+    const totalPending = "₹" + invoices.filter(i => i.status === 'Pending').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
+    const totalOverdue = "₹" + invoices.filter(i => i.status === 'Overdue').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
 
     return (
-        <main className="flex-1 overflow-y-auto scroll-smooth bg-gray-50">
-            <div className="min-h-full">
-                {/* Header */}
-                <div className="bg-white border-b sticky top-0 z-10 px-6 py-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Billing</h1>
-                            <p className="text-sm text-slate-500 mt-1">Manage invoices and payments</p>
+        <main className="flex-1 overflow-y-auto bg-[#F3F4F6] p-4 md:p-6 scroll-smooth font-sans">
+
+            {/* Top Header */}
+            {/* Top Header */}
+            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-orange-50/90 mb-6">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
+                            <Receipt size={24} />
                         </div>
-                        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm hover:shadow active:scale-95">
-                            <Plus className="w-5 h-5" /> Create Invoice
-                        </button>
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                                Billing & Invoices
+                            </h1>
+                            <p className="text-sm font-medium text-gray-500">
+                                Manage payments & statements
+                            </p>
+                        </div>
+                    </div>
+                    <div className="h-1.5 w-24 rounded-full bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
+                </div>
+            </div>
+
+            <div className="max-w-[1920px] mx-auto space-y-6">
+
+                {/* KPI Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+                        <div>
+                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Total Billing</p>
+                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-[#ff6e00] transition-colors">{totalBilling}</h3>
+                        </div>
+                        <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-[#ff6e00] group-hover:text-white transition-all duration-300">
+                            <CreditCard className="w-8 h-8 text-[#ff6e00] group-hover:text-white" />
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+                        <div>
+                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Paid Amount</p>
+                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-green-600 transition-colors">{totalPaid}</h3>
+                        </div>
+                        <div className="bg-green-50 p-3 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
+                            <CheckCircle className="w-8 h-8 text-green-600 group-hover:text-white" />
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+                        <div>
+                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Pending</p>
+                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-orange-500 transition-colors">{totalPending}</h3>
+                        </div>
+                        <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-all duration-300">
+                            <Clock className="w-8 h-8 text-orange-500 group-hover:text-white" />
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+                        <div>
+                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Overdue</p>
+                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-red-500 transition-colors">{totalOverdue}</h3>
+                        </div>
+                        <div className="bg-red-50 p-3 rounded-xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
+                            <AlertCircle className="w-8 h-8 text-red-500 group-hover:text-white" />
+                        </div>
                     </div>
                 </div>
 
-                <div className="p-6 space-y-6">
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-5 text-white shadow-lg shadow-blue-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-blue-100 text-sm font-medium">Total Billing</p>
-                                    <p className="text-2xl font-bold mt-1">₹29,677</p>
-                                </div>
-                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                                    <CreditCard className="w-6 h-6" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-5 text-white shadow-lg shadow-green-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-green-100 text-sm font-medium">Paid</p>
-                                    <p className="text-2xl font-bold mt-1">₹16,638</p>
-                                </div>
-                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                                    <CheckCircle className="w-6 h-6" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl p-5 text-white shadow-lg shadow-amber-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-amber-100 text-sm font-medium">Pending</p>
-                                    <p className="text-2xl font-bold mt-1">₹2,537</p>
-                                </div>
-                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                                    <Clock className="w-6 h-6" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl p-5 text-white shadow-lg shadow-red-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-red-100 text-sm font-medium">Overdue</p>
-                                    <p className="text-2xl font-bold mt-1">₹10,502</p>
-                                </div>
-                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                                    <AlertCircle className="w-6 h-6" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                {/* Content Card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">
 
-                    {/* Controls */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                        <div className="flex flex-col sm:flex-row gap-4 justify-between">
-                            <div className="flex flex-wrap gap-3">
-                                <div className="relative w-full sm:w-auto">
-                                    <Search className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                                    <input
-                                        placeholder="Search invoices..."
-                                        className="pl-10 pr-4 py-2.5 bg-slate-100 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all w-full sm:w-64"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </div>
+                    {/* Header Controls */}
+                    <div className="p-5 border-b border-gray-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-t-2xl">
+                        {/* Left: Title & Search */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full xl:w-auto">
+                            <div className="relative w-full md:w-80 group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Search invoices..."
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-sm group-hover:bg-white"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Right: Actions & Filter */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            {/* Status Filter Dropdown */}
+                            <div className="relative min-w-[140px]" ref={statusFilterRef}>
                                 <button
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition ${showFilters ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                    onClick={() => setIsStatusFilterOpen(!isStatusFilterOpen)}
+                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isStatusFilterOpen
+                                        ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
                                 >
-                                    <Filter className="w-5 h-5" /> Filters
+                                    <span className="truncate">
+                                        {filterStatus === 'All' ? 'All Status' : filterStatus}
+                                    </span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isStatusFilterOpen ? 'rotate-180' : ''}`} />
                                 </button>
+                                <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isStatusFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                                    }`}>
+                                    {['All', 'Paid', 'Pending', 'Overdue'].map((option) => (
+                                        <button
+                                            key={option}
+                                            onClick={() => {
+                                                setFilterStatus(option);
+                                                setIsStatusFilterOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${filterStatus === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
+                                                }`}
+                                        >
+                                            {option === 'All' ? 'All Status' : option}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex items-center gap-4 text-sm">
-                                <span className="text-slate-500">Total Invoices: <span className="font-semibold text-slate-800">{filteredInvoices.length}</span></span>
-                            </div>
-                        </div>
 
-                        {/* Filter Dropdowns */}
-                        {showFilters && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-top-2">
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wider">Status</label>
-                                    <select
-                                        value={filterStatus}
-                                        onChange={(e) => setFilterStatus(e.target.value)}
-                                        className="w-full bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none font-medium"
-                                    >
-                                        <option value="All">All Statuses</option>
-                                        <option value="Paid">Paid</option>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Overdue">Overdue</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wider">Type</label>
-                                    <select
-                                        value={filterType}
-                                        onChange={(e) => setFilterType(e.target.value)}
-                                        className="w-full bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none font-medium"
-                                    >
-                                        <option value="All">All Types</option>
-                                        <option value="SOLAR">Solar</option>
-                                        <option value="WATER">Water</option>
-                                        <option value="ELECTRIC">Electric</option>
-                                        <option value="GAS">Gas</option>
-                                    </select>
+                            {/* Meter Filter Dropdown */}
+                            <div className="relative min-w-[140px]" ref={meterFilterRef}>
+                                <button
+                                    onClick={() => setIsMeterFilterOpen(!isMeterFilterOpen)}
+                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isMeterFilterOpen
+                                        ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                >
+                                    <span className="truncate">
+                                        {filterMeter === 'All' ? 'All Meters' : filterMeter}
+                                    </span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isMeterFilterOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isMeterFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                                    }`}>
+                                    {['All', 'SOLAR', 'WATER', 'ELECTRIC', 'GAS'].map((option) => (
+                                        <button
+                                            key={option}
+                                            onClick={() => {
+                                                setFilterMeter(option);
+                                                setIsMeterFilterOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${filterMeter === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
+                                                }`}
+                                        >
+                                            {option === 'All' ? 'All Meters' : option}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
-                        )}
+
+                            {/* Type Filter Dropdown */}
+                            <div className="relative min-w-[140px]" ref={typeFilterRef}>
+                                <button
+                                    onClick={() => setIsTypeFilterOpen(!isTypeFilterOpen)}
+                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isTypeFilterOpen
+                                        ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                >
+                                    <span className="truncate">
+                                        {filterType === 'All' ? 'All Types' : filterType}
+                                    </span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isTypeFilterOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isTypeFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                                    }`}>
+                                    {['All', 'Consumption', 'Usage', 'Generation', 'Maintenance', 'Billing'].map((option) => (
+                                        <button
+                                            key={option}
+                                            onClick={() => {
+                                                setFilterType(option);
+                                                setIsTypeFilterOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${filterType === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
+                                                }`}
+                                        >
+                                            {option === 'All' ? 'All Types' : option}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
+
+                            {/* Action Buttons */}
+                            <button
+                                className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
+                            >
+                                <Plus className="w-5 h-5 stroke-[2.5]" />
+                                <span className="hidden sm:inline">Create Invoice</span>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Table */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="bg-slate-50 text-slate-600">
-                                    <tr>
-                                        <th className="px-5 py-4 text-left font-semibold">Invoice</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Customer</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Meter</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Amount</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Due Date</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Status</th>
-                                        <th className="px-5 py-4 text-right font-semibold">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {filteredInvoices.length > 0 ? (
-                                        filteredInvoices.map((inv) => (
-                                            <tr key={inv.id} className="hover:bg-slate-50 transition cursor-pointer">
-                                                <td className="px-5 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="p-2 bg-slate-100 rounded-lg">
-                                                            <FileText className="w-5 h-5 text-slate-600" />
-                                                        </div>
-                                                        <span className="font-medium text-slate-800">{inv.id}</span>
+                    <div className="overflow-x-auto min-h-[400px] rounded-b-2xl">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-gray-50/50 text-gray-500 text-xs uppercase font-extrabold tracking-wider sticky top-0 z-10 backdrop-blur-md">
+                                <tr>
+                                    <th className="px-6 py-4 border-b border-gray-100">Invoice</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Customer</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Meter</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Type</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Amount</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Due Date</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Status</th>
+                                    <th className="px-6 py-4 border-b border-gray-100 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {filteredInvoices.length > 0 ? (
+                                    filteredInvoices.map((inv) => (
+                                        <tr
+                                            key={inv.id}
+                                            onClick={() => handleViewInvoice(inv)}
+                                            className="group hover:bg-orange-50/50 transition-colors duration-200 cursor-pointer"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-white border border-gray-200 rounded-lg group-hover:border-[#ff6e00] transition-colors">
+                                                        <FileText className="w-5 h-5 text-gray-400 group-hover:text-[#ff6e00]" />
                                                     </div>
-                                                </td>
-                                                <td className="px-5 py-4">
-                                                    <div>
-                                                        <p className="font-medium text-slate-800">{inv.customer}</p>
-                                                        <p className="text-xs text-slate-500">{inv.email}</p>
-                                                    </div>
-                                                </td>
-                                                <td className="px-5 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getTypeColor(inv.type)}`}>
-                                                            {inv.type}
-                                                        </span>
-                                                        <span className="text-slate-600">{inv.meter}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-5 py-4 font-semibold text-slate-800">{inv.amount}</td>
-                                                <td className="px-5 py-4">
-                                                    <div className="flex items-center gap-2 text-slate-600">
-                                                        <Clock className="w-4 h-4" /> {/* Or Calendar icon */}
-                                                        {inv.date}
-                                                    </div>
-                                                </td>
-                                                <td className="px-5 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        {getStatusIcon(inv.status)}
-                                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(inv.status)}`}>
-                                                            {inv.status}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-5 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <button
-                                                            onClick={() => handleViewInvoice(inv)}
-                                                            className="p-2 hover:bg-blue-100 rounded-lg transition text-blue-600"
-                                                            title="View"
-                                                        >
-                                                            <Eye className="w-4 h-4" />
-                                                        </button>
-                                                        <button className="p-2 hover:bg-green-100 rounded-lg transition text-green-600" title="Download">
-                                                            <Download className="w-4 h-4" />
-                                                        </button>
-                                                        <button className="p-2 hover:bg-purple-100 rounded-lg transition text-purple-600" title="Send Email">
-                                                            <Mail className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="7" className="px-5 py-8 text-center text-slate-500">
-                                                No invoices found matching your criteria.
+                                                    <span className="font-bold text-gray-700 group-hover:text-[#ff6e00] transition-colors">{inv.id}</span>
+                                                </div>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-gray-800 text-sm">{inv.customer}</span>
+                                                    <span className="text-xs text-gray-400 font-medium mt-0.5">{inv.email}</span>
+                                                </div>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border ${getResourceTypeColor(inv.resourceType)}`}>
+                                                    {inv.resourceType}
+                                                </span>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm font-medium text-gray-600">{inv.type}</span>
+                                            </td>
+
+                                            <td className="px-6 py-4 font-black text-gray-800 group-hover:text-[#ff6e00] transition-colors">
+                                                {inv.amount}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-sm text-gray-500 font-medium">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                                    {inv.date}
+                                                </div>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(inv.status)}`}>
+                                                    {inv.status === 'Paid' && <CheckCircle className="w-3 h-3" />}
+                                                    {inv.status === 'Pending' && <Clock className="w-3 h-3" />}
+                                                    {inv.status === 'Overdue' && <AlertCircle className="w-3 h-3" />}
+                                                    {inv.status}
+                                                </div>
+                                            </td>
+
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:shadow-md transition-all active:scale-90"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-green-500 hover:text-green-600 hover:shadow-md transition-all active:scale-90"
+                                                        title="Download Invoice"
+                                                    >
+                                                        <Download className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-purple-500 hover:text-purple-600 hover:shadow-md transition-all active:scale-90"
+                                                        title="Email Invoice"
+                                                    >
+                                                        <Mail className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={8} className="px-6 py-12 text-center">
+                                            <div className="flex flex-col items-center justify-center text-gray-400">
+                                                <div className="p-4 bg-gray-50 rounded-full mb-3">
+                                                    <Search className="w-8 h-8 opacity-50" />
+                                                </div>
+                                                <p className="text-lg font-medium text-gray-600">No invoices found</p>
+                                                <p className="text-sm">Try adjusting your search or filters</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
             </div>
 
             <BillingDetailsModal

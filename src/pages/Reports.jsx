@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     FileText,
     Search,
@@ -7,7 +7,11 @@ import {
     LayoutGrid,
     Download,
     Eye,
-    Plus
+    Plus,
+    BarChart3,
+    CheckCircle2,
+    Clock,
+    ChevronDown
 } from 'lucide-react';
 import ReportDetailsModal from './ReportDetailsModal';
 
@@ -22,12 +26,37 @@ const initialReports = [
 
 export default function ReportsPage() {
     const [searchTerm, setSearchTerm] = useState("");
-    const [showFilters, setShowFilters] = useState(false);
     const [filterReportType, setFilterReportType] = useState("All");
     const [filterMeterType, setFilterMeterType] = useState("All");
     const [reports] = useState(initialReports);
     const [selectedReport, setSelectedReport] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Dropdown states
+    const [isTypeFilterOpen, setIsTypeFilterOpen] = useState(false);
+    const [isMeterFilterOpen, setIsMeterFilterOpen] = useState(false);
+
+    // Refs for click outside
+    const typeFilterRef = useRef(null);
+    const meterFilterRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (typeFilterRef.current && !typeFilterRef.current.contains(event.target)) {
+                setIsTypeFilterOpen(false);
+            }
+            if (meterFilterRef.current && !meterFilterRef.current.contains(event.target)) {
+                setIsMeterFilterOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+
 
     const handleViewReport = (report) => {
         setSelectedReport(report);
@@ -43,171 +72,292 @@ export default function ReportsPage() {
 
     const getMeterColor = (meter) => {
         switch (meter) {
-            case 'ELECTRIC': return 'bg-purple-100 text-purple-700';
-            case 'WATER': return 'bg-blue-100 text-blue-700';
-            case 'SOLAR': return 'bg-amber-100 text-amber-700';
-            case 'GAS': return 'bg-orange-100 text-orange-700';
-            default: return 'bg-gray-100 text-gray-700';
+            case 'ELECTRIC': return 'bg-purple-50 text-purple-700 border-purple-200';
+            case 'WATER': return 'bg-blue-50 text-blue-700 border-blue-200';
+            case 'SOLAR': return 'bg-amber-50 text-amber-700 border-amber-200';
+            case 'GAS': return 'bg-orange-50 text-orange-700 border-orange-200';
+            default: return 'bg-gray-50 text-gray-700 border-gray-200';
         }
     };
 
     const getStatusColor = (status) => {
-        return status === 'Ready' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700';
+        return status === 'Ready'
+            ? 'bg-green-50 text-green-700 border-green-200'
+            : 'bg-orange-50 text-orange-700 border-orange-200';
     };
 
+    // KPI Calculations
+    const totalReports = reports.length;
+    const readyReports = reports.filter(r => r.status === 'Ready').length;
+    const processingReports = reports.filter(r => r.status === 'Processing').length;
+
+    // Mock downloaded count
+    const downloadedReports = 142;
+
     return (
-        <main className="flex-1 overflow-y-auto scroll-smooth bg-gray-50">
-            <div className="min-h-full">
-                {/* Header */}
-                <div className="bg-white border-b sticky top-0 z-10 px-6 py-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Reports</h1>
-                            <p className="text-sm text-slate-500 mt-1">View and download system reports</p>
+        <main className="flex-1 overflow-y-auto bg-[#F3F4F6] p-4 md:p-6 scroll-smooth font-sans">
+
+            {/* Top Header */}
+            {/* Top Header */}
+            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-orange-50/90 mb-6 mx-1">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
+                            <FileText size={24} />
                         </div>
-                        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm hover:shadow active:scale-95">
-                            <Plus className="w-5 h-5" /> GENEREATE REPORT
-                        </button>
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                                Reports & Analytics
+                            </h1>
+                            <p className="text-sm font-medium text-gray-500">
+                                Download & manage system reports
+                            </p>
+                        </div>
+                    </div>
+                    <div className="h-1.5 w-24 rounded-full bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
+                </div>
+            </div>
+
+            <div className="max-w-[1920px] mx-auto space-y-6">
+
+                {/* KPI Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+                        <div>
+                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Total Reports</p>
+                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-[#ff6e00] transition-colors">{totalReports}</h3>
+                        </div>
+                        <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-[#ff6e00] group-hover:text-white transition-all duration-300">
+                            <FileText className="w-8 h-8 text-[#ff6e00] group-hover:text-white" />
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+                        <div>
+                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Ready to Download</p>
+                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-green-600 transition-colors">{readyReports}</h3>
+                        </div>
+                        <div className="bg-green-50 p-3 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
+                            <CheckCircle2 className="w-8 h-8 text-green-600 group-hover:text-white" />
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+                        <div>
+                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Processing</p>
+                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-amber-500 transition-colors">{processingReports}</h3>
+                        </div>
+                        <div className="bg-amber-50 p-3 rounded-xl group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
+                            <Clock className="w-8 h-8 text-amber-500 group-hover:text-white" />
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+                        <div>
+                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Total Downloads</p>
+                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-blue-500 transition-colors">{downloadedReports}</h3>
+                        </div>
+                        <div className="bg-blue-50 p-3 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+                            <Download className="w-8 h-8 text-blue-500 group-hover:text-white" />
+                        </div>
                     </div>
                 </div>
 
-                <div className="p-6 space-y-6">
-                    {/* Controls */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                        <div className="flex flex-col sm:flex-row gap-4 justify-between">
-                            <div className="flex flex-wrap gap-3">
-                                <div className="relative w-full sm:w-auto">
-                                    <Search className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                                    <input
-                                        placeholder="Search reports..."
-                                        className="pl-10 pr-4 py-2.5 bg-slate-100 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all w-full sm:w-64"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </div>
-                                <button
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition ${showFilters ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                                >
-                                    <Filter className="w-5 h-5" /> Filters
-                                </button>
-                            </div>
-                            <div className="flex items-center gap-2 bg-slate-100 rounded-xl p-1">
-                                <button className="p-2 rounded-lg transition bg-white shadow-sm text-blue-600">
-                                    <List className="w-5 h-5" />
-                                </button>
-                                <button className="p-2 rounded-lg transition hover:bg-slate-200 text-slate-600">
-                                    <LayoutGrid className="w-5 h-5" />
-                                </button>
+                {/* Content Card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">
+
+                    {/* Header Controls */}
+                    <div className="p-5 border-b border-gray-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-t-2xl">
+                        {/* Left: Title & Search */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
+                            <div className="relative w-full md:w-80 group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Search reports..."
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-sm group-hover:bg-white"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
                             </div>
                         </div>
 
-                        {showFilters && (
-                            <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-slate-200 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Report Type</label>
-                                    <select
-                                        value={filterReportType}
-                                        onChange={(e) => setFilterReportType(e.target.value)}
-                                        className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-slate-50 transition-colors"
-                                    >
-                                        <option value="All">All</option>
-                                        <option value="Consumption">Consumption</option>
-                                        <option value="Usage">Usage</option>
-                                        <option value="Generation">Generation</option>
-                                        <option value="Maintenance">Maintenance</option>
-                                        <option value="Billing">Billing</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Meter Type</label>
-                                    <select
-                                        value={filterMeterType}
-                                        onChange={(e) => setFilterMeterType(e.target.value)}
-                                        className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-slate-50 transition-colors"
-                                    >
-                                        <option value="All">All</option>
-                                        <option value="SOLAR">SOLAR</option>
-                                        <option value="GAS">GAS</option>
-                                        <option value="WATER">WATER</option>
-                                        <option value="ELECTRIC">ELECTRIC</option>
-                                    </select>
+                        {/* Right: Actions & Filter */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            {/* Type Filter Dropdown */}
+                            <div className="relative min-w-[150px]" ref={typeFilterRef}>
+                                <button
+                                    onClick={() => setIsTypeFilterOpen(!isTypeFilterOpen)}
+                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isTypeFilterOpen
+                                        ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                >
+                                    <span className="truncate">
+                                        {filterReportType === 'All' ? 'All Types' : filterReportType}
+                                    </span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isTypeFilterOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isTypeFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                                    }`}>
+                                    {['All', 'Consumption', 'Usage', 'Generation', 'Maintenance', 'Billing'].map((option) => (
+                                        <button
+                                            key={option}
+                                            onClick={() => {
+                                                setFilterReportType(option);
+                                                setIsTypeFilterOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${filterReportType === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
+                                                }`}
+                                        >
+                                            {option === 'All' ? 'All Types' : option}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
-                        )}
+
+                            {/* Meter Filter Dropdown */}
+                            <div className="relative min-w-[140px]" ref={meterFilterRef}>
+                                <button
+                                    onClick={() => setIsMeterFilterOpen(!isMeterFilterOpen)}
+                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isMeterFilterOpen
+                                        ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                >
+                                    <span className="truncate">
+                                        {filterMeterType === 'All' ? 'All Meters' : filterMeterType}
+                                    </span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isMeterFilterOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isMeterFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                                    }`}>
+                                    {['All', 'SOLAR', 'GAS', 'WATER', 'ELECTRIC'].map((option) => (
+                                        <button
+                                            key={option}
+                                            onClick={() => {
+                                                setFilterMeterType(option);
+                                                setIsMeterFilterOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${filterMeterType === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
+                                                }`}
+                                        >
+                                            {option === 'All' ? 'All Meters' : option}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
+
+                            {/* Action Buttons */}
+                            <button className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95">
+                                <Plus className="w-5 h-5 stroke-[2.5]" />
+                                <span className="hidden sm:inline">Generate Report</span>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Table */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="bg-slate-50 text-slate-600">
-                                    <tr>
-                                        <th className="px-5 py-4 text-left font-semibold">Report Name</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Type</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Meter</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Period</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Generated</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Status</th>
-                                        <th className="px-5 py-4 text-left font-semibold">Size</th>
-                                        <th className="px-5 py-4 text-right font-semibold">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {filteredReports.map((report) => (
-                                        <tr key={report.id} className="hover:bg-slate-50 transition cursor-pointer">
-                                            <td className="px-5 py-4">
+                    <div className="overflow-x-auto min-h-[400px] rounded-b-2xl">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-gray-50/50 text-gray-500 text-xs uppercase font-extrabold tracking-wider sticky top-0 z-10 backdrop-blur-md">
+                                <tr>
+                                    <th className="px-6 py-4 border-b border-gray-100">Report Name</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Type</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Meter</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Period</th>
+                                    <th className="px-6 py-4 border-b border-gray-100 text-center">Generated</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Status</th>
+                                    <th className="px-6 py-4 border-b border-gray-100">Size</th>
+                                    <th className="px-6 py-4 border-b border-gray-100 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {filteredReports.length > 0 ? (
+                                    filteredReports.map((report) => (
+                                        <tr
+                                            key={report.id}
+                                            className="group hover:bg-orange-50/50 transition-colors duration-200 cursor-pointer"
+                                            onClick={() => handleViewReport(report)}
+                                        >
+                                            <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-slate-100 rounded-lg">
-                                                        <FileText className="w-5 h-5 text-slate-600" />
+                                                    <div className="p-2 bg-white border border-gray-200 rounded-lg group-hover:border-[#ff6e00] transition-colors">
+                                                        <FileText className="w-5 h-5 text-gray-400 group-hover:text-[#ff6e00]" />
                                                     </div>
-                                                    <span className="font-medium text-slate-800">{report.name}</span>
+                                                    <span className="font-bold text-gray-700 group-hover:text-[#ff6e00] transition-colors">{report.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-5 py-4 text-slate-600">{report.type}</td>
-                                            <td className="px-5 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getMeterColor(report.meter)}`}>
+
+                                            <td className="px-6 py-4 text-sm text-gray-600 font-medium">
+                                                {report.type}
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border ${getMeterColor(report.meter)}`}>
                                                     {report.meter}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-4 text-slate-600">{report.period}</td>
-                                            <td className="px-5 py-4 text-slate-600">{report.generated}</td>
-                                            <td className="px-5 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(report.status)}`}>
-                                                    {report.status}
+
+                                            <td className="px-6 py-4 text-sm text-gray-500">
+                                                {report.period}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="text-xs font-mono text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                                                    {report.generated}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-4 text-slate-600">{report.size}</td>
-                                            <td className="px-5 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
+
+                                            <td className="px-6 py-4">
+                                                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(report.status)}`}>
+                                                    {report.status === 'Ready' && <CheckCircle2 className="w-3 h-3" />}
+                                                    {report.status === 'Processing' && <Clock className="w-3 h-3 animate-spin" />}
+                                                    {report.status}
+                                                </div>
+                                            </td>
+
+                                            <td className="px-6 py-4 text-sm font-mono text-gray-500">
+                                                {report.size}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
-                                                        onClick={() => handleViewReport(report)}
-                                                        className="p-2 hover:bg-blue-100 rounded-lg transition text-blue-600"
+                                                        onClick={(e) => { e.stopPropagation(); handleViewReport(report); }}
+                                                        className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:shadow-md transition-all active:scale-90"
                                                         title="View Report"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        className="p-2 hover:bg-green-100 rounded-lg transition text-green-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                        className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-green-500 hover:text-green-600 hover:shadow-md transition-all active:scale-90 disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:text-gray-600 disabled:cursor-not-allowed"
                                                         title="Download"
                                                         disabled={report.status !== 'Ready'}
+                                                        onClick={(e) => e.stopPropagation()}
                                                     >
                                                         <Download className="w-4 h-4" />
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))}
-                                    {filteredReports.length === 0 && (
-                                        <tr>
-                                            <td colSpan="8" className="px-5 py-8 text-center text-slate-500">
-                                                No reports found matching your search.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={8} className="px-6 py-12 text-center">
+                                            <div className="flex flex-col items-center justify-center text-gray-400">
+                                                <div className="p-4 bg-gray-50 rounded-full mb-3">
+                                                    <Search className="w-8 h-8 opacity-50" />
+                                                </div>
+                                                <p className="text-lg font-medium text-gray-600">No reports found</p>
+                                                <p className="text-sm">Try adjusting your search or filters</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

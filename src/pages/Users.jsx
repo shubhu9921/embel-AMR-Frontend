@@ -1,11 +1,25 @@
-import React, { useState } from "react";
-import { Search, Plus, Download, Upload, MoreVertical, Edit, Trash2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Search,
+  Plus,
+  Download,
+  Upload,
+  Edit,
+  Trash2,
+  Users,
+  UserCheck,
+  UserX,
+  UserPlus,
+  ChevronDown
+} from "lucide-react";
 import CreateUserModal from "./CreateUserModal";
 
 const initialUsers = [
   { id: 1, firstName: "John", lastName: "Anderson", email: "john.anderson@email.com", phone: "9876543210", roleId: "ADMIN", address: "Mumbai, MH", status: "Active" },
   { id: 2, firstName: "Sarah", lastName: "Miller", email: "sarah.miller@email.com", phone: "9876543211", roleId: "USER", address: "Pune, MH", status: "Active" },
   { id: 3, firstName: "Michael", lastName: "Chen", email: "michael.chen@email.com", phone: "9876543212", roleId: "USER", address: "Nagpur, MH", status: "Inactive" },
+  { id: 4, firstName: "Emily", lastName: "Davis", email: "emily.davis@email.com", phone: "9876543213", roleId: "USER", address: "Nashik, MH", status: "Active" },
+  { id: 5, firstName: "David", lastName: "Wilson", email: "david.wilson@email.com", phone: "9876543214", roleId: "ADMIN", address: "Aurangabad, MH", status: "Active" },
 ];
 
 export default function UsersPage() {
@@ -14,7 +28,22 @@ export default function UsersPage() {
   const [viewStatus, setViewStatus] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const pageSize = 10;
+  const filterRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Filter Data
   const filteredUsers = users.filter((user) =>
@@ -24,15 +53,15 @@ export default function UsersPage() {
     (viewStatus === "All" || user.status === viewStatus)
   );
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, viewStatus]);
+
   // Pagination
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
-  const displayedUsers = filteredUsers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const startRange = (currentPage - 1) * pageSize + 1;
-  const endRange = Math.min(currentPage * pageSize, filteredUsers.length);
+  const startIndex = (currentPage - 1) * pageSize;
+  const displayedUsers = filteredUsers.slice(startIndex, startIndex + pageSize);
 
   const handlePrevPage = () => {
     if (currentPage > 1) setCurrentPage(p => p - 1);
@@ -53,113 +82,230 @@ export default function UsersPage() {
     setUsers([...users, newUser]);
   };
 
+  // KPI Calculations
+  const totalUsers = users.length;
+  const activeUsers = users.filter(u => u.status === "Active").length;
+  const inactiveUsers = users.filter(u => u.status === "Inactive").length;
+  const newUsers = 2; // Mock data for now
+
   return (
-    <main className="flex-1 overflow-y-auto scroll-smooth bg-gray-100 p-4">
-      <div className="relative flex flex-col h-[calc(100vh-100px)] overflow-hidden">
-        <div className="bg-white rounded-lg shadow-md p-4 md:p-5 space-y-4 flex-1 flex flex-col w-full h-full overflow-hidden">
-
-          {/* Header Section */}
-          <div className="flex flex-row justify-between items-center gap-4 mb-2 bg-gray-50/50 -mx-4 -mt-4 p-4 border-b rounded-t-lg">
-            <div className="flex items-center gap-4 shrink-0">
-              <h1 className="text-xl font-black text-[#002D5E] uppercase tracking-tight">Users</h1>
-              <button
-                onClick={() => setViewStatus(prev => prev === "All" ? "Inactive" : "All")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 border ${viewStatus === 'Inactive' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-white text-slate-500 border-gray-200 hover:bg-gray-50'}`}
-              >
-                {viewStatus === "All" ? "Show Inactive" : "Show All"}
-              </button>
+    <main className="flex-1 overflow-y-auto bg-[#F3F4F6] p-4 md:p-6 scroll-smooth font-sans">
+      {/* Top Header */}
+      {/* Top Header */}
+      <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-orange-50/90 mb-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
+              <Users size={24} />
             </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                User Management
+              </h1>
+              <p className="text-sm font-medium text-gray-500">
+                Manage user access & roles
+              </p>
+            </div>
+          </div>
+          <div className="h-1.5 w-24 rounded-full bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
+        </div>
+      </div>
 
-            <div className="flex items-center gap-3 flex-1 justify-end">
-              {/* Search */}
-              <div className="relative w-full max-w-[400px]">
-                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+      <div className="max-w-[1920px] mx-auto space-y-6">
+
+        {/* KPI Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+            <div>
+              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Total Users</p>
+              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-[#ff6e00] transition-colors">{totalUsers}</h3>
+            </div>
+            <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-[#ff6e00] group-hover:text-white transition-all duration-300">
+              <Users className="w-8 h-8 text-[#ff6e00] group-hover:text-white" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+            <div>
+              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Active Users</p>
+              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-green-600 transition-colors">{activeUsers}</h3>
+            </div>
+            <div className="bg-green-50 p-3 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
+              <UserCheck className="w-8 h-8 text-green-600 group-hover:text-white" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+            <div>
+              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Inactive Users</p>
+              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-red-500 transition-colors">{inactiveUsers}</h3>
+            </div>
+            <div className="bg-red-50 p-3 rounded-xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
+              <UserX className="w-8 h-8 text-red-500 group-hover:text-white" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
+            <div>
+              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">New This Week</p>
+              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-blue-500 transition-colors">{newUsers}</h3>
+            </div>
+            <div className="bg-blue-50 p-3 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+              <UserPlus className="w-8 h-8 text-blue-500 group-hover:text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Content Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">
+
+          {/* Header Controls */}
+          <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-t-2xl">
+            {/* Left: Title & Search */}
+            <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
+              <div className="relative w-full md:w-80 group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
                 <input
+                  type="text"
                   placeholder="Search User..."
-                  className="pl-9 pr-3 py-2 w-full border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-sm group-hover:bg-white"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+            </div>
 
-              <div className="flex items-center gap-2">
-                <input id="user-upload-input" className="hidden" accept=".xlsx,.xls,.csv" type="file" />
-
-                {/* Add User Button */}
-                <div className="relative group">
-                  <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="bg-[#2563EB] hover:bg-[#1d4ed8] text-white p-2 rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center"
-                  >
-                    <Plus className="w-5 h-5 stroke-[3]" />
-                  </button>
-                  <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 text-xs font-bold text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
-                    Add User
+            {/* Right: Actions & Filter */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Custom Filter Dropdown */}
+              <div className="relative min-w-[160px]" ref={filterRef}>
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isFilterOpen
+                    ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                >
+                  <span className="truncate">
+                    {viewStatus === 'All' ? 'All Users' : viewStatus === 'Active' ? 'Active Only' : 'Inactive Only'}
                   </span>
-                </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-                {/* Download List Button */}
-                <div className="relative group">
-                  <button className="bg-[#2563EB] hover:bg-[#1d4ed8] text-white p-2 rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center">
-                    <Download className="w-5 h-5 stroke-[3]" />
-                  </button>
-                  <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 text-xs font-bold text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
-                    Download List
-                  </span>
+                <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                  }`}>
+                  {['All', 'Active', 'Inactive'].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setViewStatus(option);
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${viewStatus === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
+                        }`}
+                    >
+                      {option === 'All' ? 'All Users' : option === 'Active' ? 'Active Only' : 'Inactive Only'}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                {/* Upload Excel Button */}
-                <div className="relative group">
-                  <button className="bg-[#2563EB] hover:bg-[#1d4ed8] text-white p-2 rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center">
-                    <Upload className="w-5 h-5 stroke-[3]" />
-                  </button>
-                  <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 text-xs font-bold text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
-                    Upload Excel
-                  </span>
-                </div>
+              <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
+
+              {/* Action Buttons */}
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
+              >
+                <Plus className="w-5 h-5 stroke-[2.5]" />
+                <span className="hidden sm:inline">Add User</span>
+              </button>
+
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                <button className="p-2 text-gray-600 hover:bg-white hover:text-[#ff6e00] hover:shadow-sm rounded-lg transition-all" title="Import">
+                  <Upload className="w-5 h-5" />
+                </button>
+                <div className="w-[1px] bg-gray-300 my-1"></div>
+                <button className="p-2 text-gray-600 hover:bg-white hover:text-[#ff6e00] hover:shadow-sm rounded-lg transition-all" title="Export">
+                  <Download className="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto rounded border flex-1 custom-scrollbar">
-            <table className="w-full text-[13px] min-w-[1000px] border-collapse sticky-header">
-              <thead className="bg-[#F8FAFC] text-[#002D5E] font-black uppercase border-b sticky top-0 z-10 text-sm">
-                <tr className="text-[#002D5E] font-black uppercase text-sm">
-                  <th className="px-3 py-1.5 text-left border-r w-16 text-center">NO.</th>
-                  <th className="px-3 py-1.5 text-left border-r">FIRST NAME</th>
-                  <th className="px-3 py-1.5 text-left border-r">LAST NAME</th>
-                  <th className="px-3 py-1.5 text-left border-r">EMAIL</th>
-                  <th className="px-3 py-1.5 text-left border-r">PHONE</th>
-                  <th className="px-3 py-1.5 text-left border-r">ROLE ID</th>
-                  <th className="px-3 py-1.5 text-left border-r">ADDRESS</th>
-                  <th className="px-3 py-1.5 text-left border-r">STATUS</th>
-                  <th className="px-3 py-1.5 text-right">ACTIONS</th>
+          <div className="overflow-x-auto min-h-[400px]">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-gray-50/50 text-gray-500 text-xs uppercase font-extrabold tracking-wider sticky top-0 z-10 backdrop-blur-md">
+                <tr>
+                  <th className="px-6 py-4 border-b border-gray-100">#</th>
+                  <th className="px-6 py-4 border-b border-gray-100">Name & Email</th>
+                  <th className="px-6 py-4 border-b border-gray-100">Role</th>
+                  <th className="px-6 py-4 border-b border-gray-100">Phone</th>
+                  <th className="px-6 py-4 border-b border-gray-100">Address</th>
+                  <th className="px-6 py-4 border-b border-gray-100">Status</th>
+                  <th className="px-6 py-4 border-b border-gray-100 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-gray-50">
                 {displayedUsers.length > 0 ? (
                   displayedUsers.map((user, index) => (
-                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-3 py-2 border-r text-center font-bold text-gray-500">{(currentPage - 1) * pageSize + index + 1}</td>
-                      <td className="px-3 py-2 border-r font-bold text-gray-700">{user.firstName}</td>
-                      <td className="px-3 py-2 border-r font-bold text-gray-700">{user.lastName}</td>
-                      <td className="px-3 py-2 border-r text-gray-600 font-medium">{user.email}</td>
-                      <td className="px-3 py-2 border-r text-gray-600 font-medium">{user.phone}</td>
-                      <td className="px-3 py-2 border-r text-blue-600 font-bold">{user.roleId}</td>
-                      <td className="px-3 py-2 border-r text-gray-600 text-xs">{user.address}</td>
-                      <td className="px-3 py-2 border-r">
-                        <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase ${user.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {user.status}
+                    <tr
+                      key={user.id}
+                      className="group hover:bg-orange-50/50 transition-colors duration-200"
+                    >
+                      <td className="px-6 py-4 text-sm font-bold text-gray-400 group-hover:text-[#ff6e00]">
+                        {startIndex + index + 1}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-800 text-sm group-hover:text-[#ff6e00] transition-colors">{user.firstName} {user.lastName}</span>
+                          <span className="text-xs text-gray-400 font-medium mt-0.5">{user.email}</span>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border ${user.roleId === 'ADMIN'
+                          ? 'bg-purple-50 text-purple-700 border-purple-200'
+                          : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}>
+                          {user.roleId}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button className="p-1 hover:bg-gray-100 rounded text-blue-600 transition-colors">
-                            <Edit size={16} />
+
+                      <td className="px-6 py-4 text-sm text-gray-600 font-medium font-mono">
+                        {user.phone}
+                      </td>
+
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {user.address}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${user.status === 'Active'
+                          ? 'bg-green-50 text-green-700 border-green-200'
+                          : 'bg-red-50 text-red-700 border-red-200'
+                          }`}>
+                          <div className={`w-1.5 h-1.5 rounded-full ${user.status === 'Active' ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                            }`}></div>
+                          {user.status}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-[#ff6e00] hover:text-[#ff6e00] hover:shadow-md transition-all active:scale-90"
+                            title="Edit User"
+                          >
+                            <Edit className="w-4 h-4" />
                           </button>
-                          <button className="p-1 hover:bg-gray-100 rounded text-red-600 transition-colors">
-                            <Trash2 size={16} />
+                          <button
+                            className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-red-500 hover:text-red-600 hover:shadow-md transition-all active:scale-90"
+                            title="Delete User"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -167,8 +313,14 @@ export default function UsersPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="9" className="px-4 py-10 text-center text-gray-400 font-medium">
-                      No users found.
+                    <td colSpan={7} className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center justify-center text-gray-400">
+                        <div className="p-4 bg-gray-50 rounded-full mb-3">
+                          <Search className="w-8 h-8 opacity-50" />
+                        </div>
+                        <p className="text-lg font-medium text-gray-600">No users found</p>
+                        <p className="text-sm">Try adjusting your search or filters</p>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -176,26 +328,40 @@ export default function UsersPage() {
             </table>
           </div>
 
-          {/* Footer / Pagination */}
-          <div className="flex justify-between items-center gap-4 pt-2 border-t">
-            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-              Showing <span className="text-blue-600">{filteredUsers.length > 0 ? startRange : 0} - {endRange}</span> of <span className="text-gray-900">{filteredUsers.length}</span> users
-            </span>
-            <div className="flex gap-2">
+          {/* Pagination */}
+          <div className="border-t border-gray-100 bg-gray-50 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-b-2xl">
+            <div className="text-sm text-gray-500 font-medium">
+              Showing <span className="font-bold text-gray-900">{filteredUsers.length > 0 ? startIndex + 1 : 0}</span> to <span className="font-bold text-gray-900">{Math.min(startIndex + pageSize, filteredUsers.length)}</span> of <span className="font-bold text-gray-900">{filteredUsers.length}</span> results
+            </div>
+
+            <div className="flex items-center gap-2">
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 border rounded text-sm disabled:opacity-40 hover:bg-gray-50 active:bg-gray-100 transition-all font-bold text-gray-600"
+                className="px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm font-medium text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm"
               >
-                Prev
+                Previous
               </button>
-              <span className="px-3 py-1.5 text-sm font-medium text-gray-700">
-                Page {filteredUsers.length > 0 ? currentPage : 0} of {totalPages || 1}
-              </span>
+
+              <div className="hidden sm:flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${currentPage === page
+                      ? 'bg-[#ff6e00] text-white shadow-md shadow-orange-500/30'
+                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="px-3 py-1.5 border rounded text-sm disabled:opacity-40 hover:bg-gray-50 active:bg-gray-100 transition-all font-bold text-gray-600"
+                className="px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm font-medium text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm"
               >
                 Next
               </button>

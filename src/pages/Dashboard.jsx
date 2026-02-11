@@ -94,15 +94,7 @@ export default function Dashboard() {
     };
     const multiResourceData = getChartData();
 
-    // System params (Generic Main Dashboard Params)
-    const systemParameters = [
-        { label: 'Grid Freq', value: '50.02 Hz', status: 'optimal' },
-        { label: 'Water Pres', value: '3.4 bar', status: 'optimal' },
-        { label: 'Gas PSI', value: '2.1 psi', status: 'optimal' },
-        { label: 'Solar Out', value: '4.2 kW', status: 'optimal' },
-        { label: 'Avg Temp', value: '24°C', status: 'optimal' },
-        { label: 'Humidity', value: '45%', status: 'optimal' },
-    ];
+
 
     /* -------------------- ALERTS -------------------- */
     const alerts = [

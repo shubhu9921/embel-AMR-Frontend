@@ -7,6 +7,9 @@ export default {
         primary: "#2563EB",
         muted: "#F8FAFC",
       },
+      fontFamily: {
+        sans: ['"Inter"', 'sans-serif'],
+      },
       keyframes: {
         // Pulse animations for ParameterCard
         'pulse-soft': {
