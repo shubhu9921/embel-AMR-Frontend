@@ -105,7 +105,7 @@ export default function Water() {
   ];
 
   return (
-    <div className="w-full h-full flex flex-col overflow-y-auto bg-gray-100">
+    <div className="w-full h-full flex flex-col overflow-y-auto">
       <MetersModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -115,7 +115,7 @@ export default function Water() {
       />
 
       {/* Header */}
-      <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-cyan-50/90 mx-4 mt-4">
+      <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-cyan-50/90 mx-4 mt-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -138,11 +138,11 @@ export default function Water() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 shrink-0">
-          <StatCard title="Total Usage" value="2,027 L" icon={<Droplet className="w-4 h-4" />} trend={-12.5} color="blue" compact />
-          <StatCard title="Est. Cost" value="₹ 2,450" icon={<IndianRupee className="w-4 h-4" />} trend={8.2} color="green" compact />
-          <StatCard title="Daily Avg" value="289 L" icon={<Droplets className="w-4 h-4" />} trend={-5.2} color="purple" compact />
-          <StatCard title="Peak Flow" value="18 L/m" icon={<Gauge className="w-4 h-4" />} subValue="07:30" color="orange" compact />
-          <StatCard title="Alerts" value={alerts.length} icon={<AlertTriangle className="w-4 h-4" />} subValue="Active" color="red" compact />
+          <StatCard title="Total Usage" value="2,027 L" icon={<Droplet className="w-4 h-4" />} trend={-12.5} color="blue" description="Monthly cumulative volume" compact />
+          <StatCard title="Est. Cost" value="₹ 2,450" icon={<IndianRupee className="w-4 h-4" />} trend={8.2} color="green" description="Projected billing cycle cost" compact />
+          <StatCard title="Daily Avg" value="289 L" icon={<Droplets className="w-4 h-4" />} trend={-5.2} color="purple" description="Based on 30-day average" compact />
+          <StatCard title="Peak Flow" value="18 L/m" icon={<Gauge className="w-4 h-4" />} subValue="07:30" color="orange" description="Highest recorded flow rate" compact />
+          <StatCard title="Alerts" value={alerts.length} icon={<AlertTriangle className="w-4 h-4" />} subValue="Active" color="red" description="Requires immediate attention" compact />
         </div>
 
         {/* Row 1: Charts & Alerts */}
@@ -150,7 +150,7 @@ export default function Water() {
           <div className="col-span-12 lg:col-span-9 bg-white rounded-xl p-5 border border-gray-100 shadow-md flex flex-col h-auto lg:h-full">
             <div className="flex items-center justify-between mb-4 shrink-0">
               <h3 className="text-base font-bold text-gray-800">Consumption Overview</h3>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shadow-sm shadow-orange-100 rounded-lg">
                 <TimeFilter selected={timeRange} onChange={setTimeRange} compact />
               </div>
             </div>

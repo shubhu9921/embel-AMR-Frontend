@@ -15,6 +15,7 @@ import {
     Receipt
 } from 'lucide-react';
 import BillingDetailsModal from './BillingDetailsModal';
+import { StatCard } from './StatCard';
 
 const initialInvoices = [
     {
@@ -136,11 +137,11 @@ export default function BillingPage() {
     const totalOverdue = "₹" + invoices.filter(i => i.status === 'Overdue').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
 
     return (
-        <main className="flex-1 overflow-y-auto bg-[#F3F4F6] p-4 md:p-6 scroll-smooth font-sans">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth font-sans">
 
             {/* Top Header */}
             {/* Top Header */}
-            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-orange-50/90 mb-6">
+            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mb-6">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -162,46 +163,39 @@ export default function BillingPage() {
             <div className="max-w-[1920px] mx-auto space-y-6">
 
                 {/* KPI Section */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-                        <div>
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Total Billing</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-[#ff6e00] transition-colors">{totalBilling}</h3>
-                        </div>
-                        <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-[#ff6e00] group-hover:text-white transition-all duration-300">
-                            <CreditCard className="w-8 h-8 text-[#ff6e00] group-hover:text-white" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-                        <div>
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Paid Amount</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-green-600 transition-colors">{totalPaid}</h3>
-                        </div>
-                        <div className="bg-green-50 p-3 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-                            <CheckCircle className="w-8 h-8 text-green-600 group-hover:text-white" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-                        <div>
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Pending</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-orange-500 transition-colors">{totalPending}</h3>
-                        </div>
-                        <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-all duration-300">
-                            <Clock className="w-8 h-8 text-orange-500 group-hover:text-white" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-                        <div>
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Overdue</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-red-500 transition-colors">{totalOverdue}</h3>
-                        </div>
-                        <div className="bg-red-50 p-3 rounded-xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
-                            <AlertCircle className="w-8 h-8 text-red-500 group-hover:text-white" />
-                        </div>
-                    </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    <StatCard
+                        title="Total Billing"
+                        value={totalBilling}
+                        icon={<CreditCard className="w-4 h-4" />}
+                        color="orange"
+                        description="Cumulative invoiced amount"
+                        compact
+                    />
+                    <StatCard
+                        title="Paid Amount"
+                        value={totalPaid}
+                        icon={<CheckCircle className="w-4 h-4" />}
+                        color="green"
+                        description="Total collected revenue"
+                        compact
+                    />
+                    <StatCard
+                        title="Pending"
+                        value={totalPending}
+                        icon={<Clock className="w-4 h-4" />}
+                        color="amber" // Using amber for pending as per plan
+                        description="Awaiting payment"
+                        compact
+                    />
+                    <StatCard
+                        title="Overdue"
+                        value={totalOverdue}
+                        icon={<AlertCircle className="w-4 h-4" />}
+                        color="red"
+                        description="Payment deadline crossed"
+                        compact
+                    />
                 </div>
 
                 {/* Content Card */}
@@ -216,7 +210,7 @@ export default function BillingPage() {
                                 <input
                                     type="text"
                                     placeholder="Search invoices..."
-                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-sm group-hover:bg-white"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-md shadow-orange-100 hover:shadow-orange-200 group-hover:bg-white"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -229,7 +223,7 @@ export default function BillingPage() {
                             <div className="relative min-w-[140px]" ref={statusFilterRef}>
                                 <button
                                     onClick={() => setIsStatusFilterOpen(!isStatusFilterOpen)}
-                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isStatusFilterOpen
+                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 ${isStatusFilterOpen
                                         ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
                                         : 'border-gray-200 hover:border-gray-300'
                                         }`}
@@ -261,7 +255,7 @@ export default function BillingPage() {
                             <div className="relative min-w-[140px]" ref={meterFilterRef}>
                                 <button
                                     onClick={() => setIsMeterFilterOpen(!isMeterFilterOpen)}
-                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isMeterFilterOpen
+                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 ${isMeterFilterOpen
                                         ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
                                         : 'border-gray-200 hover:border-gray-300'
                                         }`}
@@ -293,7 +287,7 @@ export default function BillingPage() {
                             <div className="relative min-w-[140px]" ref={typeFilterRef}>
                                 <button
                                     onClick={() => setIsTypeFilterOpen(!isTypeFilterOpen)}
-                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isTypeFilterOpen
+                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 ${isTypeFilterOpen
                                         ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
                                         : 'border-gray-200 hover:border-gray-300'
                                         }`}

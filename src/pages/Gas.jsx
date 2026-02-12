@@ -109,7 +109,7 @@ export default function GasPage() {
   const totalBreakdown = breakdownData.reduce((acc, cur) => acc + cur.value, 0);
 
   return (
-    <div className="w-full h-full flex flex-col overflow-y-auto bg-gray-100">
+    <div className="w-full h-full flex flex-col overflow-y-auto">
       <MetersModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -119,7 +119,7 @@ export default function GasPage() {
       />
 
       {/* Header */}
-      <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-orange-50/90 mx-4 mt-4">
+      <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mx-4 mt-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -142,11 +142,11 @@ export default function GasPage() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 shrink-0">
-          <StatCard title="Total Usage" value="387 m³" icon={<Flame className="w-4 h-4" />} trend={8.2} color="orange" compact />
-          <StatCard title="Est. Cost" value="₹ 15,240" icon={<IndianRupee className="w-4 h-4" />} trend={-2.4} color="green" compact />
-          <StatCard title="Daily Avg" value="55.3 m³" icon={<Wind className="w-4 h-4" />} trend={6.1} color="blue" compact />
-          <StatCard title="Peak Flow" value="8.2 m³/h" icon={<Gauge className="w-4 h-4" />} subValue="18:15" color="purple" compact />
-          <StatCard title="Alerts" value={alerts.length} icon={<AlertTriangle className="w-4 h-4" />} subValue="Active" color="red" compact />
+          <StatCard title="Total Usage" value="845 m³" icon={<Flame className="w-4 h-4" />} trend={2.5} color="orange" description="Monthly cumulative volume" compact />
+          <StatCard title="Est. Cost" value="₹ 45,230" icon={<IndianRupee className="w-4 h-4" />} trend={-1.2} color="green" description="Projected billing cycle cost" compact />
+          <StatCard title="Avg Pressure" value="2.4 bar" icon={<Gauge className="w-4 h-4" />} color="blue" description="System-wide average" compact />
+          <StatCard title="Peak Flow" value="42 m³/h" icon={<Activity className="w-4 h-4" />} subValue="14:00" color="purple" description="Highest recorded flow rate" compact />
+          <StatCard title="Alerts" value={alerts.length} icon={<AlertTriangle className="w-4 h-4" />} subValue="Active" color="red" description="Requires immediate attention" compact />
         </div>
 
         {/* Row 1: Charts & Alerts */}
@@ -154,7 +154,9 @@ export default function GasPage() {
           <div className="col-span-12 lg:col-span-9 bg-white rounded-xl p-5 border border-gray-100 shadow-md flex flex-col h-auto lg:h-full">
             <div className="flex items-center justify-between mb-4 shrink-0">
               <h3 className="text-base font-bold text-gray-800">Consumption Overview</h3>
-              <TimeFilter selected={timeRange} onChange={setTimeRange} compact />
+              <div className="flex items-center gap-3 shadow-sm shadow-orange-100 rounded-lg">
+                <TimeFilter selected={timeRange} onChange={setTimeRange} compact />
+              </div>
             </div>
             <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-6">
               <div className="w-full h-[300px] lg:flex-[2] lg:h-full min-w-0">

@@ -2,13 +2,13 @@ import React from 'react';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 
 const colorClasses = {
-  blue: 'border-blue-200',
-  green: 'border-emerald-200',
-  purple: 'border-purple-200',
-  orange: 'border-orange-200',
-  red: 'border-red-200',
-  cyan: 'border-cyan-200',
-  amber: 'border-amber-200',
+  blue: 'border-transparent',
+  green: 'border-transparent',
+  purple: 'border-transparent',
+  orange: 'border-transparent',
+  red: 'border-transparent',
+  cyan: 'border-transparent',
+  amber: 'border-transparent',
 };
 
 export function StatCard({
@@ -19,13 +19,14 @@ export function StatCard({
   trendLabel,
   subValue,
   color,
+  description,
   compact = false,
 }) {
   // Negative trend = positive
   const isPositiveTrend = trend !== undefined && trend < 0;
 
   return (
-    <div className={`rounded-2xl shadow-sm border ${colorClasses[color] || 'border-gray-100'} bg-white ${compact ? 'p-3' : 'p-4'} transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50/50 hover:border-orange-200 cursor-pointer h-full flex flex-col justify-between relative overflow-hidden group`}>
+    <div className={`rounded-2xl shadow-md border ${colorClasses[color] || 'border-transparent'} bg-white ${compact ? 'p-3' : 'p-4'} transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50/50 cursor-pointer h-full flex flex-col justify-between relative overflow-hidden group`}>
 
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/40 to-transparent rounded-bl-3xl -mr-4 -mt-4 opacity-50 group-hover:opacity-100 transition-opacity"></div>
@@ -55,6 +56,7 @@ export function StatCard({
 
         {trendLabel && <p className="text-[10px] text-gray-500 mt-1 font-medium">{trendLabel}</p>}
         {subValue && <p className="text-[10px] text-gray-500 mt-1 font-medium">{subValue}</p>}
+        {description && <p className="text-[11px] text-gray-400 mt-1 font-medium leading-tight">{description}</p>}
       </div>
     </div>
   );

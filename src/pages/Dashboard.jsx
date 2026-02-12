@@ -28,7 +28,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 export default function Dashboard() {
     /* -------------------- STATE -------------------- */
-    const [consumptionTimeRange, setConsumptionTimeRange] = useState('1M');
+    const [consumptionTimeRange, setConsumptionTimeRange] = useState('month');
     const [activeResource, setActiveResource] = useState('All');
     const [showMapModal, setShowMapModal] = useState(false);
 
@@ -85,10 +85,11 @@ export default function Dashboard() {
 
     const getChartData = () => {
         switch (consumptionTimeRange) {
-            case '1D': return multiResourceDataDay;
-            case '1W': return multiResourceDataWeek;
-            case '1M': return multiResourceDataMonth;
-            case '1Y': return multiResourceDataYear;
+            case 'day': return multiResourceDataDay;
+            case 'week': return multiResourceDataWeek;
+            case 'month': return multiResourceDataMonth;
+            case 'year': return multiResourceDataYear;
+            case 'all': return multiResourceDataYear;
             default: return multiResourceDataWeek;
         }
     };
@@ -104,10 +105,10 @@ export default function Dashboard() {
     ];
 
     return (
-        <main className="w-full flex flex-col gap-6 min-h-screen mb-20 bg-gray-100">
+        <main className="w-full flex flex-col gap-6 min-h-screen mb-20">
 
             {/* -------------------- HEADER (Floating Card Style) -------------------- */}
-            <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-blue-50/90 mx-4 mt-4">
+            <div className="relative group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-blue-50/90 mx-4 mt-4">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -132,13 +133,14 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
                     {/* KPI 1: TOTAL METERS DONUT */}
-                    <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-5 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-default relative overflow-hidden">
+                    <div className="bg-white rounded-2xl border border-transparent shadow-md p-5 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-default relative overflow-hidden">
                         {/* Background Icon */}
                         <div className="absolute -bottom-6 -right-6 opacity-[0.08] group-hover:opacity-[0.40] transition-opacity duration-300 text-emerald-600 pointer-events-none z-0">
                             <Gauge size={120} strokeWidth={1} />
                         </div>
 
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 relative z-10">Total Meter Status</h3>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 relative z-10">Total Meter Status</h3>
+                        <p className="text-[11px] text-gray-400 font-medium mb-4 relative z-10 leading-tight">Real-time connectivity status</p>
                         <div className="flex items-center justify-between h-full relative z-10">
                             <div className="w-24 h-24 relative scale-110 group-hover:scale-115 transition-transform">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -166,13 +168,14 @@ export default function Dashboard() {
                     </div>
 
                     {/* KPI 2: ACTIVE ISSUES */}
-                    <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-5 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                    <div className="bg-white rounded-2xl border border-transparent shadow-md p-5 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
                         {/* Background Icon */}
                         <div className="absolute -bottom-6 -right-6 opacity-[0.08] group-hover:opacity-[0.40] transition-opacity duration-300 text-red-500 pointer-events-none z-0">
                             <AlertTriangle size={120} strokeWidth={1} />
                         </div>
 
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 relative z-10">Active System Issues</h3>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 relative z-10">Active System Issues</h3>
+                        <p className="text-[11px] text-gray-400 font-medium mb-4 relative z-10 leading-tight">Critical operational alerts</p>
                         <div className="flex-1 space-y-3 relative z-10">
                             <div className="flex items-center justify-between p-3 bg-red-50/50 rounded-xl border border-red-100 hover:border-red-200 transition-colors">
                                 <div className="flex items-center gap-3">
@@ -196,10 +199,13 @@ export default function Dashboard() {
                     </div>
 
                     {/* KPI 3: SITE MAP PREVIEW */}
-                    <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-0 flex flex-col relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-[200px] md:h-auto">
+                    <div className="bg-white rounded-2xl border border-transparent shadow-md p-0 flex flex-col relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-[200px] md:h-auto">
                         <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-gray-100 shadow-sm flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Live Sites</h3>
+                            <div>
+                                <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Live Sites</h3>
+                                <p className="text-[10px] text-gray-500 font-medium leading-none mt-0.5">Geospatial distribution</p>
+                            </div>
                         </div>
                         <button
                             onClick={() => setShowMapModal(true)}
@@ -235,6 +241,7 @@ export default function Dashboard() {
                         <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl -ml-10 -mb-10"></div>
 
                         <h3 className="text-sm font-bold text-emerald-50 uppercase tracking-wide relative z-10">System Health</h3>
+                        <p className="text-[11px] text-emerald-100/80 font-medium relative z-10 leading-tight mt-0.5">Overall system uptime</p>
                         <div className="flex flex-col items-center justify-center flex-1 py-2 relative z-10">
                             <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-3 shadow-inner border border-white/20">
                                 <CheckCircle size={32} className="text-white" />
@@ -260,7 +267,7 @@ export default function Dashboard() {
 
                             <div className="flex flex-wrap items-center gap-2">
                                 {/* Resource Selector */}
-                                <div className="flex bg-white p-1 rounded-xl border border-gray-100 shadow-sm">
+                                <div className="flex bg-white p-1 rounded-xl border border-gray-100 shadow-sm shadow-orange-100">
                                     {[
                                         { id: 'All', label: 'All', icon: LayoutDashboard, activeBg: 'bg-indigo-600 text-white shadow-md', inactiveBg: 'hover:bg-indigo-50 text-gray-500' },
                                         { id: 'Energy', label: 'Energy', icon: Zap, activeBg: 'bg-emerald-500 text-white shadow-md', inactiveBg: 'hover:bg-emerald-50 text-gray-500' },
@@ -369,7 +376,7 @@ export default function Dashboard() {
                             { label: 'Avg Temp', value: '24°C', icon: Info, color: 'blue', theme: 'to-blue-100/60' },
                             { label: 'Humidity', value: '45%', icon: Wind, color: 'indigo', theme: 'to-indigo-100/60' },
                         ].map((p, i) => (
-                            <div key={i} className={`flex flex-col bg-gradient-to-br from-white ${p.theme} p-3 rounded-xl border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 hover:border-${p.color}-300 transition-all duration-300 cursor-pointer group`}>
+                            <div key={i} className={`flex flex-col bg-gradient-to-br from-white ${p.theme} p-3 rounded-xl border border-transparent shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group`}>
                                 <div className="flex items-center justify-between mb-2">
                                     <span className={`text-[10px] text-gray-500 font-bold uppercase tracking-wider group-hover:text-${p.color}-600 transition-colors`}>{p.label}</span>
                                     <p.icon className={`w-4 h-4 text-gray-400 group-hover:text-${p.color}-600 transition-colors`} />

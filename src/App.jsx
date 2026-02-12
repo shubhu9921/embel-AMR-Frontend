@@ -76,6 +76,7 @@ export default function App() {
 
           activePage={activePage}
           setActivePage={setActivePage}
+          onLogout={handleLogout}
         />
 
         {/* Page content – ONLY this scrolls */}

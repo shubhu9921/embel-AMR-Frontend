@@ -3,9 +3,9 @@ import { Settings } from 'lucide-react';
 
 export default function SettingsPage() {
     return (
-        <div className="w-full h-full flex flex-col bg-gray-100 overflow-hidden relative">
+        <div className="w-full h-full flex flex-col bg-white overflow-hidden relative">
             {/* Page Header */}
-            <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-gray-50/90 mx-6 mt-6 mb-2">
+            <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-gray-50/90 mx-6 mt-6 mb-2">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-500 to-slate-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -24,7 +24,7 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-auto p-6">
+            <div className="p-6 max-w-4xl mx-auto mb-20">
                 {/* Content will go here */}
             </div>
         </div>

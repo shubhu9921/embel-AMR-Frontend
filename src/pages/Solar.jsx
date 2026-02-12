@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sun, Battery, Zap, AlertTriangle, ArrowUpRight, List, Gauge, Thermometer, TrendingUp, BarChart as BarChartIcon, Activity } from 'lucide-react';
+import { Sun, Battery, Zap, AlertTriangle, ArrowUpRight, List, Gauge, Thermometer, TrendingUp, BarChart as BarChartIcon, Activity, IndianRupee } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { TimeFilter } from './TimeFilter';
 import { DeviceCard } from './DeviceCard';
@@ -108,7 +108,7 @@ export default function SolarPage() {
     const totalBreakdown = breakdownData.reduce((acc, cur) => acc + cur.value, 0);
 
     return (
-        <div className="w-full h-full flex flex-col overflow-y-auto bg-gray-100">
+        <div className="w-full h-full flex flex-col overflow-y-auto">
             <MetersModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -119,7 +119,7 @@ export default function SolarPage() {
             />
 
             {/* Header */}
-            <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-amber-50/90 mx-4 mt-4">
+            <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-amber-50/90 mx-4 mt-4">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -142,9 +142,9 @@ export default function SolarPage() {
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 shrink-0">
-                    <StatCard title="Output" value="45.2 kW" icon={<Sun className="w-4 h-4" />} trend={12.5} color="orange" compact />
-                    <StatCard title="Daily Yld" value="285 kWh" icon={<Zap className="w-4 h-4" />} trend={5.2} color="green" compact />
-                    <StatCard title="Battery" value="92%" icon={<Battery className="w-4 h-4" />} subValue="Charging" color="blue" compact />
+                    <StatCard title="Total Generation" value="45,230 kWh" icon={<Sun className="w-4 h-4" />} trend={12.5} color="amber" description="Monthly cumulative production" compact />
+                    <StatCard title="Cost Savings" value="₹ 3,61,840" icon={<IndianRupee className="w-4 h-4" />} trend={15.2} color="green" description="Estimated utility savings" compact />
+                    <StatCard title="Efficiency" value="98.5%" icon={<Activity className="w-4 h-4" />} subValue="PR" color="blue" description="Performance Ratio" compact />
                     <StatCard title="CO2 Saved" value="145 kg" icon={<ArrowUpRight className="w-4 h-4" />} subValue="Today" color="purple" compact />
                     <StatCard title="Alerts" value={alerts.length} icon={<AlertTriangle className="w-4 h-4" />} subValue="Active" color="red" compact />
                 </div>
@@ -159,7 +159,7 @@ export default function SolarPage() {
                         <div className="col-span-12 lg:col-span-9 bg-white rounded-xl p-5 border border-gray-100 shadow-md flex flex-col h-auto lg:h-full">
                             <div className="flex items-center justify-between mb-4 shrink-0">
                                 <h3 className="text-base font-bold text-gray-800">Generation Analytics</h3>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 shadow-sm shadow-orange-100 rounded-lg">
                                     <TimeFilter selected={timeRange} onChange={setTimeRange} compact />
                                 </div>
                             </div>

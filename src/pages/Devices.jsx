@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Cpu
 } from "lucide-react";
+import { StatCard } from "./StatCard";
 
 const initialDevicesData = [
   { id: 1, admin: "demoadmin", user: "ashwini", deviceId: "C6:92:06:F0:F8:58", name: "EMBEL-HTTPS", type: "NBIOT", mac: "EE:8A:C2:A1:F7:CD", status: "Active" },
@@ -143,11 +144,11 @@ export default function DevicesPage() {
   const maintenanceDevices = 0;
 
   return (
-    <main className="flex-1 overflow-y-auto bg-[#F3F4F6] p-4 md:p-6 scroll-smooth font-sans">
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth font-sans">
 
       {/* Top Header */}
       {/* Top Header */}
-      <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-orange-50/90 mb-6">
+      <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mb-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -169,50 +170,39 @@ export default function DevicesPage() {
       <div className="max-w-[1920px] mx-auto space-y-6">
 
         {/* KPI Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-            <div>
-              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Total Devices</p>
-              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-[#ff6e00] transition-colors">{totalDevices}</h3>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-[#ff6e00] group-hover:text-white transition-all duration-300">
-              <Cpu className="w-8 h-8 text-[#ff6e00] group-hover:text-white" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-            <div>
-              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Active Devices</p>
-              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-green-600 transition-colors">{activeDevices}</h3>
-            </div>
-            <div className="bg-green-50 p-3 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse ring-4 ring-green-200"></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-            <div>
-              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Inactive Devices</p>
-              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-red-500 transition-colors">{inactiveDevices}</h3>
-            </div>
-            <div className="bg-red-50 p-3 rounded-xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <div className="w-3 h-3 bg-red-500 rounded-full ring-4 ring-red-200"></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-            <div>
-              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Maintenance</p>
-              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-orange-500 transition-colors">{maintenanceDevices}</h3>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-all duration-300">
-              <Router className="w-8 h-8 text-orange-500 group-hover:text-white" />
-            </div>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <StatCard
+            title="Total Devices"
+            value={totalDevices}
+            icon={<Cpu className="w-4 h-4" />}
+            color="orange"
+            description="Total deployed units"
+            compact
+          />
+          <StatCard
+            title="Active Devices"
+            value={activeDevices}
+            icon={<div className="w-2 h-2 bg-green-500 rounded-full animate-pulse ring-2 ring-green-200"></div>}
+            color="green"
+            description="Online & communicating"
+            compact
+          />
+          <StatCard
+            title="Inactive Devices"
+            value={inactiveDevices}
+            icon={<div className="w-2 h-2 bg-red-500 rounded-full ring-2 ring-red-200"></div>}
+            color="red"
+            description="Offline or disconnected"
+            compact
+          />
+          <StatCard
+            title="Maintenance"
+            value={maintenanceDevices}
+            icon={<Router className="w-4 h-4" />}
+            color="amber"
+            description="Under maintenance"
+            compact
+          />
         </div>
 
         {/* Content Card */}
@@ -227,7 +217,7 @@ export default function DevicesPage() {
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-sm group-hover:bg-white"
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-md shadow-orange-100 hover:shadow-orange-200 group-hover:bg-white"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -240,7 +230,7 @@ export default function DevicesPage() {
               <div className="relative min-w-[160px]" ref={filterRef}>
                 <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isFilterOpen
+                  className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 ${isFilterOpen
                     ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
                     : 'border-gray-200 hover:border-gray-300'
                     }`}

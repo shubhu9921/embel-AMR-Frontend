@@ -13,13 +13,14 @@ import {
   ChevronDown
 } from "lucide-react";
 import CreateUserModal from "./CreateUserModal";
+import { StatCard } from "./StatCard";
 
 const initialUsers = [
-  { id: 1, firstName: "John", lastName: "Anderson", email: "john.anderson@email.com", phone: "9876543210", roleId: "ADMIN", address: "Mumbai, MH", status: "Active" },
-  { id: 2, firstName: "Sarah", lastName: "Miller", email: "sarah.miller@email.com", phone: "9876543211", roleId: "USER", address: "Pune, MH", status: "Active" },
-  { id: 3, firstName: "Michael", lastName: "Chen", email: "michael.chen@email.com", phone: "9876543212", roleId: "USER", address: "Nagpur, MH", status: "Inactive" },
-  { id: 4, firstName: "Emily", lastName: "Davis", email: "emily.davis@email.com", phone: "9876543213", roleId: "USER", address: "Nashik, MH", status: "Active" },
-  { id: 5, firstName: "David", lastName: "Wilson", email: "david.wilson@email.com", phone: "9876543214", roleId: "ADMIN", address: "Aurangabad, MH", status: "Active" },
+  { id: 1, firstName: "John", lastName: "Anderson", username: "janderson", email: "john.anderson@email.com", phone: "9876543210", roleId: "ADMIN", address: "Mumbai, MH", status: "Active" },
+  { id: 2, firstName: "Sarah", lastName: "Miller", username: "smiller", email: "sarah.miller@email.com", phone: "9876543211", roleId: "USER", address: "Pune, MH", status: "Active" },
+  { id: 3, firstName: "Michael", lastName: "Chen", username: "mchen", email: "michael.chen@email.com", phone: "9876543212", roleId: "USER", address: "Nagpur, MH", status: "Inactive" },
+  { id: 4, firstName: "Emily", lastName: "Davis", username: "edavis", email: "emily.davis@email.com", phone: "9876543213", roleId: "USER", address: "Nashik, MH", status: "Active" },
+  { id: 5, firstName: "David", lastName: "Wilson", username: "dwilson", email: "david.wilson@email.com", phone: "9876543214", roleId: "ADMIN", address: "Aurangabad, MH", status: "Active" },
 ];
 
 export default function UsersPage() {
@@ -29,6 +30,8 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('create');
+  const [editingUser, setEditingUser] = useState(null);
   const pageSize = 10;
   const filterRef = useRef(null);
 
@@ -71,15 +74,42 @@ export default function UsersPage() {
     if (currentPage < totalPages) setCurrentPage(p => p + 1);
   };
 
-  const handleCreateUser = (userData) => {
-    const newUser = {
-      id: users.length + 1,
-      ...userData,
-      phone: userData.mobile,
-      roleId: userData.role,
-      status: "Active"
-    };
-    setUsers([...users, newUser]);
+  const handleAddUserClick = () => {
+    setModalMode('create');
+    setEditingUser(null);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleEditUserClick = (user) => {
+    setModalMode('edit');
+    setEditingUser({
+      ...user,
+      role: user.roleId,
+      mobile: user.phone
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleUserSubmit = (userData) => {
+    if (modalMode === 'create') {
+      const newUser = {
+        id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+        ...userData,
+        phone: userData.mobile,
+        roleId: userData.role,
+        status: "Active"
+      };
+      setUsers([...users, newUser]);
+    } else {
+      setUsers(users.map(u =>
+        u.id === editingUser.id ? {
+          ...u,
+          ...userData,
+          phone: userData.mobile,
+          roleId: userData.role
+        } : u
+      ));
+    }
   };
 
   // KPI Calculations
@@ -89,10 +119,10 @@ export default function UsersPage() {
   const newUsers = 2; // Mock data for now
 
   return (
-    <main className="flex-1 overflow-y-auto bg-[#F3F4F6] p-4 md:p-6 scroll-smooth font-sans">
+    <div className="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth font-sans">
       {/* Top Header */}
       {/* Top Header */}
-      <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-orange-50/90 mb-6">
+      <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mb-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -114,61 +144,54 @@ export default function UsersPage() {
       <div className="max-w-[1920px] mx-auto space-y-6">
 
         {/* KPI Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-            <div>
-              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Total Users</p>
-              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-[#ff6e00] transition-colors">{totalUsers}</h3>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-[#ff6e00] group-hover:text-white transition-all duration-300">
-              <Users className="w-8 h-8 text-[#ff6e00] group-hover:text-white" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-            <div>
-              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Active Users</p>
-              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-green-600 transition-colors">{activeUsers}</h3>
-            </div>
-            <div className="bg-green-50 p-3 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-              <UserCheck className="w-8 h-8 text-green-600 group-hover:text-white" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-            <div>
-              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Inactive Users</p>
-              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-red-500 transition-colors">{inactiveUsers}</h3>
-            </div>
-            <div className="bg-red-50 p-3 rounded-xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
-              <UserX className="w-8 h-8 text-red-500 group-hover:text-white" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-            <div>
-              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">New This Week</p>
-              <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-blue-500 transition-colors">{newUsers}</h3>
-            </div>
-            <div className="bg-blue-50 p-3 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
-              <UserPlus className="w-8 h-8 text-blue-500 group-hover:text-white" />
-            </div>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <StatCard
+            title="Total Users"
+            value={totalUsers}
+            icon={<Users className="w-4 h-4" />}
+            color="orange"
+            description="Registered account holders"
+            compact
+          />
+          <StatCard
+            title="Active Users"
+            value={activeUsers}
+            icon={<UserCheck className="w-4 h-4" />}
+            color="green"
+            description="Logged in past 30 days"
+            compact
+          />
+          <StatCard
+            title="Inactive Users"
+            value={inactiveUsers}
+            icon={<UserX className="w-4 h-4" />}
+            color="red"
+            description="No recent activity"
+            compact
+          />
+          <StatCard
+            title="New This Week"
+            value={newUsers}
+            icon={<UserPlus className="w-4 h-4" />}
+            color="blue"
+            description="New signups this week"
+            compact
+          />
         </div>
 
         {/* Content Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">
 
           {/* Header Controls */}
-          <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-t-2xl">
+          <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-t-2xl shadow-md shadow-orange-100">
             {/* Left: Title & Search */}
             <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
               <div className="relative w-full md:w-80 group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search User..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-sm group-hover:bg-white"
+                  placeholder="Search users..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-md shadow-orange-100 hover:shadow-orange-200 group-hover:bg-white"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -181,7 +204,7 @@ export default function UsersPage() {
               <div className="relative min-w-[160px]" ref={filterRef}>
                 <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isFilterOpen
+                  className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 ${isFilterOpen
                     ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
                     : 'border-gray-200 hover:border-gray-300'
                     }`}
@@ -214,7 +237,7 @@ export default function UsersPage() {
 
               {/* Action Buttons */}
               <button
-                onClick={() => setIsCreateModalOpen(true)}
+                onClick={handleAddUserClick}
                 className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
               >
                 <Plus className="w-5 h-5 stroke-[2.5]" />
@@ -296,6 +319,7 @@ export default function UsersPage() {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
+                            onClick={() => handleEditUserClick(user)}
                             className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-[#ff6e00] hover:text-[#ff6e00] hover:shadow-md transition-all active:scale-90"
                             title="Edit User"
                           >
@@ -373,8 +397,10 @@ export default function UsersPage() {
       <CreateUserModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateUser}
+        onSubmit={handleUserSubmit}
+        mode={modalMode}
+        initialData={editingUser}
       />
-    </main>
+    </div>
   );
 }

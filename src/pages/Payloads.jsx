@@ -15,6 +15,7 @@ import {
     ChevronRight,
     Calendar
 } from 'lucide-react';
+import { StatCard } from './StatCard';
 
 const mockPayloads = Array.from({ length: 50 }, (_, i) => ({
     id: i + 1,
@@ -29,7 +30,7 @@ const mockPayloads = Array.from({ length: 50 }, (_, i) => ({
     endBalance: (23150.99 + i).toFixed(2),
     meterEnd: (64.73 + i).toFixed(2),
     pushButton: Math.floor(Math.random() * 5),
-    battery: Math.floor(Math.random() * 20) + 80,
+    battery: i < 3 ? Math.floor(Math.random() * 15) + 5 : Math.floor(Math.random() * 20) + 80, // First 3 devices have low battery
     signalPower: Math.floor(Math.random() * 5),
     signalQuality: Math.floor(Math.random() * 30),
     snr: Math.floor(Math.random() * 10)
@@ -77,11 +78,11 @@ export default function PayloadsPage() {
     const activeDevices = new Set(mockPayloads.map(p => p.device)).size;
 
     return (
-        <main className="flex-1 overflow-y-auto bg-[#F3F4F6] p-4 md:p-6 scroll-smooth font-sans">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth font-sans">
 
             {/* Top Header */}
             {/* Top Header */}
-            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-orange-50/90 mb-6">
+            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mb-6">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -104,46 +105,39 @@ export default function PayloadsPage() {
             <div className="max-w-[1920px] mx-auto space-y-6">
 
                 {/* KPI Section */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-                        <div>
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Total Payloads</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-[#ff6e00] transition-colors">{totalPayloads}</h3>
-                        </div>
-                        <div className="bg-orange-50 p-3 rounded-xl group-hover:bg-[#ff6e00] group-hover:text-white transition-all duration-300">
-                            <Database className="w-8 h-8 text-[#ff6e00] group-hover:text-white" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-                        <div>
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Avg Signal Quality</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-blue-600 transition-colors">{avgSignalQuality}%</h3>
-                        </div>
-                        <div className="bg-blue-50 p-3 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                            <Signal className="w-8 h-8 text-blue-600 group-hover:text-white" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-                        <div>
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Active Devices</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-green-500 transition-colors">{activeDevices}</h3>
-                        </div>
-                        <div className="bg-green-50 p-3 rounded-xl group-hover:bg-green-500 group-hover:text-white transition-all duration-300">
-                            <Zap className="w-8 h-8 text-green-500 group-hover:text-white" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(255,110,0,0.1)] border border-gray-100 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
-                        <div>
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Low Battery</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1 group-hover:text-red-500 transition-colors">{lowBatteryCount}</h3>
-                        </div>
-                        <div className="bg-red-50 p-3 rounded-xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
-                            <Battery className="w-8 h-8 text-red-500 group-hover:text-white" />
-                        </div>
-                    </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    <StatCard
+                        title="Total Payloads"
+                        value={totalPayloads}
+                        icon={<Database className="w-4 h-4" />}
+                        color="orange"
+                        description="Total accepted packets"
+                        compact
+                    />
+                    <StatCard
+                        title="Avg Signal Quality"
+                        value={`${avgSignalQuality}%`}
+                        icon={<Signal className="w-4 h-4" />}
+                        color="blue"
+                        description="Network signal strength"
+                        compact
+                    />
+                    <StatCard
+                        title="Active Devices"
+                        value={activeDevices}
+                        icon={<Zap className="w-4 h-4" />}
+                        color="green"
+                        description="Transmitting devices"
+                        compact
+                    />
+                    <StatCard
+                        title="Low Battery"
+                        value={lowBatteryCount}
+                        icon={<Battery className="w-4 h-4" />}
+                        color="red"
+                        description="Critical battery levels"
+                        compact
+                    />
                 </div>
 
                 {/* Content Card */}
@@ -157,8 +151,8 @@ export default function PayloadsPage() {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
                                 <input
                                     type="text"
-                                    placeholder="Search MAC, Device..."
-                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-sm group-hover:bg-white"
+                                    placeholder="Search payloads..."
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-md shadow-orange-100 hover:shadow-orange-200 group-hover:bg-white"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -171,7 +165,7 @@ export default function PayloadsPage() {
                             <div className="relative min-w-[150px]" ref={filterRef}>
                                 <button
                                     onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none ${isFilterOpen
+                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 ${isFilterOpen
                                         ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
                                         : 'border-gray-200 hover:border-gray-300'
                                         }`}

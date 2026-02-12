@@ -80,6 +80,7 @@ export default function AnalysisPage() {
       case 'week': return mockDataWeek;
       case 'month': return mockDataMonth;
       case 'year': return mockDataYear;
+      case 'all': return mockDataYear;
       default: return mockDataWeek;
     }
   }
@@ -95,7 +96,7 @@ export default function AnalysisPage() {
   }[activeTab];
 
   return (
-    <div className="w-full flex flex-col gap-6 p-4 md:p-6 mb-20 bg-gray-100">
+    <div className="w-full flex flex-col gap-6 p-4 md:p-6 mb-20">
 
       <MetersModal
         isOpen={isModalOpen}
@@ -106,7 +107,7 @@ export default function AnalysisPage() {
       />
 
       {/* Header */}
-      <div className={`sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-indigo-50/90`}>
+      <div className={`sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-indigo-50/90`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${COLORS[activeTab].gradient} text-white shadow-lg transition-transform duration-300 group-hover:scale-105`}>
@@ -144,7 +145,7 @@ export default function AnalysisPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
+        <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-md flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
           <div className="flex items-center gap-2 text-indigo-600 mb-1">
             <Activity size={16} />
             <span className="text-xs font-bold uppercase tracking-wider">Total Devices</span>
@@ -152,7 +153,7 @@ export default function AnalysisPage() {
           <span className="text-2xl font-extrabold text-indigo-900">124</span>
           <span className="text-xs text-indigo-600 font-medium">+12 new installed</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
+        <div className="bg-white p-4 rounded-2xl border border-emerald-100 shadow-md flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
           <div className="flex items-center gap-2 text-emerald-600 mb-1">
             <Activity size={16} />
             <span className="text-xs font-bold uppercase tracking-wider">Active</span>
@@ -160,7 +161,7 @@ export default function AnalysisPage() {
           <span className="text-2xl font-extrabold text-emerald-700">98</span>
           <span className="text-xs text-emerald-600 font-medium">Running normally</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-amber-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
+        <div className="bg-white p-4 rounded-2xl border border-amber-100 shadow-md flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
           <div className="flex items-center gap-2 text-amber-600 mb-1">
             <AlertCircle size={16} />
             <span className="text-xs font-bold uppercase tracking-wider">Warnings</span>
@@ -168,7 +169,7 @@ export default function AnalysisPage() {
           <span className="text-2xl font-extrabold text-amber-700">21</span>
           <span className="text-xs text-amber-600 font-medium">Requires attention</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
+        <div className="bg-white p-4 rounded-2xl border border-rose-100 shadow-md flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 hover:border-orange-200 cursor-pointer group">
           <div className="flex items-center gap-2 text-rose-600 mb-1">
             <XCircle size={16} />
             <span className="text-xs font-bold uppercase tracking-wider">Offline</span>

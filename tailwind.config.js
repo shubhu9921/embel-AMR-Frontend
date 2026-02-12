@@ -8,7 +8,7 @@ export default {
         muted: "#F8FAFC",
       },
       fontFamily: {
-        sans: ['"Inter"', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
       },
       keyframes: {
         // Pulse animations for ParameterCard

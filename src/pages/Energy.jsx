@@ -113,7 +113,7 @@ export default function Energy() {
   ];
 
   return (
-    <div className="w-full h-full flex flex-col overflow-y-auto bg-gray-100">
+    <div className="w-full h-full flex flex-col overflow-y-auto">
       <MetersModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -123,7 +123,7 @@ export default function Energy() {
       />
 
       {/* Header */}
-      <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-emerald-50/90 mx-4 mt-4">
+      <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-emerald-50/90 mx-4 mt-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -146,10 +146,10 @@ export default function Energy() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 shrink-0">
-          <StatCard title="Total Usage" value="4,520 kWh" icon={<Zap className="w-4 h-4" />} trend={12.5} color="blue" compact />
-          <StatCard title="Est. Cost" value={`₹ ${estimatedCost.toFixed(0)}`} icon={<IndianRupee className="w-4 h-4" />} trend={12.5} color="green" compact />
+          <StatCard title="Total Usage" value="12,450 kWh" icon={<Zap className="w-4 h-4" />} trend={5.4} color="purple" description="Monthly cumulative consumption" compact />
+          <StatCard title="Est. Cost" value="₹ 1,24,500" icon={<IndianRupee className="w-4 h-4" />} trend={2.1} color="green" description="Projected billing cycle cost" compact />
           <StatCard title="Daily Avg" value="645 kWh" icon={<Calendar className="w-4 h-4" />} trend={-8.3} color="purple" compact />
-          <StatCard title="Peak Dem" value="12.5 kW" icon={<Gauge className="w-4 h-4" />} subValue="18:00" color="orange" compact />
+          <StatCard title="Peak Demand" value="850 kW" icon={<Gauge className="w-4 h-4" />} subValue="11:30" color="orange" description="Highest recorded demand" compact />
           <StatCard title="Alerts" value={alerts.length} icon={<AlertTriangle className="w-4 h-4" />} subValue="Active" color="red" compact />
         </div>
 
@@ -158,7 +158,7 @@ export default function Energy() {
           <div className="col-span-12 lg:col-span-9 bg-white rounded-xl p-5 border border-gray-100 shadow-md flex flex-col h-auto lg:h-full">
             <div className="flex items-center justify-between mb-4 shrink-0">
               <h3 className="text-base font-bold text-gray-800">Consumption Trends</h3>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shadow-sm shadow-orange-100 rounded-lg">
                 <TimeFilter selected={timeRange} onChange={setTimeRange} compact />
               </div>
             </div>

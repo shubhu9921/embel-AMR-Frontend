@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, Bell, Settings, Sun, Droplet, Flame, Zap, X, Check, LogOut, User } from "lucide-react";
 
-export default function Header({ activePage, setActivePage }) {
+export default function Header({ activePage, setActivePage, onLogout }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -96,7 +96,7 @@ export default function Header({ activePage, setActivePage }) {
   ];
 
   return (
-    <header className="h-16 bg-[white] backdrop-blur-xl flex items-center px-4 sm:px-6 sticky top-0 z-50 justify-between transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
+    <header className="h-16 bg-white backdrop-blur-xl flex items-center px-4 sm:px-6 sticky top-0 z-50 justify-between transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
       {/* Left: Search */}
       <div className="flex items-center gap-4 flex-shrink-0 relative z-50">
         {/* Desktop search */}
@@ -287,7 +287,7 @@ export default function Header({ activePage, setActivePage }) {
               <div className="p-2 border-t border-gray-50 mb-1">
                 <button
                   className="w-full text-left px-4 py-3 rounded-xl text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 transition-colors font-bold"
-                  onClick={() => alert("Logging out...")}
+                  onClick={onLogout}
                 >
                   <LogOut size={18} /> Sign Out
                 </button>

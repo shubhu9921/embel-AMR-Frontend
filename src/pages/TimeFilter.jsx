@@ -9,7 +9,7 @@ export function TimeFilter({ selected, onChange, onEnlarge, compact = false, sho
 
   return (
     <div className="flex items-center gap-1">
-      <div className="inline-flex rounded border border-gray-200 bg-white p-[1px]">
+      <div className="inline-flex rounded border border-gray-200 bg-white p-[1px] shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 transition-all">
         {options.map((option) => (
           <button
             key={option.value}

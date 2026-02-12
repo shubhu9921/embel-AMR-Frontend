@@ -35,10 +35,10 @@ export default function AlertsPage() {
   );
 
   return (
-    <div className="w-full h-full flex flex-col bg-gray-100 overflow-hidden relative">
+    <div className="w-full h-full flex flex-col bg-white overflow-hidden relative">
 
       {/* Page Header */}
-      <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl border border-gray-200 px-6 py-4 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md hover:bg-blue-50/90 mx-6 mt-6 mb-2">
+      <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-blue-50/90 mx-6 mt-6 mb-2">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -72,7 +72,7 @@ export default function AlertsPage() {
       <div className="flex-1 overflow-hidden p-6 flex flex-col gap-6 max-w-5xl mx-auto w-full">
 
         {/* Controls */}
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
             {['all', 'critical', 'warning', 'info', 'success'].map((type) => {
               const hoverStyles = {

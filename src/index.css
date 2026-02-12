@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 body {
-  @apply text-slate-700 font-sans;
-  background-color: #d3d3d3;
+  @apply text-slate-700 font-sans bg-[#E3E3E3];
+}
+
+* {
   font-family: 'Inter', sans-serif;
 }
