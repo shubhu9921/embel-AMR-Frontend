@@ -81,7 +81,7 @@ export default function App() {
 
         {/* Page content – ONLY this scrolls */}
         <main className="flex-1 overflow-y-auto">
-          {activePage === "Dashboard" && <Dashboard />}
+          {activePage === "Dashboard" && <Dashboard setActivePage={setActivePage} userRole={userRole} />}
           {activePage === "Users" && <Users />}
           {activePage === 'Gas' && <GasPage />}
           {activePage === 'Water' && <WaterPage />}

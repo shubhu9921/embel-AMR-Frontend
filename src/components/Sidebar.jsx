@@ -56,7 +56,7 @@ export default function Sidebar({
   return (
     <aside
       className={`
-        bg-white transition-all duration-300 shadow-[4px_0_24px_rgba(0,0,0,0.15)] z-50 border-r border-gray-100
+        bg-white/50 backdrop-blur-md transition-all duration-300 shadow-[4px_0_24px_rgba(0,0,0,0.15)] z-50 border-r border-gray-100
         ${collapsed ? "w-20" : "w-64"}
         flex flex-col min-h-full
       `}

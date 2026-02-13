@@ -7,9 +7,10 @@ import {
     AreaChart, Area, Tooltip, CartesianGrid, XAxis, YAxis,
     BarChart, Bar, Label
 } from "recharts";
-import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun, Activity } from "lucide-react";
+import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun, Activity, Users, CreditCard, FileText, Cpu, Clock, AlertCircle } from "lucide-react";
 import { TimeFilter } from "./TimeFilter";
 import { AlertsPanel } from "./AlertsPanel";
+import { StatCard } from "./StatCard";
 
 
 
@@ -26,14 +27,22 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-export default function Dashboard() {
+export default function Dashboard({ setActivePage = () => { }, userRole }) {
+    const isAdmin = userRole === 'Admin';
     /* -------------------- STATE -------------------- */
     const [consumptionTimeRange, setConsumptionTimeRange] = useState('month');
     const [activeResource, setActiveResource] = useState('All');
     const [showMapModal, setShowMapModal] = useState(false);
 
+    /* -------------------- ADMIN METRICS (MOCK) -------------------- */
+    const totalDevices = 12;
+    const totalMeters = 120;
+    const totalUsers = 5;
+    const billingStats = { total: "₹12,450", pending: "₹2,321", overdue: "₹5,100" };
+    const reportsStats = { ready: 4, processing: 1, total: 6 };
+
     /* -------------------- METRICS -------------------- */
-    const totalMeters = 120; // 70 Active + 35 Inactive + 15 Deactive
+    // const totalMeters = 120; // Replaced by above
 
     const pieData = [
         { name: "Active", value: 70, color: "#10b981" },
@@ -95,6 +104,18 @@ export default function Dashboard() {
     };
     const multiResourceData = getChartData();
 
+    // Helper for safe billing percentage calculation
+    const calculateBillingPercentage = () => {
+        try {
+            const total = parseInt(billingStats.total.replace(/[^0-9]/g, '')) || 0;
+            const pending = parseInt(billingStats.pending.replace(/[^0-9]/g, '')) || 0;
+            const separator = total + pending;
+            return separator === 0 ? 0 : (total / separator) * 100;
+        } catch (e) {
+            return 0;
+        }
+    };
+
 
 
     /* -------------------- ALERTS -------------------- */
@@ -130,126 +151,66 @@ export default function Dashboard() {
             <div className="px-4 md:px-6 flex flex-col gap-6">
 
                 {/* -------------------- ROW 1: KPI CARDS -------------------- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <StatCard
+                        title="Total Devices"
+                        value={totalDevices}
+                        icon={<Cpu />}
+                        color="blue"
+                        description="Deployed hardware units"
+                        trend={-2.5}
+                        trendLabel="vs last month"
+                    />
+                    <StatCard
+                        title="Total Meters"
+                        value={totalMeters}
+                        icon={<Gauge />}
+                        color="green"
+                        description="Active measurement points"
+                        trend={-1.2}
+                        trendLabel="vs last month"
+                    />
 
-                    {/* KPI 1: TOTAL METERS DONUT */}
-                    <div className="bg-white rounded-2xl border border-transparent shadow-md p-5 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-default relative overflow-hidden">
-                        {/* Background Icon */}
-                        <div className="absolute -bottom-6 -right-6 opacity-[0.08] group-hover:opacity-[0.40] transition-opacity duration-300 text-emerald-600 pointer-events-none z-0">
-                            <Gauge size={120} strokeWidth={1} />
-                        </div>
-
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 relative z-10">Total Meter Status</h3>
-                        <p className="text-[11px] text-gray-400 font-medium mb-4 relative z-10 leading-tight">Real-time connectivity status</p>
-                        <div className="flex items-center justify-between h-full relative z-10">
-                            <div className="w-24 h-24 relative scale-110 group-hover:scale-115 transition-transform">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie data={pieData} innerRadius={35} outerRadius={45} paddingAngle={4} dataKey="value" stroke="none">
-                                            {pieData.map((entry, index) => (
-                                                <Cell key={`cell - ${index} `} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <span className="text-xl font-bold text-gray-900">{totalMeters}</span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-2.5 text-xs">
-                                {pieData.map((p, i) => (
-                                    <div key={i} className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full ring-2 ring-white shadow-sm" style={{ background: p.color }}></div>
-                                        <span className="text-gray-600 font-semibold">{p.name}: <span className="text-gray-900">{p.value}</span></span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* KPI 2: ACTIVE ISSUES */}
-                    <div className="bg-white rounded-2xl border border-transparent shadow-md p-5 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-                        {/* Background Icon */}
-                        <div className="absolute -bottom-6 -right-6 opacity-[0.08] group-hover:opacity-[0.40] transition-opacity duration-300 text-red-500 pointer-events-none z-0">
-                            <AlertTriangle size={120} strokeWidth={1} />
-                        </div>
-
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 relative z-10">Active System Issues</h3>
-                        <p className="text-[11px] text-gray-400 font-medium mb-4 relative z-10 leading-tight">Critical operational alerts</p>
-                        <div className="flex-1 space-y-3 relative z-10">
-                            <div className="flex items-center justify-between p-3 bg-red-50/50 rounded-xl border border-red-100 hover:border-red-200 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-1.5 bg-red-100 rounded-lg text-red-600">
-                                        <AlertTriangle size={16} />
-                                    </div>
-                                    <span className="text-sm font-semibold text-gray-700">Offline Meters</span>
-                                </div>
-                                <span className="text-lg font-bold text-red-600">5</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100 hover:border-amber-200 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-1.5 bg-amber-100 rounded-lg text-amber-600">
-                                        <Info size={16} />
-                                    </div>
-                                    <span className="text-sm font-semibold text-gray-700">High Usage</span>
-                                </div>
-                                <span className="text-lg font-bold text-amber-600">2</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* KPI 3: SITE MAP PREVIEW */}
-                    <div className="bg-white rounded-2xl border border-transparent shadow-md p-0 flex flex-col relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-[200px] md:h-auto">
-                        <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-gray-100 shadow-sm flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <div>
-                                <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Live Sites</h3>
-                                <p className="text-[10px] text-gray-500 font-medium leading-none mt-0.5">Geospatial distribution</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setShowMapModal(true)}
-                            className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-blue-50 text-gray-500 hover:text-blue-600 border border-gray-100 shadow-md transition-all hover:scale-105 active:scale-95"
-                            title="Enlarge Map"
-                        >
-                            <Maximize2 size={18} />
-                        </button>
-                        <div className="w-full h-full opacity-90 group-hover:opacity-100 transition-opacity">
-                            <MapContainer
-                                center={[20.5937, 78.9629]}
-                                zoom={3}
-                                zoomControl={false}
-                                scrollWheelZoom={false}
-                                style={{ height: "100%", width: "100%", background: '#f8fafc' }}
-                            >
-                                <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
-                                {sites.map(site => (
-                                    <Marker key={site.id} position={site.location}></Marker>
-                                ))}
-                            </MapContainer>
-                        </div>
-                    </div>
-
-                    {/* KPI 4: QUICK STATS */}
-                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-md shadow-emerald-200 p-5 flex flex-col justify-between hover:shadow-lg hover:shadow-emerald-300 transition-all duration-300 text-white relative overflow-hidden group">
-                        {/* Background Icon */}
-                        <div className="absolute -bottom-6 -right-6 opacity-[0.2] group-hover:opacity-[0.5] transition-opacity duration-300 text-white pointer-events-none z-0">
-                            <CheckCircle size={120} strokeWidth={1} />
-                        </div>
-
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl -ml-10 -mb-10"></div>
-
-                        <h3 className="text-sm font-bold text-emerald-50 uppercase tracking-wide relative z-10">System Health</h3>
-                        <p className="text-[11px] text-emerald-100/80 font-medium relative z-10 leading-tight mt-0.5">Overall system uptime</p>
-                        <div className="flex flex-col items-center justify-center flex-1 py-2 relative z-10">
-                            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-3 shadow-inner border border-white/20">
-                                <CheckCircle size={32} className="text-white" />
-                            </div>
-                            <span className="text-3xl font-extrabold text-white tracking-tight">98.5%</span>
-                            <span className="text-xs text-emerald-100 font-medium mt-1 bg-white/10 px-2 py-0.5 rounded-full">Operational Uptime</span>
-                        </div>
-                    </div>
+                    {isAdmin ? (
+                        <>
+                            <StatCard
+                                title="Total Users"
+                                value={totalUsers}
+                                icon={<Users />}
+                                color="orange"
+                                description="System administrators"
+                                subValue="2 New this week"
+                            />
+                            <StatCard
+                                title="Total Revenue"
+                                value={billingStats.total}
+                                icon={<CreditCard />}
+                                color="purple"
+                                description="Billed this month"
+                                subValue={`Pending: ${billingStats.pending}`}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <StatCard
+                                title="Active Issues"
+                                value="5"
+                                icon={<AlertTriangle />}
+                                color="red"
+                                description="Critical alerts"
+                                subValue="2 High Priority"
+                            />
+                            <StatCard
+                                title="System Health"
+                                value="98.5%"
+                                icon={<Activity />}
+                                color="emerald"
+                                description="Operational Uptime"
+                                trend={0.5}
+                                trendLabel="vs last month"
+                            />
+                        </>
+                    )}
                 </div>
 
                 {/* -------------------- ROW 2: GRAPHS & ALERTS -------------------- */}
@@ -359,35 +320,152 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* -------------------- ROW 3: SYSTEM PARAMETERS (Gas Style) -------------------- */}
-                <div className="shrink-0 bg-white rounded-xl p-5 text-gray-900 shadow-md border border-gray-100 flex flex-col gap-6">
-                    <div className="flex items-center gap-3 text-blue-600 font-bold shrink-0 border-b border-gray-100 pb-4 w-full">
-                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-                            <Gauge size={20} />
-                        </div>
-                        <span className="text-sm uppercase tracking-wide">Live System Parameters</span>
-                    </div>
-                    <div className="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
-                        {[
-                            { label: 'Grid Freq', value: '50.02 Hz', icon: Activity, color: 'emerald', theme: 'to-emerald-100/60' },
-                            { label: 'Water Pres', value: '3.4 bar', icon: Droplet, color: 'cyan', theme: 'to-cyan-100/60' },
-                            { label: 'Gas PSI', value: '2.1 psi', icon: Flame, color: 'orange', theme: 'to-orange-100/60' },
-                            { label: 'Solar Out', value: '4.2 kW', icon: Sun, color: 'amber', theme: 'to-amber-100/60' },
-                            { label: 'Avg Temp', value: '24°C', icon: Info, color: 'blue', theme: 'to-blue-100/60' },
-                            { label: 'Humidity', value: '45%', icon: Wind, color: 'indigo', theme: 'to-indigo-100/60' },
-                        ].map((p, i) => (
-                            <div key={i} className={`flex flex-col bg-gradient-to-br from-white ${p.theme} p-3 rounded-xl border border-transparent shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group`}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className={`text-[10px] text-gray-500 font-bold uppercase tracking-wider group-hover:text-${p.color}-600 transition-colors`}>{p.label}</span>
-                                    <p.icon className={`w-4 h-4 text-gray-400 group-hover:text-${p.color}-600 transition-colors`} />
+                {/* -------------------- ROW 3: BILLING, REPORTS & PARAMS -------------------- */}
+                <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-6`}>
+
+                    {/* BILLING ANALYSIS - ADMIN ONLY */}
+                    {isAdmin && (
+                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                                    <CreditCard size={18} className="text-purple-500" />
+                                    Billing Overview
+                                </h3>
+                                <button
+                                    onClick={() => setActivePage('Billing')}
+                                    className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded hover:bg-purple-100 transition-colors"
+                                >
+                                    View All
+                                </button>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                        <span>Collected</span>
+                                        <span className="font-bold text-gray-900">{billingStats.total}</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div
+                                            className="bg-purple-500 h-2 rounded-full"
+                                            style={{ width: `${calculateBillingPercentage()}%` }}
+                                        ></div>
+                                    </div>
                                 </div>
-                                <span className="text-sm font-mono font-extrabold text-gray-900">{p.value}</span>
-                                <div className="hidden group-hover:flex items-center gap-1 mt-1 animate-in fade-in slide-in-from-top-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    <span className="text-[9px] text-emerald-600 font-bold">Normal</span>
+                                <div className="flex gap-3">
+                                    <div className="flex-1 p-3 rounded-xl bg-orange-50 border border-orange-100">
+                                        <span className="text-xs text-orange-600 font-bold block mb-1">Pending</span>
+                                        <span className="text-lg font-bold text-gray-900">{billingStats.pending}</span>
+                                    </div>
+                                    <div className="flex-1 p-3 rounded-xl bg-red-50 border border-red-100">
+                                        <span className="text-xs text-red-600 font-bold block mb-1">Overdue</span>
+                                        <span className="text-lg font-bold text-gray-900">{billingStats.overdue}</span>
+                                    </div>
                                 </div>
                             </div>
-                        ))}
+                        </div>
+                    )}
+
+                    {/* REPORTS SUMMARY - ADMIN ONLY */}
+                    {isAdmin && (
+                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                                    <FileText size={18} className="text-blue-500" />
+                                    Recent Reports
+                                </h3>
+                                <button
+                                    onClick={() => setActivePage('Reports')}
+                                    className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
+                                >
+                                    View All
+                                </button>
+                            </div>
+                            <div className="space-y-3">
+                                <div
+                                    onClick={() => setActivePage('Reports')}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePage('Reports') }}
+                                    tabIndex="0"
+                                    role="button"
+                                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-1.5 bg-blue-100 text-blue-600 rounded">
+                                            <FileText size={14} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600">Monthly Consumption</span>
+                                            <span className="text-[10px] text-gray-400">Dec 2024 • 2.4 MB</span>
+                                        </div>
+                                    </div>
+                                    <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded-full">Ready</span>
+                                </div>
+                                <div
+                                    onClick={() => setActivePage('Reports')}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePage('Reports') }}
+                                    tabIndex="0"
+                                    role="button"
+                                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-1.5 bg-amber-100 text-amber-600 rounded">
+                                            <FileText size={14} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600">Solar Analysis</span>
+                                            <span className="text-[10px] text-gray-400">Annual 2024 • 5.2 MB</span>
+                                        </div>
+                                    </div>
+                                    <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded-full">Ready</span>
+                                </div>
+                                <div
+                                    onClick={() => setActivePage('Reports')}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePage('Reports') }}
+                                    tabIndex="0"
+                                    role="button"
+                                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-1.5 bg-gray-100 text-gray-500 rounded">
+                                            <Clock size={14} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600">Device Health</span>
+                                            <span className="text-[10px] text-gray-400">Jan 2025 • Processing</span>
+                                        </div>
+                                    </div>
+                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-full">Processing</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SYSTEM PARAMETERS (Compact) */}
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                                <Gauge size={18} className="text-emerald-500" />
+                                System Status
+                            </h3>
+                            <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                        </div>
+                        <div className={`grid ${isAdmin ? 'grid-cols-2 lg:grid-cols-2' : 'grid-cols-2 md:grid-cols-4'} gap-3 flex-1 content-start`}>
+                            {[
+                                { label: 'Grid Freq', value: '50.02 Hz', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                                { label: 'Water Pres', value: '3.4 bar', icon: Droplet, color: 'text-cyan-500', bg: 'bg-cyan-50' },
+                                { label: 'Gas PSI', value: '2.1 psi', icon: Flame, color: 'text-orange-500', bg: 'bg-orange-50' },
+                                { label: 'Solar Out', value: '4.2 kW', icon: Sun, color: 'text-amber-500', bg: 'bg-amber-50' },
+                            ].map((p, i) => (
+                                <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-colors">
+                                    <div className={`p-2 rounded-lg ${p.bg} ${p.color}`}>
+                                        <p.icon size={16} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase">{p.label}</p>
+                                        <p className="text-sm font-bold text-gray-900">{p.value}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
