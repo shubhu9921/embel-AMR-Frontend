@@ -17,12 +17,12 @@ export default function LoginPage({ onLogin }) {
         setTimeout(() => {
             // Demo Credentials Logic
             if (email === 'superadmin' && (password === 'superadmin' || password === 'superadmin')) {
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('userRole', 'Admin');
+                sessionStorage.setItem('isAuthenticated', 'true');
+                sessionStorage.setItem('userRole', 'Admin');
                 onLogin('Admin');
             } else if (email === 'user1' && password === 'user1') {
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('userRole', 'User');
+                sessionStorage.setItem('isAuthenticated', 'true');
+                sessionStorage.setItem('userRole', 'User');
                 onLogin('User');
             } else {
                 setError('Invalid username or password. Try superadmin/superadmin or user1/user1');

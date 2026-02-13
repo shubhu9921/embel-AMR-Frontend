@@ -18,10 +18,18 @@ import PayloadsPage from "./pages/Payloads";
 import LoginPage from "./pages/Login";
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('isAuthenticated') === 'true');
-  const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || 'Admin');
+  const [isAuthenticated, setIsAuthenticated] = useState(sessionStorage.getItem('isAuthenticated') === 'true');
+  const [userRole, setUserRole] = useState(sessionStorage.getItem('userRole') || 'Admin');
   const [collapsed, setCollapsed] = useState(false);
-  const [activePage, setActivePage] = useState("Dashboard");
+  // Initialize activePage from sessionStorage or default to "Dashboard"
+  const [activePage, setActivePage] = useState(sessionStorage.getItem('activePage') || "Dashboard");
+
+  // Persist activePage to sessionStorage whenever it changes
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      sessionStorage.setItem('activePage', activePage);
+    }
+  }, [activePage, isAuthenticated]);
 
   // Auto-collapse on small screens
   React.useEffect(() => {
@@ -40,12 +48,17 @@ export default function App() {
   const handleLogin = (role) => {
     setIsAuthenticated(true);
     setUserRole(role);
+    // On login, default to Dashboard or previously saved page if valid logic requires it,
+    // but typically reset to Dashboard to start fresh session or keep current if seamless.
+    // Here we set to Dashboard for new login.
     setActivePage("Dashboard");
+    sessionStorage.setItem('activePage', "Dashboard");
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userRole');
+    sessionStorage.removeItem('isAuthenticated');
+    sessionStorage.removeItem('userRole');
+    sessionStorage.removeItem('activePage');
     setIsAuthenticated(false);
     setUserRole('Admin'); // Reset to default
     setActivePage("Dashboard");

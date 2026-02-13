@@ -7,10 +7,11 @@ import {
     AreaChart, Area, Tooltip, CartesianGrid, XAxis, YAxis,
     BarChart, Bar, Label
 } from "recharts";
-import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun, Activity, Users, CreditCard, FileText, Cpu, Clock, AlertCircle } from "lucide-react";
+import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun, Activity, Users, CreditCard, FileText, Cpu, Clock, AlertCircle, MapPin } from "lucide-react";
 import { TimeFilter } from "./TimeFilter";
 import { AlertsPanel } from "./AlertsPanel";
 import { StatCard } from "./StatCard";
+import { LocationDetailsModal } from "./LocationDetailsModal";
 
 
 
@@ -33,12 +34,45 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const [consumptionTimeRange, setConsumptionTimeRange] = useState('month');
     const [activeResource, setActiveResource] = useState('All');
     const [showMapModal, setShowMapModal] = useState(false);
+    const [showLocationModal, setShowLocationModal] = useState(false);
+
 
     /* -------------------- ADMIN METRICS (MOCK) -------------------- */
     const totalDevices = 12;
+    const deviceStats = [
+        { label: 'Active', value: 8, color: 'text-emerald-500' },
+        { label: 'Inactive', value: 3, color: 'text-amber-500' },
+        { label: 'Deactive', value: 1, color: 'text-red-500' },
+    ];
+    const locationStats = [
+        { label: 'Mumbai', value: 5, color: 'text-blue-500' },
+        { label: 'Delhi', value: 4, color: 'text-indigo-500' },
+        { label: 'B\'lore', value: 3, color: 'text-purple-500' },
+    ];
+
     const totalMeters = 120;
+    const meterStats = [
+        { label: 'Active', value: 95, color: 'text-emerald-500' },
+        { label: 'Inactive', value: 15, color: 'text-amber-500' },
+        { label: 'Deactive', value: 10, color: 'text-red-500' },
+    ];
+
     const totalUsers = 5;
+    const userStats = [
+        { label: 'Active', value: 4, color: 'text-emerald-500' },
+        { label: 'Inactive', value: 1, color: 'text-amber-500' },
+        { label: 'Deactive', value: 0, color: 'text-red-500' },
+    ];
+
     const billingStats = { total: "₹12,450", pending: "₹2,321", overdue: "₹5,100" };
+    const revenueStats = [
+        { label: 'Paid', value: 150, color: 'text-emerald-500' },
+        { label: 'Unpaid', value: 45, color: 'text-red-500' },
+        { label: 'Pending', value: 20, color: 'text-amber-500' },
+        { label: 'Processing', value: 12, color: 'text-blue-500' },
+    ];
+
+
     const reportsStats = { ready: 4, processing: 1, total: 6 };
 
     /* -------------------- METRICS -------------------- */
@@ -60,7 +94,6 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         { id: 6, name: "Central Unit", location: [17.3850, 78.4867], status: "Active" }, // Hyderabad
     ];
 
-    /* -------------------- CONSUMPTION DATA (MULTI-RESOURCE) -------------------- */
     /* -------------------- CONSUMPTION DATA (MULTI-RESOURCE) -------------------- */
     const multiResourceDataDay = [
         { name: "00:00", Energy: 10, Water: 5, Gas: 2, Solar: 0 },
@@ -160,6 +193,16 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                         description="Deployed hardware units"
                         trend={-2.5}
                         trendLabel="vs last month"
+                        statusBreakdown={deviceStats}
+                    />
+                    <StatCard
+                        title="Devices Location"
+                        value="View Details"
+                        icon={<MapPin />}
+                        color="cyan"
+                        description="Filter by location & source"
+                        onClick={() => setShowLocationModal(true)}
+                        statusBreakdown={locationStats}
                     />
                     <StatCard
                         title="Total Meters"
@@ -169,6 +212,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                         description="Active measurement points"
                         trend={-1.2}
                         trendLabel="vs last month"
+                        statusBreakdown={meterStats}
                     />
 
                     {isAdmin ? (
@@ -180,6 +224,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 color="orange"
                                 description="System administrators"
                                 subValue="2 New this week"
+                                statusBreakdown={userStats}
                             />
                             <StatCard
                                 title="Total Revenue"
@@ -188,6 +233,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 color="purple"
                                 description="Billed this month"
                                 subValue={`Pending: ${billingStats.pending}`}
+                                statusBreakdown={revenueStats}
                             />
                         </>
                     ) : (
@@ -516,6 +562,10 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                         </div>
                     </div>
                 </div>
+            )}
+            {/* -------------------- LOCATION DETAILS MODAL -------------------- */}
+            {showLocationModal && (
+                <LocationDetailsModal onClose={() => setShowLocationModal(false)} />
             )}
         </main>
     );
