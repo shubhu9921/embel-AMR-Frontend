@@ -35,7 +35,7 @@ export function StatCard({
       <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-white/40 to-transparent rounded-tr-3xl -ml-4 -mb-4 opacity-50 group-hover:opacity-100 transition-opacity"></div>
 
       {/* Background Icon - No Background Color, Just Text Color */}
-      <div className={`absolute bottom-2 right-2 opacity-[0.4] group-hover:opacity-100 transition-opacity duration-300 ${color ? `text-${color === 'green' ? 'emerald' : color}-500` : 'text-gray-500'} pointer-events-none`}>
+      <div className={`absolute top-1/2 -translate-y-1/2 right-2 opacity-[0.4] group-hover:opacity-100 transition-opacity duration-300 ${color ? `text-${color === 'green' ? 'emerald' : color}-500` : 'text-gray-500'} pointer-events-none`}>
         {icon && React.cloneElement(icon, { size: 40, strokeWidth: 1.5, className: "" })}
       </div>
 

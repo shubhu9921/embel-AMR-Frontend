@@ -35,6 +35,10 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const [activeResource, setActiveResource] = useState('All');
     const [showMapModal, setShowMapModal] = useState(false);
     const [showLocationModal, setShowLocationModal] = useState(false);
+    const [showUserDevicesModal, setShowUserDevicesModal] = useState(false);
+    const [showUserMetersModal, setShowUserMetersModal] = useState(false);
+    const [showUserLocationsModal, setShowUserLocationsModal] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState(null);
 
 
     /* -------------------- ADMIN METRICS (MOCK) -------------------- */
@@ -72,6 +76,75 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         { label: 'Processing', value: 12, color: 'text-blue-500' },
     ];
 
+    /* -------------------- USER METRICS (MOCK) -------------------- */
+    const userAssignedDevices = 5;
+    const userDeviceStats = [
+        { label: 'Active', value: 3, color: 'text-emerald-500' },
+        { label: 'Inactive', value: 1, color: 'text-amber-500' },
+        { label: 'Deactive', value: 1, color: 'text-red-500' },
+    ];
+
+    const userAssignedLocations = 2; // Mumbai, Delhi
+    const userLocationStats = [
+        { label: 'Mumbai', value: 3, color: 'text-blue-500' },
+        { label: 'Delhi', value: 2, color: 'text-indigo-500' },
+    ];
+
+    const userAssignedMeters = 8;
+    const userMeterStats = [
+        { label: 'Active', value: 6, color: 'text-emerald-500' },
+        { label: 'Inactive', value: 1, color: 'text-amber-500' },
+        { label: 'Deactive', value: 1, color: 'text-red-500' },
+    ];
+
+    const userDataDetailed = {
+        devices: [
+            { id: 1, name: "EM-001", source: "Energy", params: "Voltage, Current, Power", status: "Active", location: "Mumbai" },
+            { id: 2, name: "WM-002", source: "Water", params: "Flow Rate, Volume", status: "Active", location: "Mumbai" },
+            { id: 3, name: "GM-003", source: "Gas", params: "Pressure, Volume", status: "Inactive", location: "Delhi" },
+            { id: 4, name: "SM-004", source: "Solar", params: "Irradiance, Output", status: "Active", location: "Delhi" },
+            { id: 5, name: "EM-005", source: "Energy", params: "Voltage, P.F.", status: "Deactive", location: "Mumbai" },
+        ],
+        meters: [
+            { id: 1, name: "Meter-01", source: "Energy", reading: "450 kWh", status: "Active", location: "Mumbai" },
+            { id: 2, name: "Meter-02", source: "Water", reading: "1200 L", status: "Active", location: "Mumbai" },
+            { id: 3, name: "Meter-03", source: "Gas", reading: "34 m3", status: "Active", location: "Delhi" },
+            { id: 4, name: "Meter-04", source: "Energy", reading: "0 kWh", status: "Inactive", location: "Delhi" },
+            { id: 5, name: "Meter-05", source: "Energy", reading: "0 kWh", status: "Deactive", location: "Mumbai" },
+            { id: 6, name: "Meter-06", source: "Water", reading: "500 L", status: "Active", location: "Mumbai" },
+            { id: 7, name: "Meter-07", source: "Gas", reading: "12 m3", status: "Active", location: "Delhi" },
+            { id: 8, name: "Meter-08", source: "Solar", reading: "89 kWh", status: "Active", location: "Mumbai" },
+        ],
+        locations: [
+            {
+                id: 1, name: "Mumbai Hub",
+                devices: [
+                    { name: "EM-001", source: "Energy", status: "Active" },
+                    { name: "WM-002", source: "Water", status: "Active" },
+                    { name: "EM-005", source: "Energy", status: "Deactive" }
+                ],
+                meters: [
+                    { name: "Meter-01", reading: "450 kWh", status: "Active" },
+                    { name: "Meter-02", reading: "1200 L", status: "Active" },
+                    { name: "Meter-05", reading: "0 kWh", status: "Deactive" },
+                    { name: "Meter-06", reading: "500 L", status: "Active" },
+                    { name: "Meter-08", reading: "89 kWh", status: "Active" }
+                ]
+            },
+            {
+                id: 2, name: "Delhi Center",
+                devices: [
+                    { name: "GM-003", source: "Gas", status: "Inactive" },
+                    { name: "SM-004", source: "Solar", status: "Active" }
+                ],
+                meters: [
+                    { name: "Meter-03", reading: "34 m3", status: "Active" },
+                    { name: "Meter-04", reading: "0 kWh", status: "Inactive" },
+                    { name: "Meter-07", reading: "12 m3", status: "Active" }
+                ]
+            }
+        ]
+    };
 
     const reportsStats = { ready: 4, processing: 1, total: 6 };
 
@@ -185,35 +258,73 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
 
                 {/* -------------------- ROW 1: KPI CARDS -------------------- */}
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <StatCard
-                        title="Total Devices"
-                        value={totalDevices}
-                        icon={<Cpu />}
-                        color="blue"
-                        description="Deployed hardware units"
-                        trend={-2.5}
-                        trendLabel="vs last month"
-                        statusBreakdown={deviceStats}
-                    />
-                    <StatCard
-                        title="Devices Location"
-                        value="View Details"
-                        icon={<MapPin />}
-                        color="cyan"
-                        description="Filter by location & source"
-                        onClick={() => setShowLocationModal(true)}
-                        statusBreakdown={locationStats}
-                    />
-                    <StatCard
-                        title="Total Meters"
-                        value={totalMeters}
-                        icon={<Gauge />}
-                        color="green"
-                        description="Active measurement points"
-                        trend={-1.2}
-                        trendLabel="vs last month"
-                        statusBreakdown={meterStats}
-                    />
+                    {isAdmin ? (
+                        <>
+                            <StatCard
+                                title="Total Devices"
+                                value={totalDevices}
+                                icon={<Cpu />}
+                                color="blue"
+                                description="Deployed hardware units"
+                                trend={-2.5}
+                                trendLabel="vs last month"
+                                statusBreakdown={deviceStats}
+                                onClick={() => setActivePage('Devices')}
+                                className="cursor-pointer hover:shadow-lg transition-all"
+                            />
+                            <StatCard
+                                title="Devices Location"
+                                value="View Details"
+                                icon={<MapPin />}
+                                color="cyan"
+                                description="Filter by location & source"
+                                onClick={() => setShowLocationModal(true)}
+                                statusBreakdown={locationStats}
+                            />
+                            <StatCard
+                                title="Total Meters"
+                                value={totalMeters}
+                                icon={<Gauge />}
+                                color="green"
+                                description="Active measurement points"
+                                trend={-1.2}
+                                trendLabel="vs last month"
+                                statusBreakdown={meterStats}
+                                onClick={() => setActivePage('Devices')}
+                                className="cursor-pointer hover:shadow-lg transition-all"
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <StatCard
+                                title="Assigned Devices"
+                                value={userAssignedDevices}
+                                icon={<Cpu />}
+                                color="blue"
+                                description="Hardware assigned to you"
+                                statusBreakdown={userDeviceStats}
+                                onClick={() => setShowUserDevicesModal(true)}
+                            />
+                            <StatCard
+                                title="Assigned Locations"
+                                value={userAssignedLocations}
+                                icon={<MapPin />}
+                                color="cyan"
+                                description="Operational sites"
+                                statusBreakdown={userLocationStats}
+                                onClick={() => { setShowUserLocationsModal(true); setSelectedLocation(userDataDetailed.locations[0]); }}
+                            />
+                            <StatCard
+                                title="Assigned Meters"
+                                value={userAssignedMeters}
+                                icon={<Gauge />}
+                                color="green"
+                                description="Meters under your supervision"
+                                statusBreakdown={userMeterStats}
+                                onClick={() => setShowUserMetersModal(true)}
+                            />
+                        </>
+                    )}
 
                     {isAdmin ? (
                         <>
@@ -225,6 +336,8 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 description="System administrators"
                                 subValue="2 New this week"
                                 statusBreakdown={userStats}
+                                onClick={() => setActivePage('Users')}
+                                className="cursor-pointer hover:shadow-lg transition-all"
                             />
                             <StatCard
                                 title="Total Revenue"
@@ -234,6 +347,8 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 description="Billed this month"
                                 subValue={`Pending: ${billingStats.pending}`}
                                 statusBreakdown={revenueStats}
+                                onClick={() => setActivePage('Billing')}
+                                className="cursor-pointer hover:shadow-lg transition-all"
                             />
                         </>
                     ) : (
@@ -517,7 +632,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
 
             </div> {/* End of px-4 container */}
 
-            {/* -------------------- MAP MODAL -------------------- */}
+            {/* -------------------- ADMIN MAP MODAL -------------------- */}
             {showMapModal && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-white w-full max-w-5xl h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
@@ -567,6 +682,194 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
             {showLocationModal && (
                 <LocationDetailsModal onClose={() => setShowLocationModal(false)} />
             )}
+
+
+            {/* -------------------- USER DETAILS MODALS -------------------- */}
+            {/* User Devices Modal */}
+            {showUserDevicesModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">Assigned Devices</h2>
+                                <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of hardware assigned to you</p>
+                            </div>
+                            <button onClick={() => setShowUserDevicesModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                        </div>
+                        <div className="overflow-auto p-6">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                                        <th className="py-3 px-4">Device Name</th>
+                                        <th className="py-3 px-4">Type/Source</th>
+                                        <th className="py-3 px-4">Parameters</th>
+                                        <th className="py-3 px-4">Status</th>
+                                        <th className="py-3 px-4">Location</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-sm">
+                                    {userDataDetailed.devices.map((device, i) => (
+                                        <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                            <td className="py-3 px-4 font-semibold text-gray-900">{device.name}</td>
+                                            <td className="py-3 px-4 text-gray-600">{device.source}</td>
+                                            <td className="py-3 px-4 text-gray-600">{device.params}</td>
+                                            <td className="py-3 px-4">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${device.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : device.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {device.status}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-gray-500">{device.location}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User Meters Modal */}
+            {showUserMetersModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">Assigned Meters</h2>
+                                <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of meters under your supervision</p>
+                            </div>
+                            <button onClick={() => setShowUserMetersModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                        </div>
+                        <div className="overflow-auto p-6">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                                        <th className="py-3 px-4">Meter Name</th>
+                                        <th className="py-3 px-4">Type/Source</th>
+                                        <th className="py-3 px-4">Current Reading</th>
+                                        <th className="py-3 px-4">Status</th>
+                                        <th className="py-3 px-4">Location</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-sm">
+                                    {userDataDetailed.meters.map((meter, i) => (
+                                        <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                            <td className="py-3 px-4 font-semibold text-gray-900">{meter.name}</td>
+                                            <td className="py-3 px-4 text-gray-600">{meter.source}</td>
+                                            <td className="py-3 px-4 text-gray-600 font-mono">{meter.reading}</td>
+                                            <td className="py-3 px-4">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${meter.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : meter.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {meter.status}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-gray-500">{meter.location}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User Locations Modal */}
+            {showUserLocationsModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-5xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">Assigned Locations</h2>
+                                <p className="text-sm text-gray-500 font-medium mt-1">Select a location to view assigned equipment</p>
+                            </div>
+                            <button onClick={() => { setShowUserLocationsModal(false); setSelectedLocation(null); }} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                        </div>
+                        <div className="flex flex-1 overflow-hidden">
+                            {/* Location List Sidebar */}
+                            <div className="w-1/3 border-r border-gray-100 overflow-y-auto bg-gray-50/50">
+                                {userDataDetailed.locations.map((loc) => (
+                                    <button
+                                        key={loc.id}
+                                        onClick={() => setSelectedLocation(loc)}
+                                        className={`w-full text-left p-4 border-b border-gray-100 transition-colors hover:bg-white flex items-center justify-between group ${selectedLocation?.id === loc.id ? 'bg-white shadow-sm border-l-4 border-l-blue-500' : 'border-l-4 border-l-transparent'}`}
+                                    >
+                                        <div>
+                                            <h3 className={`font-bold ${selectedLocation?.id === loc.id ? 'text-blue-600' : 'text-gray-800'}`}>{loc.name}</h3>
+                                            <p className="text-xs text-gray-500 mt-1">{loc.devices.length} Devices • {loc.meters.length} Meters</p>
+                                        </div>
+                                        <MapPin size={18} className={`${selectedLocation?.id === loc.id ? 'text-blue-500' : 'text-gray-300 group-hover:text-gray-400'}`} />
+                                    </button>
+                                ))}
+                            </div>
+                            {/* Selected Location Details */}
+                            <div className="w-2/3 overflow-y-auto p-6 bg-white">
+                                {selectedLocation ? (
+                                    <div className="space-y-8">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
+                                                <Cpu className="text-blue-500" size={20} /> Devices at {selectedLocation.name}
+                                            </h3>
+                                            <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+                                                <table className="w-full text-left text-sm">
+                                                    <thead className="bg-gray-100/50 text-gray-500 font-bold uppercase text-xs">
+                                                        <tr>
+                                                            <th className="py-2 px-4">Name</th>
+                                                            <th className="py-2 px-4">Source</th>
+                                                            <th className="py-2 px-4">Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-100">
+                                                        {selectedLocation.devices.map((d, i) => (
+                                                            <tr key={i}>
+                                                                <td className="py-2 px-4 font-medium text-gray-900">{d.name}</td>
+                                                                <td className="py-2 px-4 text-gray-600">{d.source}</td>
+                                                                <td className="py-2 px-4">
+                                                                    <span className={`text-xs font-bold ${d.status === 'Active' ? 'text-emerald-600' : 'text-red-600'}`}>{d.status}</span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
+                                                <Gauge className="text-indigo-500" size={20} /> Meters at {selectedLocation.name}
+                                            </h3>
+                                            <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+                                                <table className="w-full text-left text-sm">
+                                                    <thead className="bg-gray-100/50 text-gray-500 font-bold uppercase text-xs">
+                                                        <tr>
+                                                            <th className="py-2 px-4">Name</th>
+                                                            <th className="py-2 px-4">Reading</th>
+                                                            <th className="py-2 px-4">Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-100">
+                                                        {selectedLocation.meters.map((m, i) => (
+                                                            <tr key={i}>
+                                                                <td className="py-2 px-4 font-medium text-gray-900">{m.name}</td>
+                                                                <td className="py-2 px-4 font-mono text-gray-600">{m.reading}</td>
+                                                                <td className="py-2 px-4">
+                                                                    <span className={`text-xs font-bold ${m.status === 'Active' ? 'text-emerald-600' : 'text-red-600'}`}>{m.status}</span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                                        <MapPin size={48} className="mb-4 opacity-20" />
+                                        <p className="text-lg font-medium">Select a location to view details</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </main>
     );
 }
