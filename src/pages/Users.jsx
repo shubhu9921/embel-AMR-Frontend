@@ -15,13 +15,7 @@ import {
 import CreateUserModal from "./CreateUserModal";
 import { StatCard } from "./StatCard";
 
-const initialUsers = [
-  { id: 1, firstName: "John", lastName: "Anderson", username: "janderson", email: "john.anderson@email.com", phone: "9876543210", roleId: "ADMIN", address: "Mumbai, MH", status: "Active" },
-  { id: 2, firstName: "Sarah", lastName: "Miller", username: "smiller", email: "sarah.miller@email.com", phone: "9876543211", roleId: "USER", address: "Pune, MH", status: "Active" },
-  { id: 3, firstName: "Michael", lastName: "Chen", username: "mchen", email: "michael.chen@email.com", phone: "9876543212", roleId: "USER", address: "Nagpur, MH", status: "Inactive" },
-  { id: 4, firstName: "Emily", lastName: "Davis", username: "edavis", email: "emily.davis@email.com", phone: "9876543213", roleId: "USER", address: "Nashik, MH", status: "Active" },
-  { id: 5, firstName: "David", lastName: "Wilson", username: "dwilson", email: "david.wilson@email.com", phone: "9876543214", roleId: "ADMIN", address: "Aurangabad, MH", status: "Active" },
-];
+import { initialUsers } from "../data/mockData";
 
 export default function UsersPage() {
   const [users, setUsers] = useState(initialUsers);

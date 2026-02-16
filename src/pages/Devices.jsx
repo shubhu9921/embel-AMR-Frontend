@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import DeviceModal from "./CreateDeviceModal";
 import {
   Router,
@@ -9,27 +9,19 @@ import {
   Edit,
   Trash2,
   ChevronDown,
-  Cpu
+  Cpu,
+  Gauge,
+  Activity,
+  AlertTriangle
 } from "lucide-react";
 import { StatCard } from "./StatCard";
-
-const initialDevicesData = [
-  { id: 1, admin: "demoadmin", user: "ashwini", deviceId: "C6:92:06:F0:F8:58", name: "EMBEL-HTTPS", type: "NBIOT", mac: "EE:8A:C2:A1:F7:CD", status: "Active" },
-  { id: 2, admin: "kunal", user: "siddhesh", deviceId: "E4:DF:99:FB:F4:3F", name: "EMBEL-OPENCPU_24_04_24", type: "NBIOT", mac: "E4:DF:99:FB:F4:3F", status: "Inactive" },
-  { id: 3, admin: "demoadmin", user: "demouser", deviceId: "1234", name: "Embel-OPEN_CPU", type: "NBIOT", mac: "E5:E5:61:39:9F:F8", status: "Active" },
-  { id: 4, admin: "demoadmin", user: "user4", deviceId: "ID-004", name: "Device-4", type: "NBIOT", mac: "MAC-004", status: "Active" },
-  { id: 5, admin: "demoadmin", user: "user5", deviceId: "ID-005", name: "Device-5", type: "NBIOT", mac: "MAC-005", status: "Inactive" },
-  { id: 6, admin: "demoadmin", user: "user6", deviceId: "ID-006", name: "Device-6", type: "NBIOT", mac: "MAC-006", status: "Active" },
-  { id: 7, admin: "demoadmin", user: "user7", deviceId: "ID-007", name: "Device-7", type: "NBIOT", mac: "MAC-007", status: "Active" },
-  { id: 8, admin: "demoadmin", user: "user8", deviceId: "ID-008", name: "Device-8", type: "NBIOT", mac: "MAC-008", status: "Active" },
-  { id: 9, admin: "demoadmin", user: "user9", deviceId: "ID-009", name: "Device-9", type: "NBIOT", mac: "MAC-009", status: "Active" },
-  { id: 10, admin: "demoadmin", user: "user10", deviceId: "ID-0010", name: "Device-10", type: "NBIOT", mac: "MAC-0010", status: "Active" },
-  { id: 11, admin: "demoadmin", user: "user11", deviceId: "ID-0011", name: "Device-11", type: "NBIOT", mac: "MAC-0011", status: "Active" },
-  { id: 12, admin: "demoadmin", user: "user12", deviceId: "ID-0012", name: "Device-12", type: "NBIOT", mac: "MAC-0012", status: "Active" },
-];
+import { initialDevicesData, initialMetersData } from "../data/mockData";
 
 export default function DevicesPage() {
+  const [activeTab, setActiveTab] = useState('devices');
   const [devicesData, setDevicesData] = useState(initialDevicesData);
+  const [metersData, setMetersData] = useState(initialMetersData);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +31,23 @@ export default function DevicesPage() {
   const [editingDevice, setEditingDevice] = useState(null);
   const pageSize = 10;
   const filterRef = useRef(null);
+
+  // Initialize tab from sessionStorage
+  useEffect(() => {
+    const savedTab = sessionStorage.getItem('devicesPageTab');
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+  }, []);
+
+  // Update sessionStorage when tab changes
+  useEffect(() => {
+    sessionStorage.setItem('devicesPageTab', activeTab);
+    // Reset filters and pagination on tab change
+    setCurrentPage(1);
+    setSearchTerm("");
+    setStatusFilter("All");
+  }, [activeTab]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -54,26 +63,24 @@ export default function DevicesPage() {
   }, []);
 
   // Filter Data
-  const filteredDevices = devicesData.filter(device => {
-    const matchesSearch =
-      device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      device.deviceId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      device.user.toLowerCase().includes(searchTerm.toLowerCase());
+  const currentData = activeTab === 'devices' ? devicesData : metersData;
 
-    const matchesStatus = statusFilter === "All" || device.status === statusFilter;
+  const filteredData = currentData.filter(item => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.deviceId && item.deviceId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (item.user && item.user.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (item.location && item.location.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesStatus = statusFilter === "All" || item.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
-  // Reset pagination when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
-
   // Pagination Logic
-  const totalPages = Math.ceil(filteredDevices.length / pageSize);
+  const totalPages = Math.ceil(filteredData.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const currentDevices = filteredDevices.slice(startIndex, startIndex + pageSize);
+  const currentItems = filteredData.slice(startIndex, startIndex + pageSize);
 
   const handlePrevPage = () => {
     if (currentPage > 1) setCurrentPage(p => p - 1);
@@ -92,78 +99,91 @@ export default function DevicesPage() {
   const handleEditDevice = (device) => {
     setModalMode('edit');
     setEditingDevice({
-      // Map existing device data to form fields
-      admin: device.admin,
-      user: device.user,
+      ...device,
       techType: device.type,
-      meterType: 'water', // Default or derive if available
-      deviceId: device.deviceId,
-      macId: device.mac,
-      deviceName: device.name,
-      // Add other fields if available in device object, otherwise defaults
       deviceEnable: device.status === 'Active'
     });
     setIsModalOpen(true);
   };
 
   const handleSaveDevice = (formData) => {
-    if (modalMode === 'create') {
-      const newDevice = {
-        id: devicesData.length + 1,
-        admin: formData.admin,
-        user: formData.user || "N/A",
-        deviceId: formData.deviceId,
-        name: formData.deviceName,
-        type: formData.techType,
-        mac: formData.macId,
-        status: formData.deviceEnable ? "Active" : "Inactive"
-      };
-      setDevicesData([...devicesData, newDevice]);
-    } else {
-      // Update existing device
-      setDevicesData(devicesData.map(d =>
-        d.deviceId === editingDevice.deviceId ? {
-          ...d,
+    if (activeTab === 'devices') {
+      if (modalMode === 'create') {
+        const newDevice = {
+          id: devicesData.length + 1,
           admin: formData.admin,
-          user: formData.user || "N/A",
+          user: formData.user,
           deviceId: formData.deviceId,
           name: formData.deviceName,
           type: formData.techType,
           mac: formData.macId,
           status: formData.deviceEnable ? "Active" : "Inactive"
-        } : d
-      ));
+        };
+        setDevicesData([...devicesData, newDevice]);
+      } else {
+        setDevicesData(devicesData.map(d =>
+          d.id === editingDevice.id ? {
+            ...d,
+            admin: formData.admin,
+            user: formData.user,
+            deviceId: formData.deviceId,
+            name: formData.deviceName,
+            type: formData.techType,
+            mac: formData.macId,
+            status: formData.deviceEnable ? "Active" : "Inactive"
+          } : d
+        ));
+      }
     }
+    setIsModalOpen(false);
   };
 
-  // KPI Counts
-  const totalDevices = devicesData.length;
-  const activeDevices = devicesData.filter(d => d.status === "Active").length;
-  const inactiveDevices = devicesData.filter(d => d.status === "Inactive").length;
-  // Assuming 'maintenance' could be derived or just a placeholder for now
-  const maintenanceDevices = 0;
+  const activeCount = currentData.filter((d) => d.status === "Active").length;
+  const inactiveCount = currentData.filter((d) => d.status === "Inactive").length;
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth font-sans">
+    <div className="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth font-sans">
 
-      {/* Top Header */}
       {/* Top Header */}
       <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mb-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
-              <Cpu size={24} />
+            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${activeTab === 'devices' ? 'from-blue-500 to-indigo-600' : 'from-emerald-500 to-teal-600'} text-white shadow-lg transition-transform duration-300 group-hover:scale-105`}>
+              {activeTab === 'devices' ? <Cpu size={24} /> : <Gauge size={24} />}
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                Device Management
+                {activeTab === 'devices' ? 'Device Management' : 'Meter Management'}
               </h1>
               <p className="text-sm font-medium text-gray-500">
-                Monitor & configure devices
+                Manage {activeTab === 'devices' ? 'IoT hardware & connections' : 'utility meter readings'}
               </p>
             </div>
           </div>
-          <div className="h-1.5 w-24 rounded-full bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
+
+          {/* Tab Switcher - Prominent in Header */}
+          <div className="flex p-1 bg-gray-100 rounded-xl">
+            <button
+              onClick={() => setActiveTab('devices')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'devices'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+                }`}
+            >
+              <Cpu size={16} />
+              Devices
+            </button>
+            <button
+              onClick={() => setActiveTab('meters')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'meters'
+                  ? 'bg-white text-emerald-600 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+                }`}
+            >
+              <Gauge size={16} />
+              Meters
+            </button>
+          </div>
         </div>
       </div>
 
@@ -172,35 +192,35 @@ export default function DevicesPage() {
         {/* KPI Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           <StatCard
-            title="Total Devices"
-            value={totalDevices}
-            icon={<Cpu className="w-4 h-4" />}
-            color="orange"
-            description="Total deployed units"
+            title={`Total ${activeTab === 'devices' ? 'Devices' : 'Meters'}`}
+            value={currentData.length.toString().padStart(2, '0')}
+            icon={activeTab === 'devices' ? <Cpu className="w-4 h-4" /> : <Gauge className="w-4 h-4" />}
+            color="blue"
+            description={`Registered ${activeTab}`}
             compact
           />
           <StatCard
-            title="Active Devices"
-            value={activeDevices}
-            icon={<div className="w-2 h-2 bg-green-500 rounded-full animate-pulse ring-2 ring-green-200"></div>}
+            title="Active"
+            value={activeCount.toString().padStart(2, '0')}
+            icon={<Activity className="w-4 h-4" />}
             color="green"
-            description="Online & communicating"
+            description="Online & Reporting"
             compact
           />
           <StatCard
-            title="Inactive Devices"
-            value={inactiveDevices}
-            icon={<div className="w-2 h-2 bg-red-500 rounded-full ring-2 ring-red-200"></div>}
-            color="red"
-            description="Offline or disconnected"
+            title="Inactive"
+            value={inactiveCount.toString().padStart(2, '0')}
+            icon={<AlertTriangle className="w-4 h-4" />}
+            color="orange"
+            description="No recent signal"
             compact
           />
           <StatCard
             title="Maintenance"
-            value={maintenanceDevices}
+            value={currentData.filter((d) => d.status === "Deactive").length.toString().padStart(2, '0')}
             icon={<Router className="w-4 h-4" />}
-            color="amber"
-            description="Under maintenance"
+            color="red"
+            description="Scheduled service"
             compact
           />
         </div>
@@ -209,14 +229,14 @@ export default function DevicesPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">
 
           {/* Header Controls */}
-          <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-t-2xl">
-            {/* Left: Title & Search */}
+          <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-t-2xl shadow-md shadow-orange-100">
+            {/* Left: Search */}
             <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
               <div className="relative w-full md:w-80 group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder={`Search ${activeTab}...`}
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-md shadow-orange-100 hover:shadow-orange-200 group-hover:bg-white"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -226,7 +246,7 @@ export default function DevicesPage() {
 
             {/* Right: Actions & Filter */}
             <div className="flex flex-wrap items-center gap-3">
-              {/* Filter */}
+              {/* Custom Filter Dropdown */}
               <div className="relative min-w-[160px]" ref={filterRef}>
                 <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -236,14 +256,14 @@ export default function DevicesPage() {
                     }`}
                 >
                   <span className="truncate">
-                    {statusFilter === 'All' ? 'All Status' : statusFilter}
+                    {statusFilter === 'All' ? 'All Status' : statusFilter === 'Active' ? 'Active Only' : statusFilter}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`}>
-                  {['All', 'Active', 'Inactive'].map((option) => (
+                  {['All', 'Active', 'Inactive', 'Deactive'].map((option) => (
                     <button
                       key={option}
                       onClick={() => {
@@ -267,7 +287,7 @@ export default function DevicesPage() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
               >
                 <Plus className="w-5 h-5 stroke-[2.5]" />
-                <span className="hidden sm:inline">Add Device</span>
+                <span className="hidden sm:inline">Add {activeTab === 'devices' ? 'Device' : 'Meter'}</span>
               </button>
 
               <div className="flex bg-gray-100 p-1 rounded-xl">
@@ -287,71 +307,90 @@ export default function DevicesPage() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-gray-50/50 text-gray-500 text-xs uppercase font-extrabold tracking-wider sticky top-0 z-10 backdrop-blur-md">
                 <tr>
-                  <th className="px-6 py-4 border-b border-gray-100">#</th>
-                  <th className="px-6 py-4 border-b border-gray-100">Device Details</th>
+                  <th className="px-6 py-4 border-b border-gray-100">{activeTab === 'devices' ? 'Device Name' : 'Meter Name'}</th>
                   <th className="px-6 py-4 border-b border-gray-100">Type</th>
-                  <th className="px-6 py-4 border-b border-gray-100">Owner</th>
+                  <th className="px-6 py-4 border-b border-gray-100">{activeTab === 'devices' ? 'Device ID' : 'Location'}</th>
+                  {activeTab === 'devices' && <th className="px-6 py-4 border-b border-gray-100">MAC Address</th>}
+                  {activeTab === 'meters' && <th className="px-6 py-4 border-b border-gray-100">Reading</th>}
+                  <th className="px-6 py-4 border-b border-gray-100">User</th>
                   <th className="px-6 py-4 border-b border-gray-100">Status</th>
                   <th className="px-6 py-4 border-b border-gray-100 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {currentDevices.length > 0 ? (
-                  currentDevices.map((device, index) => (
+                {currentItems.length > 0 ? (
+                  currentItems.map((item, index) => (
                     <tr
-                      key={device.id}
+                      key={item.id}
                       className="group hover:bg-orange-50/50 transition-colors duration-200"
                     >
-                      <td className="px-6 py-4 text-sm font-bold text-gray-400 group-hover:text-[#ff6e00]">
-                        {startIndex + index + 1}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${activeTab === 'devices' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                            {activeTab === 'devices' ? <Cpu size={18} /> : <Gauge size={18} />}
+                          </div>
+                          <div>
+                            <span className="font-bold text-gray-800 text-sm group-hover:text-[#ff6e00] transition-colors block">{item.name}</span>
+                            <span className="text-xs text-gray-400 font-medium">ID: {item.id}</span>
+                          </div>
+                        </div>
                       </td>
 
                       <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-gray-800 text-sm group-hover:text-[#ff6e00] transition-colors">{device.name}</span>
-                          <span className="text-xs text-gray-400 font-mono mt-0.5">{device.deviceId}</span>
-                          <span className="text-[10px] text-gray-300 uppercase tracking-widest">{device.mac}</span>
-                        </div>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                          {item.type}
+                        </span>
                       </td>
+
+                      <td className="px-6 py-4 text-sm text-gray-600 font-medium font-mono">
+                        {activeTab === 'devices' ? item.deviceId : item.location}
+                      </td>
+
+                      {activeTab === 'devices' && (
+                        <td className="px-6 py-4 text-sm text-gray-500 font-mono">
+                          {item.mac}
+                        </td>
+                      )}
+                      {activeTab === 'meters' && (
+                        <td className="px-6 py-4 text-sm text-gray-800 font-bold font-mono">
+                          {item.reading}
+                        </td>
+                      )}
 
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">
-                            {device.type}
-                          </span>
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-[10px] flex items-center justify-center font-bold shadow-sm">
+                            {item.user ? item.user.substring(0, 2).toUpperCase() : 'NA'}
+                          </div>
+                          <span className="text-sm text-gray-600 font-medium">{item.user}</span>
                         </div>
                       </td>
 
                       <td className="px-6 py-4">
-                        <div className="flex flex-col text-sm">
-                          <span className="font-semibold text-gray-700">{device.user}</span>
-                          <span className="text-xs text-gray-400">Admin: {device.admin}</span>
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${device.status === 'Active'
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : 'bg-red-50 text-red-700 border-red-200'
+                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${item.status === 'Active' ? 'bg-green-50 text-green-700 border-green-200' :
+                            item.status === 'Inactive' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                              'bg-red-50 text-red-700 border-red-200'
                           }`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${device.status === 'Active' ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                          <div className={`w-1.5 h-1.5 rounded-full ${item.status === 'Active' ? 'bg-green-500 animate-pulse' :
+                              item.status === 'Inactive' ? 'bg-amber-500' :
+                                'bg-red-500'
                             }`}></div>
-                          {device.status}
+                          {item.status}
                         </div>
                       </td>
 
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
-                            onClick={() => handleEditDevice(device)}
+                            onClick={() => handleEditDevice(item)}
                             className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-[#ff6e00] hover:text-[#ff6e00] hover:shadow-md transition-all active:scale-90"
-                            title="Edit Device"
+                            title="Edit"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-red-500 hover:text-red-600 hover:shadow-md transition-all active:scale-90"
-                            title="Delete Device"
+                            title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -361,13 +400,19 @@ export default function DevicesPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center justify-center text-gray-400">
                         <div className="p-4 bg-gray-50 rounded-full mb-3">
                           <Search className="w-8 h-8 opacity-50" />
                         </div>
-                        <p className="text-lg font-medium text-gray-600">No devices found</p>
+                        <p className="text-lg font-medium text-gray-600">No {activeTab} found</p>
                         <p className="text-sm">Try adjusting your search or filters</p>
+                        <button
+                          onClick={() => { setSearchTerm(""); setStatusFilter("All"); }}
+                          className="mt-2 text-[#ff6e00] text-sm font-bold hover:underline"
+                        >
+                          Clear filters
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -379,7 +424,7 @@ export default function DevicesPage() {
           {/* Pagination */}
           <div className="border-t border-gray-100 bg-gray-50 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-b-2xl">
             <div className="text-sm text-gray-500 font-medium">
-              Showing <span className="font-bold text-gray-900">{filteredDevices.length > 0 ? startIndex + 1 : 0}</span> to <span className="font-bold text-gray-900">{Math.min(startIndex + pageSize, filteredDevices.length)}</span> of <span className="font-bold text-gray-900">{filteredDevices.length}</span> results
+              Showing <span className="font-bold text-gray-900">{filteredData.length > 0 ? startIndex + 1 : 0}</span> to <span className="font-bold text-gray-900">{Math.min(startIndex + pageSize, filteredData.length)}</span> of <span className="font-bold text-gray-900">{filteredData.length}</span> results
             </div>
 
             <div className="flex items-center gap-2">
@@ -416,16 +461,15 @@ export default function DevicesPage() {
             </div>
           </div>
         </div>
-
       </div>
 
       <DeviceModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSaveDevice}
+        onSave={handleSaveDevice}
         mode={modalMode}
-        initialData={editingDevice}
+        initialData={editingDevice || {}}
       />
-    </main>
+    </div>
   );
 }

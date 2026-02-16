@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, Bell, Settings, Sun, Droplet, Flame, Zap, X, Check, LogOut, User } from "lucide-react";
+import { initialDevicesData, initialUsers, sites, PAGES_DATA, PARAMS_DATA } from "../data/mockData";
 
 export default function Header({ activePage, setActivePage, onLogout }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -33,30 +34,47 @@ export default function Header({ activePage, setActivePage, onLogout }) {
   }, []);
 
   /* -------------------- SEARCH DATA & LOGIC -------------------- */
-  const SEARCH_DATA = [
-    // PAGES
-    { id: 'p1', type: 'Page', label: 'Dashboard Overview', target: 'Dashboard' },
-    { id: 'p2', type: 'Page', label: 'Gas Dashboard', target: 'Gas' },
-    { id: 'p3', type: 'Page', label: 'Water Dashboard', target: 'Water' },
-    { id: 'p4', type: 'Page', label: 'Energy Dashboard', target: 'Energy' },
-    { id: 'p5', type: 'Page', label: 'Solar Dashboard', target: 'Solar' },
-    { id: 'p6', type: 'Page', label: 'System Alerts', target: 'Alerts' },
-    { id: 'p7', type: 'Page', label: 'Resource Analysis', target: 'Analysis' },
 
-    // DEVICES (Meters)
-    { id: 'd1', type: 'Device', label: 'Energy Main Incomer (EM-001)', status: 'Active' },
-    { id: 'd2', type: 'Device', label: 'Gas Line A (GM-002)', status: 'Active' },
-    { id: 'd3', type: 'Device', label: 'Water Pump Station (WM-103)', status: 'Warning' },
-    { id: 'd4', type: 'Device', label: 'Solar Inverter East (INV-01)', status: 'Active' },
-    { id: 'd5', type: 'Device', label: 'HVAC Cooling Tower', status: 'Inactive' },
 
-    // PARAMETERS
-    { id: 'm1', type: 'Parameter', label: 'Voltage L1 (Energy)', value: '230V' },
-    { id: 'm2', type: 'Parameter', label: 'Flow Rate (Water)', value: '120 L/m' },
-    { id: 'm3', type: 'Parameter', label: 'Gas Pressure', value: '45 PSI' },
-    { id: 'm4', type: 'Parameter', label: 'Active Power', value: '450 kW' },
-    { id: 'm5', type: 'Parameter', label: 'Solar Irradiance', value: '850 W/m²' },
-  ];
+  const [allSearchData, setAllSearchData] = useState([]);
+
+  useEffect(() => {
+    const pages = PAGES_DATA.map(p => ({ ...p, category: 'Pages' }));
+
+    const devices = initialDevicesData.map(d => ({
+      id: `dev-${d.id}`,
+      type: 'Device',
+      category: 'Devices',
+      label: d.name,
+      value: d.deviceId, // Searchable sub-text
+      status: d.status,
+      target: 'Devices'
+    }));
+
+    const users = initialUsers.map(u => ({
+      id: `usr-${u.id}`,
+      type: 'User',
+      category: 'Users',
+      label: `${u.firstName} ${u.lastName}`,
+      value: u.email,
+      status: u.status,
+      target: 'Users'
+    }));
+
+    const locations = sites.map(s => ({
+      id: `loc-${s.id}`,
+      type: 'Location',
+      category: 'Locations',
+      label: s.name,
+      value: 'Site',
+      status: s.status,
+      target: 'Dashboard'
+    }));
+
+    const params = PARAMS_DATA.map(p => ({ ...p, category: 'Parameters' }));
+
+    setAllSearchData([...pages, ...devices, ...users, ...locations, ...params]);
+  }, []);
 
   const handleSearch = (e) => {
     const query = e.target.value;
@@ -64,8 +82,9 @@ export default function Header({ activePage, setActivePage, onLogout }) {
 
     if (query.length > 0) {
       const lowerQuery = query.toLowerCase();
-      const filtered = SEARCH_DATA.filter(item =>
+      const filtered = allSearchData.filter(item =>
         item.label.toLowerCase().includes(lowerQuery) ||
+        (item.value && item.value.toLowerCase().includes(lowerQuery)) ||
         item.type.toLowerCase().includes(lowerQuery)
       );
       setSearchResults(filtered);
@@ -80,20 +99,12 @@ export default function Header({ activePage, setActivePage, onLogout }) {
     setSearchQuery(result.label);
     setShowSearchDropdown(false);
 
-    if (result.type === 'Page') {
+    if (result.target) {
       setActivePage(result.target);
-    } else {
-      console.log(`Navigating to ${result.type}: ${result.label}`);
-      // Future integration: Navigate to specific device/param details
     }
   };
 
-
-  const notifications = [
-    { id: 1, title: "High Energy Usage", desc: "Energy usage spike in West Plant", time: "10m ago", type: "critical" },
-    { id: 2, title: "System Update", desc: "Maintenance scheduled for tonight", time: "1h ago", type: "info" },
-    { id: 3, title: "Device Offline", desc: "Start Inverter 04 disconnected", time: "2h ago", type: "warning" },
-  ];
+  // ... (notifications logic remains)
 
   return (
     <header className="h-16 bg-white/50 backdrop-blur-xl flex items-center px-4 sm:px-6 sticky top-0 z-50 justify-between transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
@@ -107,7 +118,7 @@ export default function Header({ activePage, setActivePage, onLogout }) {
           <input
             value={searchQuery}
             onChange={handleSearch}
-            placeholder="Search (Pages, Devices, Params)..."
+            placeholder="Search (Pages, Devices, Users)..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-300 placeholder:text-slate-400 shadow-md shadow-orange-100 hover:shadow-orange-200 hover:border-orange-300 hover:bg-white"
             onFocus={() => { if (searchResults.length > 0) setShowSearchDropdown(true); }}
           />
@@ -116,23 +127,26 @@ export default function Header({ activePage, setActivePage, onLogout }) {
           {showSearchDropdown && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-[400px] overflow-y-auto custom-scrollbar">
               <div className="p-2">
-                {['Page', 'Device', 'Parameter'].map(type => {
-                  const items = searchResults.filter(r => r.type === type);
+                {['Pages', 'Devices', 'Users', 'Locations', 'Parameters'].map(category => {
+                  const items = searchResults.filter(r => r.category === category);
                   if (items.length === 0) return null;
                   return (
-                    <div key={type} className="mb-2 last:mb-0">
-                      <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1">{type}s</div>
+                    <div key={category} className="mb-2 last:mb-0">
+                      <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1">{category}</div>
                       {items.map(item => (
                         <button
                           key={item.id}
                           onClick={() => handleResultClick(item)}
                           className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 flex items-center justify-between gap-3 transition-colors group"
                         >
-                          <span className="font-medium">{item.label}</span>
-                          {item.value && <span className="text-xs font-mono text-gray-400 group-hover:text-orange-500">{item.value}</span>}
+                          <div className="flex flex-col overflow-hidden">
+                            <span className="font-medium truncate">{item.label}</span>
+                            {item.value && <span className="text-xs text-gray-400 group-hover:text-orange-500/80 truncate">{item.value}</span>}
+                          </div>
                           {item.status && (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${item.status === 'Active' ? 'bg-emerald-100 text-emerald-700' :
-                              item.status === 'Warning' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 font-bold ${item.status === 'Active' ? 'bg-emerald-100 text-emerald-700' :
+                              item.status === 'Warning' ? 'bg-amber-100 text-amber-700' :
+                                item.status === 'Inactive' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-600'
                               }`}>
                               {item.status}
                             </span>
@@ -318,20 +332,30 @@ export default function Header({ activePage, setActivePage, onLogout }) {
             {showSearchDropdown && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-[300px] overflow-y-auto custom-scrollbar z-50">
                 <div className="p-2">
-                  {['Page', 'Device', 'Parameter'].map(type => {
-                    const items = searchResults.filter(r => r.type === type);
+                  {['Pages', 'Devices', 'Users', 'Locations', 'Parameters'].map(category => {
+                    const items = searchResults.filter(r => r.category === category);
                     if (items.length === 0) return null;
                     return (
-                      <div key={type} className="mb-2 last:mb-0">
-                        <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1">{type}s</div>
+                      <div key={category} className="mb-2 last:mb-0">
+                        <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1">{category}</div>
                         {items.map(item => (
                           <button
                             key={item.id}
                             onClick={() => { handleResultClick(item); setMobileSearchOpen(false); }}
                             className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 flex items-center justify-between gap-3 transition-colors group"
                           >
-                            <span className="font-medium">{item.label}</span>
-                            {item.value && <span className="text-xs font-mono text-gray-400 group-hover:text-orange-500">{item.value}</span>}
+                            <div className="flex flex-col overflow-hidden">
+                              <span className="font-medium truncate">{item.label}</span>
+                              {item.value && <span className="text-xs text-gray-400 group-hover:text-orange-500/80 truncate">{item.value}</span>}
+                            </div>
+                            {item.status && (
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 font-bold ${item.status === 'Active' ? 'bg-emerald-100 text-emerald-700' :
+                                item.status === 'Warning' ? 'bg-amber-100 text-amber-700' :
+                                  item.status === 'Inactive' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-600'
+                                }`}>
+                                {item.status}
+                              </span>
+                            )}
                           </button>
                         ))}
                       </div>

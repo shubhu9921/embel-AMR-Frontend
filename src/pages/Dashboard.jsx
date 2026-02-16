@@ -12,6 +12,7 @@ import { TimeFilter } from "./TimeFilter";
 import { AlertsPanel } from "./AlertsPanel";
 import { StatCard } from "./StatCard";
 import { LocationDetailsModal } from "./LocationDetailsModal";
+import { sites, userDataDetailed } from "../data/mockData";
 
 
 
@@ -97,54 +98,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         { label: 'Deactive', value: 1, color: 'text-red-500' },
     ];
 
-    const userDataDetailed = {
-        devices: [
-            { id: 1, name: "EM-001", source: "Energy", params: "Voltage, Current, Power", status: "Active", location: "Mumbai" },
-            { id: 2, name: "WM-002", source: "Water", params: "Flow Rate, Volume", status: "Active", location: "Mumbai" },
-            { id: 3, name: "GM-003", source: "Gas", params: "Pressure, Volume", status: "Inactive", location: "Delhi" },
-            { id: 4, name: "SM-004", source: "Solar", params: "Irradiance, Output", status: "Active", location: "Delhi" },
-            { id: 5, name: "EM-005", source: "Energy", params: "Voltage, P.F.", status: "Deactive", location: "Mumbai" },
-        ],
-        meters: [
-            { id: 1, name: "Meter-01", source: "Energy", reading: "450 kWh", status: "Active", location: "Mumbai" },
-            { id: 2, name: "Meter-02", source: "Water", reading: "1200 L", status: "Active", location: "Mumbai" },
-            { id: 3, name: "Meter-03", source: "Gas", reading: "34 m3", status: "Active", location: "Delhi" },
-            { id: 4, name: "Meter-04", source: "Energy", reading: "0 kWh", status: "Inactive", location: "Delhi" },
-            { id: 5, name: "Meter-05", source: "Energy", reading: "0 kWh", status: "Deactive", location: "Mumbai" },
-            { id: 6, name: "Meter-06", source: "Water", reading: "500 L", status: "Active", location: "Mumbai" },
-            { id: 7, name: "Meter-07", source: "Gas", reading: "12 m3", status: "Active", location: "Delhi" },
-            { id: 8, name: "Meter-08", source: "Solar", reading: "89 kWh", status: "Active", location: "Mumbai" },
-        ],
-        locations: [
-            {
-                id: 1, name: "Mumbai Hub",
-                devices: [
-                    { name: "EM-001", source: "Energy", status: "Active" },
-                    { name: "WM-002", source: "Water", status: "Active" },
-                    { name: "EM-005", source: "Energy", status: "Deactive" }
-                ],
-                meters: [
-                    { name: "Meter-01", reading: "450 kWh", status: "Active" },
-                    { name: "Meter-02", reading: "1200 L", status: "Active" },
-                    { name: "Meter-05", reading: "0 kWh", status: "Deactive" },
-                    { name: "Meter-06", reading: "500 L", status: "Active" },
-                    { name: "Meter-08", reading: "89 kWh", status: "Active" }
-                ]
-            },
-            {
-                id: 2, name: "Delhi Center",
-                devices: [
-                    { name: "GM-003", source: "Gas", status: "Inactive" },
-                    { name: "SM-004", source: "Solar", status: "Active" }
-                ],
-                meters: [
-                    { name: "Meter-03", reading: "34 m3", status: "Active" },
-                    { name: "Meter-04", reading: "0 kWh", status: "Inactive" },
-                    { name: "Meter-07", reading: "12 m3", status: "Active" }
-                ]
-            }
-        ]
-    };
+
 
     const reportsStats = { ready: 4, processing: 1, total: 6 };
 
@@ -158,14 +112,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     ];
 
     /* -------------------- SITES (MAP DATA) -------------------- */
-    const sites = [
-        { id: 1, name: "Headquarters", location: [19.076, 72.8777], status: "Active" }, // Mumbai
-        { id: 2, name: "North Branch", location: [28.6139, 77.209], status: "Active" }, // Delhi
-        { id: 3, name: "South Hub", location: [12.9716, 77.5946], status: "Inactive" }, // Bangalore
-        { id: 4, name: "West Plant", location: [23.0225, 72.5714], status: "Active" }, // Ahmedabad
-        { id: 5, name: "East Depot", location: [22.5726, 88.3639], status: "Deactive" }, // Kolkata
-        { id: 6, name: "Central Unit", location: [17.3850, 78.4867], status: "Active" }, // Hyderabad
-    ];
+
 
     /* -------------------- CONSUMPTION DATA (MULTI-RESOURCE) -------------------- */
     const multiResourceDataDay = [
@@ -265,11 +212,13 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 value={totalDevices}
                                 icon={<Cpu />}
                                 color="blue"
-                                description="Deployed hardware units"
-                                trend={-2.5}
-                                trendLabel="vs last month"
+                                description="Hardware deployed"
+                                subValue="Active: 8"
                                 statusBreakdown={deviceStats}
-                                onClick={() => setActivePage('Devices')}
+                                onClick={() => {
+                                    sessionStorage.setItem('devicesPageTab', 'devices');
+                                    setActivePage('Devices');
+                                }}
                                 className="cursor-pointer hover:shadow-lg transition-all"
                             />
                             <StatCard
@@ -286,11 +235,35 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 value={totalMeters}
                                 icon={<Gauge />}
                                 color="green"
-                                description="Active measurement points"
-                                trend={-1.2}
-                                trendLabel="vs last month"
+                                description="Meters monitored"
+                                subValue="Active: 95"
                                 statusBreakdown={meterStats}
-                                onClick={() => setActivePage('Devices')}
+                                onClick={() => {
+                                    sessionStorage.setItem('devicesPageTab', 'meters');
+                                    setActivePage('Devices');
+                                }}
+                                className="cursor-pointer hover:shadow-lg transition-all"
+                            />
+                            <StatCard
+                                title="Total Users"
+                                value={totalUsers}
+                                icon={<Users />}
+                                color="orange"
+                                description="System administrators"
+                                subValue="2 New this week"
+                                statusBreakdown={userStats}
+                                onClick={() => setActivePage('Users')}
+                                className="cursor-pointer hover:shadow-lg transition-all"
+                            />
+                            <StatCard
+                                title="Total Revenue"
+                                value={billingStats.total}
+                                icon={<CreditCard />}
+                                color="purple"
+                                description="Billed this month"
+                                subValue={`Pending: ${billingStats.pending}`}
+                                statusBreakdown={revenueStats}
+                                onClick={() => setActivePage('Billing')}
                                 className="cursor-pointer hover:shadow-lg transition-all"
                             />
                         </>
@@ -323,36 +296,6 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 statusBreakdown={userMeterStats}
                                 onClick={() => setShowUserMetersModal(true)}
                             />
-                        </>
-                    )}
-
-                    {isAdmin ? (
-                        <>
-                            <StatCard
-                                title="Total Users"
-                                value={totalUsers}
-                                icon={<Users />}
-                                color="orange"
-                                description="System administrators"
-                                subValue="2 New this week"
-                                statusBreakdown={userStats}
-                                onClick={() => setActivePage('Users')}
-                                className="cursor-pointer hover:shadow-lg transition-all"
-                            />
-                            <StatCard
-                                title="Total Revenue"
-                                value={billingStats.total}
-                                icon={<CreditCard />}
-                                color="purple"
-                                description="Billed this month"
-                                subValue={`Pending: ${billingStats.pending}`}
-                                statusBreakdown={revenueStats}
-                                onClick={() => setActivePage('Billing')}
-                                className="cursor-pointer hover:shadow-lg transition-all"
-                            />
-                        </>
-                    ) : (
-                        <>
                             <StatCard
                                 title="Active Issues"
                                 value="5"
