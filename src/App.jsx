@@ -86,7 +86,7 @@ export default function App() {
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Sticky Header */}
         <Header
-
+          userRole={userRole}
           activePage={activePage}
           setActivePage={setActivePage}
           onLogout={handleLogout}

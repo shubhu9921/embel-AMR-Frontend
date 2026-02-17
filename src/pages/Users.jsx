@@ -226,7 +226,6 @@ export default function UsersPage() {
                 </div>
               </div>
 
-              <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
 
               {/* Action Buttons */}
               <button

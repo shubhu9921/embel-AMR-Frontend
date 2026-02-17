@@ -7,12 +7,12 @@ import {
     AreaChart, Area, Tooltip, CartesianGrid, XAxis, YAxis,
     BarChart, Bar, Label
 } from "recharts";
-import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun, Activity, Users, CreditCard, FileText, Cpu, Clock, AlertCircle, MapPin } from "lucide-react";
+import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun, Activity, Users, CreditCard, FileText, Cpu, Clock, AlertCircle, MapPin, Eye, Filter } from "lucide-react";
 import { TimeFilter } from "./TimeFilter";
 import { AlertsPanel } from "./AlertsPanel";
 import { StatCard } from "./StatCard";
 import { LocationDetailsModal } from "./LocationDetailsModal";
-import { sites, userDataDetailed } from "../data/mockData";
+import { sites, userDataDetailed, initialDevicesData, initialMetersData, initialUsers } from "../data/mockData";
 
 
 
@@ -40,6 +40,20 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const [showUserMetersModal, setShowUserMetersModal] = useState(false);
     const [showUserLocationsModal, setShowUserLocationsModal] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState(null);
+
+    // User Dashboard Enhancements State
+    const [userDeviceFilter, setUserDeviceFilter] = useState('All');
+    const [userMeterFilter, setUserMeterFilter] = useState('All');
+    const [showDeviceDetailsModal, setShowDeviceDetailsModal] = useState(false);
+    const [selectedUserDevice, setSelectedUserDevice] = useState(null);
+    const [showMeterDetailsModal, setShowMeterDetailsModal] = useState(false);
+    const [selectedUserMeter, setSelectedUserMeter] = useState(null);
+    const [showIssuesModal, setShowIssuesModal] = useState(false);
+
+    // Calculate Issues (Inactive/Deactive)
+    const inactiveDevices = initialDevicesData.filter(d => d.status !== 'Active');
+    const inactiveMeters = initialMetersData.filter(m => m.status !== 'Active');
+    const inactiveUsers = initialUsers.filter(u => u.status !== 'Active');
 
 
     /* -------------------- ADMIN METRICS (MOCK) -------------------- */
@@ -288,6 +302,21 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 description="Operational Uptime"
                                 trend={0.5}
                                 trendLabel="vs last month"
+                            />
+                            <StatCard
+                                title="System Issues"
+                                value={inactiveDevices.length + inactiveMeters.length + inactiveUsers.length}
+                                icon={<AlertTriangle />}
+                                color="red"
+                                description="Actions required"
+                                subValue={`${inactiveDevices.length} Dev, ${inactiveMeters.length} Met`}
+                                statusBreakdown={[
+                                    { label: 'Devices', value: inactiveDevices.length, color: 'text-red-600' },
+                                    { label: 'Meters', value: inactiveMeters.length, color: 'text-orange-600' },
+                                    { label: 'Users', value: inactiveUsers.length, color: 'text-amber-600' }
+                                ]}
+                                onClick={() => setShowIssuesModal(true)}
+                                className="cursor-pointer hover:shadow-lg transition-all"
                             />
                         </>
                     ) : (
@@ -643,8 +672,151 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
             )}
 
 
-            {/* -------------------- USER DETAILS MODALS -------------------- */}
-            {/* User Devices Modal */}
+            {/* -------------------- DEVICE DETAILS MODAL -------------------- */}
+            {showDeviceDetailsModal && selectedUserDevice && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">{selectedUserDevice.name}</h2>
+                                <p className="text-sm text-gray-500 font-medium mt-1">Device Details & Parameters</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowDeviceDetailsModal(false);
+                                    setShowUserDevicesModal(true); // Return to list
+                                }}
+                                className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            {/* Device Info Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Status</p>
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${selectedUserDevice.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : selectedUserDevice.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                        {selectedUserDevice.status}
+                                    </span>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Type</p>
+                                    <p className="font-semibold text-gray-900">{selectedUserDevice.source}</p>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Location</p>
+                                    <p className="font-semibold text-gray-900">{selectedUserDevice.location}</p>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Parameters</p>
+                                    <p className="font-semibold text-gray-900">{selectedUserDevice.params}</p>
+                                </div>
+                            </div>
+
+                            {/* Detailed Params (Mock) */}
+                            <div>
+                                <h3 className="font-bold text-gray-900 mb-3 text-sm flex items-center gap-2">
+                                    <Activity size={16} className="text-blue-500" />
+                                    Live Telemetry
+                                </h3>
+                                <div className="bg-slate-900 text-slate-300 p-4 rounded-xl font-mono text-sm space-y-2">
+                                    <div className="flex justify-between">
+                                        <span>Current:</span>
+                                        <span className="text-emerald-400">4.2A</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Voltage:</span>
+                                        <span className="text-amber-400">230.1V</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Power Factor:</span>
+                                        <span className="text-blue-400">0.98</span>
+                                    </div>
+                                    <div className="flex justify-between border-t border-slate-700 pt-2 mt-2">
+                                        <span>Last Update:</span>
+                                        <span className="text-slate-500">Just now</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* -------------------- METER DETAILS MODAL -------------------- */}
+            {showMeterDetailsModal && selectedUserMeter && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">{selectedUserMeter.name}</h2>
+                                <p className="text-sm text-gray-500 font-medium mt-1">Meter Readings & Status</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowMeterDetailsModal(false);
+                                    setShowUserMetersModal(true); // Return to list
+                                }}
+                                className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            {/* Meter Info Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Status</p>
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${selectedUserMeter.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : selectedUserMeter.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                        {selectedUserMeter.status}
+                                    </span>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Type</p>
+                                    <p className="font-semibold text-gray-900">{selectedUserMeter.source}</p>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Location</p>
+                                    <p className="font-semibold text-gray-900">{selectedUserMeter.location}</p>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Last Sync</p>
+                                    <p className="font-semibold text-gray-900">Just now</p>
+                                </div>
+                            </div>
+
+                            {/* Current Reading */}
+                            <div>
+                                <h3 className="font-bold text-gray-900 mb-3 text-sm flex items-center gap-2">
+                                    <Gauge size={16} className="text-indigo-500" />
+                                    Current Reading
+                                </h3>
+                                <div className="bg-indigo-50 text-indigo-900 p-6 rounded-2xl flex flex-col items-center justify-center border border-indigo-100">
+                                    <span className="text-4xl font-bold font-mono tracking-tighter">{selectedUserMeter.reading}</span>
+                                    <span className="text-xs font-bold uppercase tracking-widest text-indigo-400 mt-1">Kilowatt Hours</span>
+                                </div>
+                            </div>
+
+                            {/* Recent Consumption (Mock) */}
+                            <div>
+                                <h3 className="font-bold text-gray-900 mb-3 text-sm">Recent History</h3>
+                                <div className="space-y-2">
+                                    {[
+                                        { time: '10:00 AM', val: '45.2 kWh' },
+                                        { time: '09:00 AM', val: '42.8 kWh' },
+                                        { time: '08:00 AM', val: '38.5 kWh' },
+                                    ].map((h, i) => (
+                                        <div key={i} className="flex justify-between items-center p-2 rounded-lg bg-gray-50 text-sm">
+                                            <span className="text-gray-500">{h.time}</span>
+                                            <span className="font-mono font-bold text-gray-900">{h.val}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             {showUserDevicesModal && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
@@ -653,7 +825,22 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 <h2 className="text-xl font-bold text-gray-900">Assigned Devices</h2>
                                 <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of hardware assigned to you</p>
                             </div>
-                            <button onClick={() => setShowUserDevicesModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
+                                    <Filter size={16} className="text-gray-400 ml-2" />
+                                    <select
+                                        value={userDeviceFilter}
+                                        onChange={(e) => setUserDeviceFilter(e.target.value)}
+                                        className="bg-transparent text-sm font-medium text-gray-700 border-none focus:ring-0 cursor-pointer py-1 pr-8 pl-1"
+                                    >
+                                        <option value="All">All Status</option>
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                        <option value="Deactive">Deactive</option>
+                                    </select>
+                                </div>
+                                <button onClick={() => setShowUserDevicesModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                            </div>
                         </div>
                         <div className="overflow-auto p-6">
                             <table className="w-full text-left border-collapse">
@@ -664,24 +851,170 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                         <th className="py-3 px-4">Parameters</th>
                                         <th className="py-3 px-4">Status</th>
                                         <th className="py-3 px-4">Location</th>
+                                        <th className="py-3 px-4 text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm">
-                                    {userDataDetailed.devices.map((device, i) => (
-                                        <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                            <td className="py-3 px-4 font-semibold text-gray-900">{device.name}</td>
-                                            <td className="py-3 px-4 text-gray-600">{device.source}</td>
-                                            <td className="py-3 px-4 text-gray-600">{device.params}</td>
-                                            <td className="py-3 px-4">
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${device.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : device.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {device.status}
-                                                </span>
-                                            </td>
-                                            <td className="py-3 px-4 text-gray-500">{device.location}</td>
-                                        </tr>
-                                    ))}
+                                    {userDataDetailed.devices
+                                        .filter(d => userDeviceFilter === 'All' || d.status === userDeviceFilter)
+                                        .map((device, i) => (
+                                            <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                                <td className="py-3 px-4 font-semibold text-gray-900">{device.name}</td>
+                                                <td className="py-3 px-4 text-gray-600">{device.source}</td>
+                                                <td className="py-3 px-4 text-gray-600">{device.params}</td>
+                                                <td className="py-3 px-4">
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${device.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : device.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                        {device.status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-4 text-gray-500">{device.location}</td>
+                                                <td className="py-3 px-4 text-center">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedUserDevice(device);
+                                                            setShowUserDevicesModal(false);
+                                                            setShowDeviceDetailsModal(true);
+                                                        }}
+                                                        className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
                                 </tbody>
                             </table>
+                            {userDataDetailed.devices.filter(d => userDeviceFilter === 'All' || d.status === userDeviceFilter).length === 0 && (
+                                <div className="text-center py-8 text-gray-500 text-sm">No devices found matching this filter.</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* -------------------- SYSTEM ISSUES MODAL -------------------- */}
+            {showIssuesModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                    <AlertTriangle className="text-red-500" />
+                                    System Issues & Alerts
+                                </h2>
+                                <p className="text-sm text-gray-500 font-medium mt-1">
+                                    Items requiring attention ({inactiveDevices.length + inactiveMeters.length + inactiveUsers.length})
+                                </p>
+                            </div>
+                            <button onClick={() => setShowIssuesModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+
+                            {/* Devices Section */}
+                            {inactiveDevices.length > 0 && (
+                                <div>
+                                    <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                        <Cpu size={18} className="text-gray-400" />
+                                        Devices ({inactiveDevices.length})
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {inactiveDevices.map(d => (
+                                            <div
+                                                key={d.id}
+                                                onClick={() => {
+                                                    sessionStorage.setItem('devicesPageTab', 'devices');
+                                                    setActivePage('Devices');
+                                                    setShowIssuesModal(false);
+                                                }}
+                                                className="p-3 border border-red-100 bg-red-50/50 rounded-xl flex justify-between items-center group hover:bg-red-50 transition-colors cursor-pointer"
+                                            >
+                                                <div>
+                                                    <p className="font-semibold text-gray-900 text-sm group-hover:text-red-700 transition-colors">{d.name}</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">{d.deviceId}</p>
+                                                </div>
+                                                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${d.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {d.status}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Meters Section */}
+                            {inactiveMeters.length > 0 && (
+                                <div>
+                                    <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                        <Gauge size={18} className="text-gray-400" />
+                                        Meters ({inactiveMeters.length})
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {inactiveMeters.map(m => (
+                                            <div
+                                                key={m.id}
+                                                onClick={() => {
+                                                    sessionStorage.setItem('devicesPageTab', 'meters');
+                                                    setActivePage('Devices');
+                                                    setShowIssuesModal(false);
+                                                }}
+                                                className="p-3 border border-orange-100 bg-orange-50/50 rounded-xl flex justify-between items-center group hover:bg-orange-50 transition-colors cursor-pointer"
+                                            >
+                                                <div>
+                                                    <p className="font-semibold text-gray-900 text-sm group-hover:text-orange-700 transition-colors">{m.name}</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">{m.location}</p>
+                                                </div>
+                                                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${m.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {m.status}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Users Section */}
+                            {inactiveUsers.length > 0 && (
+                                <div>
+                                    <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                        <Users size={18} className="text-gray-400" />
+                                        Users ({inactiveUsers.length})
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {inactiveUsers.map(u => (
+                                            <div
+                                                key={u.id}
+                                                onClick={() => {
+                                                    setActivePage('Users');
+                                                    setShowIssuesModal(false);
+                                                }}
+                                                className="p-3 border border-gray-200 bg-gray-50 rounded-xl flex justify-between items-center group hover:bg-gray-100 transition-colors cursor-pointer"
+                                            >
+                                                <div>
+                                                    <p className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">{u.firstName} {u.lastName}</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">{u.email}</p>
+                                                </div>
+                                                <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-200 text-gray-600">
+                                                    {u.status}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {inactiveDevices.length === 0 && inactiveMeters.length === 0 && inactiveUsers.length === 0 && (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <CheckCircle size={32} />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900">All Systems Operational</h3>
+                                    <p className="text-gray-500 mt-1">No active issues detected across devices, meters, or users.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -696,7 +1029,22 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 <h2 className="text-xl font-bold text-gray-900">Assigned Meters</h2>
                                 <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of meters under your supervision</p>
                             </div>
-                            <button onClick={() => setShowUserMetersModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
+                                    <Filter size={16} className="text-gray-400 ml-2" />
+                                    <select
+                                        value={userMeterFilter}
+                                        onChange={(e) => setUserMeterFilter(e.target.value)}
+                                        className="bg-transparent text-sm font-medium text-gray-700 border-none focus:ring-0 cursor-pointer py-1 pr-8 pl-1"
+                                    >
+                                        <option value="All">All Status</option>
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                        <option value="Deactive">Deactive</option>
+                                    </select>
+                                </div>
+                                <button onClick={() => setShowUserMetersModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                            </div>
                         </div>
                         <div className="overflow-auto p-6">
                             <table className="w-full text-left border-collapse">
@@ -707,24 +1055,43 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                         <th className="py-3 px-4">Current Reading</th>
                                         <th className="py-3 px-4">Status</th>
                                         <th className="py-3 px-4">Location</th>
+                                        <th className="py-3 px-4 text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm">
-                                    {userDataDetailed.meters.map((meter, i) => (
-                                        <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                            <td className="py-3 px-4 font-semibold text-gray-900">{meter.name}</td>
-                                            <td className="py-3 px-4 text-gray-600">{meter.source}</td>
-                                            <td className="py-3 px-4 text-gray-600 font-mono">{meter.reading}</td>
-                                            <td className="py-3 px-4">
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${meter.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : meter.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {meter.status}
-                                                </span>
-                                            </td>
-                                            <td className="py-3 px-4 text-gray-500">{meter.location}</td>
-                                        </tr>
-                                    ))}
+                                    {userDataDetailed.meters
+                                        .filter(m => userMeterFilter === 'All' || m.status === userMeterFilter)
+                                        .map((meter, i) => (
+                                            <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                                <td className="py-3 px-4 font-semibold text-gray-900">{meter.name}</td>
+                                                <td className="py-3 px-4 text-gray-600">{meter.source}</td>
+                                                <td className="py-3 px-4 text-gray-600 font-mono">{meter.reading}</td>
+                                                <td className="py-3 px-4">
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${meter.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : meter.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                        {meter.status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-4 text-gray-500">{meter.location}</td>
+                                                <td className="py-3 px-4 text-center">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedUserMeter(meter);
+                                                            setShowUserMetersModal(false);
+                                                            setShowMeterDetailsModal(true);
+                                                        }}
+                                                        className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
                                 </tbody>
                             </table>
+                            {userDataDetailed.meters.filter(m => userMeterFilter === 'All' || m.status === userMeterFilter).length === 0 && (
+                                <div className="text-center py-8 text-gray-500 text-sm">No meters found matching this filter.</div>
+                            )}
                         </div>
                     </div>
                 </div>

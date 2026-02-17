@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Search, Bell, Settings, Sun, Droplet, Flame, Zap, X, Check, LogOut, User } from "lucide-react";
 import { initialDevicesData, initialUsers, sites, PAGES_DATA, PARAMS_DATA } from "../data/mockData";
 
-export default function Header({ activePage, setActivePage, onLogout }) {
+export default function Header({ activePage, setActivePage, onLogout, userRole }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -104,7 +104,21 @@ export default function Header({ activePage, setActivePage, onLogout }) {
     }
   };
 
-  // ... (notifications logic remains)
+  // ... (notifications logic)
+  const adminNotifications = [
+    { id: 1, type: 'critical', title: 'Meters Offline', desc: '5 meters in South Hub offline.', time: '10m ago' },
+    { id: 2, type: 'warning', title: 'High Usage Alert', desc: 'West Plant usage spike detected.', time: '25m ago' },
+    { id: 3, type: 'info', title: 'System Maintenance', desc: 'Scheduled maintenance at 2:00 AM.', time: '1h ago' },
+  ];
+
+  const userNotifications = [
+    { id: 1, type: 'info', title: 'Bill Generated', desc: 'Your monthly bill for Jan is ready.', time: '2h ago' },
+    { id: 2, type: 'warning', title: 'Voltage Fluctuation', desc: 'Meter-01 reported voltage instability.', time: '5h ago' },
+    { id: 3, type: 'info', title: 'Usage Update', desc: 'Weekly usage report is available.', time: '1d ago' },
+  ];
+
+  const notifications = userRole === 'Admin' ? adminNotifications : userNotifications;
+
 
   return (
     <header className="h-16 bg-white/50 backdrop-blur-xl flex items-center px-4 sm:px-6 sticky top-0 z-50 justify-between transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
@@ -255,7 +269,10 @@ export default function Header({ activePage, setActivePage, onLogout }) {
             )}
           </div>
 
-          <button className="p-2 rounded-full text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+          <button
+            onClick={() => setActivePage('Settings')}
+            className="p-2 rounded-full text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+          >
             <Settings size={20} />
           </button>
         </div>
@@ -291,10 +308,16 @@ export default function Header({ activePage, setActivePage, onLogout }) {
                 </div>
               </div>
               <div className="p-2">
-                <button className="w-full text-left px-4 py-3 rounded-xl text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 flex items-center gap-3 transition-colors font-medium">
+                <button
+                  onClick={() => { setShowProfileMenu(false); setActivePage('Settings'); }}
+                  className="w-full text-left px-4 py-3 rounded-xl text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 flex items-center gap-3 transition-colors font-medium"
+                >
                   <User size={18} className="text-slate-400" /> Account Settings
                 </button>
-                <button className="w-full text-left px-4 py-3 rounded-xl text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 flex items-center gap-3 transition-colors font-medium">
+                <button
+                  onClick={() => { setShowProfileMenu(false); setActivePage('Settings'); }}
+                  className="w-full text-left px-4 py-3 rounded-xl text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 flex items-center gap-3 transition-colors font-medium"
+                >
                   <Settings size={18} className="text-slate-400" /> System Preferences
                 </button>
               </div>
