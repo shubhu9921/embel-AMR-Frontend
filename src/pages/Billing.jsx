@@ -137,7 +137,7 @@ export default function BillingPage() {
     const totalOverdue = "₹" + invoices.filter(i => i.status === 'Overdue').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
 
     return (
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth font-sans">
+        <main className="w-full min-h-screen p-4 md:p-6 font-sans">
 
             {/* Top Header */}
             {/* Top Header */}

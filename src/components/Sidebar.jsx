@@ -19,8 +19,8 @@ import {
 const adminMenu = [
   { name: "Dashboard", icon: LayoutDashboard },
   { name: "Water", icon: Droplet },
-  { name: "Gas", icon: Flame },
   { name: "Energy", icon: Zap },
+  { name: "Solar", icon: Sun },
   { name: "Devices", icon: Cpu },
   { name: "Users", icon: Users },
   { name: "Reports", icon: FileText },

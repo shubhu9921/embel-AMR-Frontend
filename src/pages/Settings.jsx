@@ -3,7 +3,7 @@ import { Settings } from 'lucide-react';
 
 export default function SettingsPage() {
     return (
-        <div className="w-full h-full flex flex-col bg-white overflow-hidden relative">
+        <div className="w-full h-full flex flex-col overflow-hidden relative">
             {/* Page Header */}
             <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-gray-50/90 mx-6 mt-6 mb-2">
                 <div className="flex items-center justify-between gap-4">

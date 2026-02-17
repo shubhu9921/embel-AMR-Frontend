@@ -142,7 +142,7 @@ export default function DevicesPage() {
   const inactiveCount = currentData.filter((d) => d.status === "Inactive").length;
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth font-sans">
+    <div className="w-full min-h-screen p-6 md:p-8 font-sans">
 
       {/* Top Header */}
       <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mb-6">
@@ -166,8 +166,8 @@ export default function DevicesPage() {
             <button
               onClick={() => setActiveTab('devices')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'devices'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               <Cpu size={16} />
@@ -176,8 +176,8 @@ export default function DevicesPage() {
             <button
               onClick={() => setActiveTab('meters')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'meters'
-                  ? 'bg-white text-emerald-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               <Gauge size={16} />
@@ -368,12 +368,12 @@ export default function DevicesPage() {
 
                       <td className="px-6 py-4">
                         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${item.status === 'Active' ? 'bg-green-50 text-green-700 border-green-200' :
-                            item.status === 'Inactive' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                              'bg-red-50 text-red-700 border-red-200'
+                          item.status === 'Inactive' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            'bg-red-50 text-red-700 border-red-200'
                           }`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${item.status === 'Active' ? 'bg-green-500 animate-pulse' :
-                              item.status === 'Inactive' ? 'bg-amber-500' :
-                                'bg-red-500'
+                            item.status === 'Inactive' ? 'bg-amber-500' :
+                              'bg-red-500'
                             }`}></div>
                           {item.status}
                         </div>

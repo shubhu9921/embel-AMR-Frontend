@@ -182,7 +182,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         <main className="w-full flex flex-col gap-6 min-h-screen mb-20">
 
             {/* -------------------- HEADER (Floating Card Style) -------------------- */}
-            <div className="relative group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-blue-50/90 mx-4 mt-4">
+            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-blue-50/90 mx-4 mt-4">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -256,7 +256,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 className="cursor-pointer hover:shadow-lg transition-all"
                             />
                             <StatCard
-                                title="Total Revenue"
+                                title="Billing Overview"
                                 value={billingStats.total}
                                 icon={<CreditCard />}
                                 color="purple"
@@ -265,6 +265,29 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 statusBreakdown={revenueStats}
                                 onClick={() => setActivePage('Billing')}
                                 className="cursor-pointer hover:shadow-lg transition-all"
+                            />
+                            <StatCard
+                                title="Recent Reports"
+                                value={reportsStats.total}
+                                icon={<FileText />}
+                                color="blue"
+                                description="Generated reports"
+                                subValue=""
+                                statusBreakdown={[
+                                    { label: 'Ready', value: reportsStats.ready, color: 'text-green-600' },
+                                    { label: 'Processing', value: reportsStats.processing, color: 'text-amber-600' }
+                                ]}
+                                onClick={() => setActivePage('Reports')}
+                                className="cursor-pointer hover:shadow-lg transition-all"
+                            />
+                            <StatCard
+                                title="System Status"
+                                value="98.5%"
+                                icon={<Activity />}
+                                color="emerald"
+                                description="Operational Uptime"
+                                trend={0.5}
+                                trendLabel="vs last month"
                             />
                         </>
                     ) : (
@@ -429,7 +452,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
 
                     {/* BILLING ANALYSIS - ADMIN ONLY */}
                     {isAdmin && (
-                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all">
+                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all h-full">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="font-bold text-gray-800 flex items-center gap-2">
                                     <CreditCard size={18} className="text-purple-500" />
@@ -442,27 +465,38 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                     View All
                                 </button>
                             </div>
-                            <div className="space-y-4">
-                                <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
-                                    <div className="flex justify-between text-sm text-gray-600 mb-1">
-                                        <span>Collected</span>
-                                        <span className="font-bold text-gray-900">{billingStats.total}</span>
-                                    </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <div
-                                            className="bg-purple-500 h-2 rounded-full"
-                                            style={{ width: `${calculateBillingPercentage()}%` }}
-                                        ></div>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center justify-between p-4 rounded-xl bg-purple-50/50 border border-purple-100 hover:shadow-md transition-all group cursor-pointer" onClick={() => setActivePage('Billing')}>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-purple-100 text-purple-600 rounded-lg group-hover:scale-110 transition-transform">
+                                            <CreditCard size={18} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-purple-600 font-bold uppercase tracking-wider">Collected</p>
+                                            <p className="text-lg font-bold text-gray-900">{billingStats.total}</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex gap-3">
-                                    <div className="flex-1 p-3 rounded-xl bg-orange-50 border border-orange-100">
-                                        <span className="text-xs text-orange-600 font-bold block mb-1">Pending</span>
-                                        <span className="text-lg font-bold text-gray-900">{billingStats.pending}</span>
+                                <div className="flex items-center justify-between p-4 rounded-xl bg-orange-50/50 border border-orange-100 hover:shadow-md transition-all group cursor-pointer" onClick={() => setActivePage('Billing')}>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-orange-100 text-orange-600 rounded-lg group-hover:scale-110 transition-transform">
+                                            <CreditCard size={18} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-orange-600 font-bold uppercase tracking-wider">Pending</p>
+                                            <p className="text-lg font-bold text-gray-900">{billingStats.pending}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1 p-3 rounded-xl bg-red-50 border border-red-100">
-                                        <span className="text-xs text-red-600 font-bold block mb-1">Overdue</span>
-                                        <span className="text-lg font-bold text-gray-900">{billingStats.overdue}</span>
+                                </div>
+                                <div className="flex items-center justify-between p-4 rounded-xl bg-red-50/50 border border-red-100 hover:shadow-md transition-all group cursor-pointer" onClick={() => setActivePage('Billing')}>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-red-100 text-red-600 rounded-lg group-hover:scale-110 transition-transform">
+                                            <AlertTriangle size={18} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-red-600 font-bold uppercase tracking-wider">Overdue</p>
+                                            <p className="text-lg font-bold text-gray-900">{billingStats.overdue}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -471,7 +505,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
 
                     {/* REPORTS SUMMARY - ADMIN ONLY */}
                     {isAdmin && (
-                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all">
+                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all h-full">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="font-bold text-gray-800 flex items-center gap-2">
                                     <FileText size={18} className="text-blue-500" />
@@ -484,60 +518,42 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                     View All
                                 </button>
                             </div>
-                            <div className="space-y-3">
-                                <div
-                                    onClick={() => setActivePage('Reports')}
-                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePage('Reports') }}
-                                    tabIndex="0"
-                                    role="button"
-                                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
-                                >
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all group cursor-pointer" onClick={() => setActivePage('Reports')}>
                                     <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-blue-100 text-blue-600 rounded">
-                                            <FileText size={14} />
+                                        <div className="p-2 bg-blue-100 text-blue-600 rounded-lg group-hover:scale-110 transition-transform">
+                                            <FileText size={18} />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600">Monthly Consumption</span>
-                                            <span className="text-[10px] text-gray-400">Dec 2024 • 2.4 MB</span>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors">Monthly Data</p>
+                                            <p className="text-[10px] text-gray-500 font-medium">Dec 2024 • 2.4 MB</p>
                                         </div>
                                     </div>
-                                    <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded-full">Ready</span>
+                                    <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-lg">Ready</span>
                                 </div>
-                                <div
-                                    onClick={() => setActivePage('Reports')}
-                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePage('Reports') }}
-                                    tabIndex="0"
-                                    role="button"
-                                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
-                                >
+                                <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all group cursor-pointer" onClick={() => setActivePage('Reports')}>
                                     <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-amber-100 text-amber-600 rounded">
-                                            <FileText size={14} />
+                                        <div className="p-2 bg-amber-100 text-amber-600 rounded-lg group-hover:scale-110 transition-transform">
+                                            <FileText size={18} />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600">Solar Analysis</span>
-                                            <span className="text-[10px] text-gray-400">Annual 2024 • 5.2 MB</span>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors">Solar Analysis</p>
+                                            <p className="text-[10px] text-gray-500 font-medium">Annual 2024 • 5.2 MB</p>
                                         </div>
                                     </div>
-                                    <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded-full">Ready</span>
+                                    <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-lg">Ready</span>
                                 </div>
-                                <div
-                                    onClick={() => setActivePage('Reports')}
-                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePage('Reports') }}
-                                    tabIndex="0"
-                                    role="button"
-                                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
-                                >
+                                <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all group cursor-pointer" onClick={() => setActivePage('Reports')}>
                                     <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-gray-100 text-gray-500 rounded">
-                                            <Clock size={14} />
+                                        <div className="p-2 bg-gray-200 text-gray-600 rounded-lg group-hover:scale-110 transition-transform">
+                                            <Activity size={18} />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600">Device Health</span>
-                                            <span className="text-[10px] text-gray-400">Jan 2025 • Processing</span>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors">Device Health</p>
+                                            <p className="text-[10px] text-gray-500 font-medium">Jan 2025 • Calculating...</p>
                                         </div>
                                     </div>
-                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-full">Processing</span>
+                                    <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-lg">Processing</span>
                                 </div>
                             </div>
                         </div>

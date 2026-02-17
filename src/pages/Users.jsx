@@ -113,8 +113,7 @@ export default function UsersPage() {
   const newUsers = 2; // Mock data for now
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth font-sans">
-      {/* Top Header */}
+    <div className="w-full min-h-screen p-6 md:p-8 font-sans">
       {/* Top Header */}
       <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mb-6">
         <div className="flex items-center justify-between gap-4">
