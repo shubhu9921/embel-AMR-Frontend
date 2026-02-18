@@ -116,6 +116,22 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
 
     const reportsStats = { ready: 4, processing: 1, total: 6 };
 
+    /* -------------------- ALERTS DATA -------------------- */
+    const adminAlerts = [
+        { id: 1, type: 'critical', title: 'Start Server 03 Offline', message: 'Critical heartbeat failure detected.', timestamp: '2m ago' },
+        { id: 2, type: 'warning', title: 'High Latency', message: 'Region: Mumbai-North > 400ms', timestamp: '15m ago' },
+        { id: 3, type: 'info', title: 'System Update', message: 'Maintenance scheduled for tonight', timestamp: '1h ago' },
+        { id: 4, type: 'critical', title: 'Database Load', message: 'CPU usage > 90% on DB-Main', timestamp: '2h ago' },
+    ];
+
+    const userAlerts = [
+        { id: 1, type: 'warning', title: 'High Usage', message: 'Water usage exceeded daily limit.', timestamp: '10m ago' },
+        { id: 2, type: 'info', title: 'Bill Generated', message: 'Bill for Jan 2025 is ready.', timestamp: '1d ago' },
+        { id: 3, type: 'info', title: 'Device Online', message: 'Smart Meter #123 is now active.', timestamp: '2d ago' },
+    ];
+
+    const currentAlerts = isAdmin ? adminAlerts : userAlerts;
+
     /* -------------------- METRICS -------------------- */
     // const totalMeters = 120; // Replaced by above
 
