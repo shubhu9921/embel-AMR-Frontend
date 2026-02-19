@@ -13,7 +13,9 @@ import {
     ChevronDown,
     ChevronLeft,
     ChevronRight,
-    Calendar
+    ChevronRight,
+    Calendar,
+    RotateCcw
 } from 'lucide-react';
 import { StatCard } from './StatCard';
 
@@ -42,7 +44,16 @@ export default function PayloadsPage() {
     const pageSize = 15;
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterDeviceType, setFilterDeviceType] = useState("All");
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const filterRef = useRef(null);
+
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        // Simulate network request
+        setTimeout(() => {
+            setIsRefreshing(false);
+        }, 1000);
+    };
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -196,9 +207,20 @@ export default function PayloadsPage() {
                             <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
 
                             {/* Action Buttons */}
-                            <button className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95">
+                            <button
+                                onClick={() => alert("Export started...")}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
+                            >
                                 <Download className="w-5 h-5 stroke-[2.5]" />
                                 <span className="hidden sm:inline">Export</span>
+                            </button>
+
+                            <button
+                                onClick={handleRefresh}
+                                className={`p-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl hover:border-[#ff6e00] hover:text-[#ff6e00] hover:shadow-md transition-all active:scale-95 ${isRefreshing ? 'animate-spin text-[#ff6e00] border-[#ff6e00]' : ''}`}
+                                title="Refresh Data"
+                            >
+                                <RotateCcw className="w-5 h-5" />
                             </button>
                         </div>
                     </div>

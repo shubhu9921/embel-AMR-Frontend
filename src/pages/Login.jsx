@@ -16,16 +16,20 @@ export default function LoginPage({ onLogin }) {
         // Mock authentication
         setTimeout(() => {
             // Demo Credentials Logic
-            if (email === 'superadmin' && (password === 'superadmin' || password === 'superadmin')) {
+            if (email === 'superadmin' && password === 'superadmin') {
                 sessionStorage.setItem('isAuthenticated', 'true');
                 sessionStorage.setItem('userRole', 'Admin');
                 onLogin('Admin');
             } else if (email === 'user1' && password === 'user1') {
                 sessionStorage.setItem('isAuthenticated', 'true');
-                sessionStorage.setItem('userRole', 'User');
-                onLogin('User');
+                sessionStorage.setItem('userRole', 'Industrial');
+                onLogin('Industrial');
+            } else if (email === 'user2' && password === 'user2') {
+                sessionStorage.setItem('isAuthenticated', 'true');
+                sessionStorage.setItem('userRole', 'Domestic');
+                onLogin('Domestic');
             } else {
-                setError('Invalid username or password. Try superadmin/superadmin or user1/user1');
+                setError('Invalid credentials. Try superadmin/superadmin, user1/user1 (Industrial), or user2/user2 (Domestic)');
                 setLoading(false);
             }
         }, 800);

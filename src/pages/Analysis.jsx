@@ -117,7 +117,7 @@ export default function AnalysisPage() {
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                 Resource Analysis
               </h1>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-gray-600">
                 Comparative insights & parameters
               </p>
             </div>
@@ -132,7 +132,7 @@ export default function AnalysisPage() {
                   px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap
                   ${activeTab === tab
                     ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
-                    : `text-gray-500 hover:${COLORS[tab].text} hover:${COLORS[tab].light}`}
+                    : `text-gray-600 hover:${COLORS[tab].text} hover:${COLORS[tab].light}`}
                 `}
               >
                 {tab}
@@ -256,7 +256,7 @@ export default function AnalysisPage() {
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-8">
               <div className="text-center">
                 <span className="text-3xl font-bold text-gray-900 block">124</span>
-                <span className="text-xs text-gray-500 font-medium uppercase">Total</span>
+                <span className="text-xs text-gray-600 font-medium uppercase">Total</span>
               </div>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function AnalysisPage() {
             {systemParameters.map((param, index) => (
               <div key={index} className={`flex flex-col bg-gradient-to-br from-white ${param.theme} p-3 rounded-xl border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 hover:border-${param.color}-300 transition-all duration-300 cursor-pointer group`}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`text-[10px] text-gray-500 font-bold uppercase tracking-wider group-hover:text-${param.color}-600 transition-colors`}>{param.label}</span>
+                  <span className={`text-[10px] text-gray-600 font-bold uppercase tracking-wider group-hover:text-${param.color}-600 transition-colors`}>{param.label}</span>
                   <param.icon className={`w-4 h-4 text-gray-400 group-hover:text-${param.color}-600 transition-colors`} />
                 </div>
                 <span className="text-xl font-mono font-extrabold text-gray-900">{param.value}</span>

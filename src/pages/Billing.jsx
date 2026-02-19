@@ -405,6 +405,10 @@ export default function BillingPage() {
                                                         <Eye className="w-4 h-4" />
                                                     </button>
                                                     <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            alert(`Downloading invoice ${inv.id}...`);
+                                                        }}
                                                         className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-green-500 hover:text-green-600 hover:shadow-md transition-all active:scale-90"
                                                         title="Download Invoice"
                                                     >

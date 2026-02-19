@@ -243,7 +243,10 @@ export default function ReportsPage() {
                             <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
 
                             {/* Action Buttons */}
-                            <button className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95">
+                            <button
+                                onClick={() => alert("Generate Report modal opening...")}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
+                            >
                                 <Plus className="w-5 h-5 stroke-[2.5]" />
                                 <span className="hidden sm:inline">Generate Report</span>
                             </button>
@@ -320,12 +323,14 @@ export default function ReportsPage() {
                                                         onClick={(e) => { e.stopPropagation(); handleViewReport(report); }}
                                                         className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:shadow-md transition-all active:scale-90"
                                                         title="View Report"
+                                                        aria-label="View Report"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-green-500 hover:text-green-600 hover:shadow-md transition-all active:scale-90 disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:text-gray-600 disabled:cursor-not-allowed"
                                                         title="Download"
+                                                        aria-label="Download Report"
                                                         disabled={report.status !== 'Ready'}
                                                         onClick={(e) => e.stopPropagation()}
                                                     >

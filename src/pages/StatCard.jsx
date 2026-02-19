@@ -23,12 +23,13 @@ export function StatCard({
   compact = false,
   onClick,
   statusBreakdown,
+  className = "",
 }) {
   // Negative trend = positive
   const isPositiveTrend = trend !== undefined && trend < 0;
 
   return (
-    <div onClick={onClick} className={`rounded-2xl shadow-md border ${colorClasses[color] || 'border-transparent'} bg-white ${compact ? 'p-3' : 'p-4'} transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50/50 cursor-pointer h-full flex flex-col justify-between relative overflow-hidden group`}>
+    <div onClick={onClick} className={`rounded-2xl shadow-md border ${colorClasses[color] || 'border-transparent'} bg-white ${compact ? 'p-3' : 'p-4'} transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50/50 cursor-pointer h-full flex flex-col justify-between relative overflow-hidden group ${className}`}>
 
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/40 to-transparent rounded-bl-3xl -mr-4 -mt-4 opacity-50 group-hover:opacity-100 transition-opacity"></div>

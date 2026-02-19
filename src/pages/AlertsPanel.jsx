@@ -49,7 +49,7 @@ export function AlertsPanel({ alerts, compact = false }) {
   const [activeFilter, setActiveFilter] = useState("all");
 
   const filteredAlerts = alerts.filter(a => {
-    const type = a.type === 'error' ? 'critical' : a.type;
+    const type = (a.type === 'error' ? 'critical' : a.type).toLowerCase();
     const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase()) ||
       (a.message || "").toLowerCase().includes(search.toLowerCase());
     const matchesFilter = activeFilter === 'all' || type === activeFilter;
@@ -68,7 +68,7 @@ export function AlertsPanel({ alerts, compact = false }) {
           </div>
           {/* Search */}
           <div className="relative group">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1.5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1.5 text-gray-500 group-focus-within:text-orange-500 transition-colors" />
             <input
               className="pl-8 pr-3 py-1 text-xs border border-gray-200 rounded-lg bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:bg-white w-28 transition-all shadow-sm shadow-orange-100 hover:shadow-orange-200"
               placeholder="Filter..."
@@ -115,9 +115,9 @@ export function AlertsPanel({ alerts, compact = false }) {
 
       <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
         {filteredAlerts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+          <div className="flex flex-col items-center justify-center h-40 text-gray-500">
             <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-2">
-              <CheckCircle className="w-6 h-6 text-gray-300" />
+              <CheckCircle className="w-6 h-6 text-gray-400" />
             </div>
             <p className="text-xs font-medium">No alerts found</p>
           </div>
@@ -146,7 +146,7 @@ export function AlertsPanel({ alerts, compact = false }) {
                       <h4 className="font-bold text-gray-900 text-xs truncate pr-2">
                         {alert.title}
                       </h4>
-                      <span className="text-[10px] font-medium text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                      <span className="text-[10px] font-medium text-gray-600 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
                         {alert.timestamp}
                       </span>
                     </div>

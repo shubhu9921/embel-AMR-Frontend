@@ -41,6 +41,14 @@ const userMenu = [
   { name: "Settings", icon: Settings }
 ];
 
+const domesticMenu = [
+  { name: "Dashboard", icon: LayoutDashboard },
+  { name: "My Usage", icon: LineChart },
+  { name: "Billing", icon: CreditCard },
+  { name: "Alerts", icon: Bell },
+  { name: "Settings", icon: Settings }
+];
+
 // Menu selection logic moved inside component or uses prop
 
 export default function Sidebar({
@@ -51,7 +59,15 @@ export default function Sidebar({
   userRole,
   onLogout
 }) {
-  const menu = (userRole === "Admin" || userRole === "Super Admin") ? adminMenu : userMenu;
+  let menu;
+  if (userRole === "Admin" || userRole === "Super Admin") {
+    menu = adminMenu;
+  } else if (userRole === "Domestic") {
+    menu = domesticMenu;
+  } else {
+    // Default to User/Industrial menu
+    menu = userMenu;
+  }
 
   return (
     <aside

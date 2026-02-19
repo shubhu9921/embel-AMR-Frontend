@@ -217,7 +217,7 @@ export default function DevicesPage() {
           />
           <StatCard
             title="Maintenance"
-            value={currentData.filter((d) => d.status === "Deactive").length.toString().padStart(2, '0')}
+            value={currentData.filter((d) => d.status === "Deactivated").length.toString().padStart(2, '0')}
             icon={<Router className="w-4 h-4" />}
             color="red"
             description="Scheduled service"
@@ -263,7 +263,7 @@ export default function DevicesPage() {
 
                 <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`}>
-                  {['All', 'Active', 'Inactive', 'Deactive'].map((option) => (
+                  {['All', 'Active', 'Inactive', 'Deactivated'].map((option) => (
                     <button
                       key={option}
                       onClick={() => {
@@ -290,11 +290,21 @@ export default function DevicesPage() {
               </button>
 
               <div className="flex bg-gray-100 p-1 rounded-xl">
-                <button className="p-2 text-gray-600 hover:bg-white hover:text-[#ff6e00] hover:shadow-sm rounded-lg transition-all" title="Import">
+                <button
+                  onClick={() => alert("Import feature coming soon!")}
+                  className="p-2 text-gray-600 hover:bg-white hover:text-[#ff6e00] hover:shadow-sm rounded-lg transition-all"
+                  title="Import"
+                  aria-label="Import devices"
+                >
                   <Upload className="w-5 h-5" />
                 </button>
                 <div className="w-[1px] bg-gray-300 my-1"></div>
-                <button className="p-2 text-gray-600 hover:bg-white hover:text-[#ff6e00] hover:shadow-sm rounded-lg transition-all" title="Export">
+                <button
+                  onClick={() => alert("Export feature coming soon!")}
+                  className="p-2 text-gray-600 hover:bg-white hover:text-[#ff6e00] hover:shadow-sm rounded-lg transition-all"
+                  title="Export"
+                  aria-label="Export devices"
+                >
                   <Download className="w-5 h-5" />
                 </button>
               </div>
@@ -384,12 +394,19 @@ export default function DevicesPage() {
                             onClick={() => handleEditDevice(item)}
                             className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-[#ff6e00] hover:text-[#ff6e00] hover:shadow-md transition-all active:scale-90"
                             title="Edit"
+                            aria-label="Edit device"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to delete ${item.name}?`)) {
+                                alert("Delete functionality coming soon!");
+                              }
+                            }}
                             className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-red-500 hover:text-red-600 hover:shadow-md transition-all active:scale-90"
                             title="Delete"
+                            aria-label="Delete device"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

@@ -12,6 +12,7 @@ import { TimeFilter } from "./TimeFilter";
 import { AlertsPanel } from "./AlertsPanel";
 import { StatCard } from "./StatCard";
 import { LocationDetailsModal } from "./LocationDetailsModal";
+import DomesticDashboard from "./DomesticDashboard";
 import { sites, userDataDetailed, initialDevicesData, initialMetersData, initialUsers } from "../data/mockData";
 
 
@@ -30,6 +31,9 @@ let DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 export default function Dashboard({ setActivePage = () => { }, userRole }) {
+    if (userRole === 'Domestic') {
+        return <DomesticDashboard setActivePage={setActivePage} />;
+    }
     const isAdmin = userRole === 'Admin';
     /* -------------------- STATE -------------------- */
     const [consumptionTimeRange, setConsumptionTimeRange] = useState('month');
@@ -61,7 +65,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const deviceStats = [
         { label: 'Active', value: 8, color: 'text-emerald-500' },
         { label: 'Inactive', value: 3, color: 'text-amber-500' },
-        { label: 'Deactive', value: 1, color: 'text-red-500' },
+        { label: 'Deactivated', value: 1, color: 'text-red-500' },
     ];
     const locationStats = [
         { label: 'Mumbai', value: 5, color: 'text-blue-500' },
@@ -73,14 +77,14 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const meterStats = [
         { label: 'Active', value: 95, color: 'text-emerald-500' },
         { label: 'Inactive', value: 15, color: 'text-amber-500' },
-        { label: 'Deactive', value: 10, color: 'text-red-500' },
+        { label: 'Deactivated', value: 10, color: 'text-red-500' },
     ];
 
     const totalUsers = 5;
     const userStats = [
         { label: 'Active', value: 4, color: 'text-emerald-500' },
         { label: 'Inactive', value: 1, color: 'text-amber-500' },
-        { label: 'Deactive', value: 0, color: 'text-red-500' },
+        { label: 'Deactivated', value: 0, color: 'text-red-500' },
     ];
 
     const billingStats = { total: "₹12,450", pending: "₹2,321", overdue: "₹5,100" };
@@ -138,7 +142,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const pieData = [
         { name: "Active", value: 70, color: "#10b981" },
         { name: "Inactive", value: 35, color: "#f59e0b" },
-        { name: "Deactive", value: 15, color: "#ef4444" },
+        { name: "Deactivated", value: 15, color: "#ef4444" },
     ];
 
     /* -------------------- SITES (MAP DATA) -------------------- */

@@ -2,7 +2,7 @@
 export const initialDevicesData = [
     { id: 1, admin: "demoadmin", user: "ashwini", deviceId: "C6:92:06:F0:F8:58", name: "EMBEL-HTTPS", type: "NBIOT", mac: "EE:8A:C2:A1:F7:CD", status: "Active" },
     { id: 2, admin: "kunal", user: "siddhesh", deviceId: "E4:DF:99:FB:F4:3F", name: "EMBEL-OPENCPU_24_04_24", type: "NBIOT", mac: "E4:DF:99:FB:F4:3F", status: "Inactive" },
-    { id: 3, admin: "demoadmin", user: "demouser", deviceId: "1234", name: "Embel-OPEN_CPU", type: "NBIOT", mac: "E5:E5:61:39:9F:F8", status: "Active" },
+    { id: 3, admin: "demoadmin", user: "demouser", deviceId: "1234", name: "EMBEL-OPEN_CPU", type: "NBIOT", mac: "E5:E5:61:39:9F:F8", status: "Active" },
     { id: 4, admin: "demoadmin", user: "user4", deviceId: "ID-004", name: "Device-4", type: "NBIOT", mac: "MAC-004", status: "Active" },
     { id: 5, admin: "demoadmin", user: "user5", deviceId: "ID-005", name: "Device-5", type: "NBIOT", mac: "MAC-005", status: "Inactive" },
     { id: 6, admin: "demoadmin", user: "user6", deviceId: "ID-006", name: "Device-6", type: "NBIOT", mac: "MAC-006", status: "Active" },
@@ -27,7 +27,7 @@ export const sites = [
     { id: 2, name: "North Branch", location: [28.6139, 77.209], status: "Active" }, // Delhi
     { id: 3, name: "South Hub", location: [12.9716, 77.5946], status: "Inactive" }, // Bangalore
     { id: 4, name: "West Plant", location: [23.0225, 72.5714], status: "Active" }, // Ahmedabad
-    { id: 5, name: "East Depot", location: [22.5726, 88.3639], status: "Deactive" }, // Kolkata
+    { id: 5, name: "East Depot", location: [22.5726, 88.3639], status: "Deactivated" }, // Kolkata
     { id: 6, name: "Central Unit", location: [17.3850, 78.4867], status: "Active" }, // Hyderabad
 ];
 
@@ -37,14 +37,14 @@ export const userDataDetailed = {
         { id: 2, name: "WM-002", source: "Water", params: "Flow Rate, Volume", status: "Active", location: "Mumbai" },
         { id: 3, name: "GM-003", source: "Gas", params: "Pressure, Volume", status: "Inactive", location: "Delhi" },
         { id: 4, name: "SM-004", source: "Solar", params: "Irradiance, Output", status: "Active", location: "Delhi" },
-        { id: 5, name: "EM-005", source: "Energy", params: "Voltage, P.F.", status: "Deactive", location: "Mumbai" },
+        { id: 5, name: "EM-005", source: "Energy", params: "Voltage, P.F.", status: "Deactivated", location: "Mumbai" },
     ],
     meters: [
         { id: 1, name: "Meter-01", source: "Energy", reading: "450 kWh", status: "Active", location: "Mumbai" },
         { id: 2, name: "Meter-02", source: "Water", reading: "1200 L", status: "Active", location: "Mumbai" },
         { id: 3, name: "Meter-03", source: "Gas", reading: "34 m3", status: "Active", location: "Delhi" },
         { id: 4, name: "Meter-04", source: "Energy", reading: "0 kWh", status: "Inactive", location: "Delhi" },
-        { id: 5, name: "Meter-05", source: "Energy", reading: "0 kWh", status: "Deactive", location: "Mumbai" },
+        { id: 5, name: "Meter-05", source: "Energy", reading: "0 kWh", status: "Deactivated", location: "Mumbai" },
         { id: 6, name: "Meter-06", source: "Water", reading: "500 L", status: "Active", location: "Mumbai" },
         { id: 7, name: "Meter-07", source: "Gas", reading: "12 m3", status: "Active", location: "Delhi" },
         { id: 8, name: "Meter-08", source: "Solar", reading: "89 kWh", status: "Active", location: "Mumbai" },
@@ -55,12 +55,12 @@ export const userDataDetailed = {
             devices: [
                 { name: "EM-001", source: "Energy", status: "Active" },
                 { name: "WM-002", source: "Water", status: "Active" },
-                { name: "EM-005", source: "Energy", status: "Deactive" }
+                { name: "EM-005", source: "Energy", status: "Deactivated" }
             ],
             meters: [
                 { name: "Meter-01", reading: "450 kWh", status: "Active" },
                 { name: "Meter-02", reading: "1200 L", status: "Active" },
-                { name: "Meter-05", reading: "0 kWh", status: "Deactive" },
+                { name: "Meter-05", reading: "0 kWh", status: "Deactivated" },
                 { name: "Meter-06", reading: "500 L", status: "Active" },
                 { name: "Meter-08", reading: "89 kWh", status: "Active" }
             ]
@@ -110,7 +110,7 @@ export const initialMetersData = [
     { id: 2, name: "Meter-02", type: "Water", reading: "1200 L", status: "Active", location: "Mumbai", user: "siddhesh" },
     { id: 3, name: "Meter-03", type: "Gas", reading: "34 m3", status: "Active", location: "Delhi", user: "demouser" },
     { id: 4, name: "Meter-04", type: "Energy", reading: "0 kWh", status: "Inactive", location: "Delhi", user: "user4" },
-    { id: 5, name: "Meter-05", type: "Energy", reading: "0 kWh", status: "Deactive", location: "Mumbai", user: "user5" },
+    { id: 5, name: "Meter-05", type: "Energy", reading: "0 kWh", status: "Deactivated", location: "Mumbai", user: "user5" },
     { id: 6, name: "Meter-06", type: "Water", reading: "500 L", status: "Active", location: "Mumbai", user: "user6" },
     { id: 7, name: "Meter-07", type: "Gas", reading: "12 m3", status: "Active", location: "Delhi", user: "user7" },
     { id: 8, name: "Meter-08", type: "Solar", reading: "89 kWh", status: "Active", location: "Mumbai", user: "user8" },

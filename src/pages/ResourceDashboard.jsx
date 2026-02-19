@@ -57,7 +57,7 @@ export default function ResourceDashboard({
         cyan: {
             light: 'bg-cyan-50',
             text: 'text-cyan-600',
-            border: 'border-cyan-100',
+            border: 'border-cyan-200',
             bar: '#06b6d4',
             iconBg: 'bg-cyan-50',
             gradientFrom: 'from-cyan-500',
@@ -72,7 +72,7 @@ export default function ResourceDashboard({
         emerald: {
             light: 'bg-emerald-50',
             text: 'text-emerald-600',
-            border: 'border-emerald-100',
+            border: 'border-emerald-200',
             bar: '#10b981',
             iconBg: 'bg-emerald-50',
             gradientFrom: 'from-emerald-500',
@@ -87,7 +87,7 @@ export default function ResourceDashboard({
         green: { // NEW: Added green theme definition
             light: 'bg-green-50',
             text: 'text-green-600',
-            border: 'border-green-100',
+            border: 'border-green-200',
             bar: '#22c55e',
             iconBg: 'bg-green-50',
             gradientFrom: 'from-green-500',
@@ -102,7 +102,7 @@ export default function ResourceDashboard({
         orange: {
             light: 'bg-orange-50',
             text: 'text-orange-600',
-            border: 'border-orange-100',
+            border: 'border-orange-200',
             bar: '#f97316',
             iconBg: 'bg-orange-50',
             gradientFrom: 'from-orange-500',
@@ -117,7 +117,7 @@ export default function ResourceDashboard({
         amber: {
             light: 'bg-amber-50',
             text: 'text-amber-600',
-            border: 'border-amber-100',
+            border: 'border-amber-200',
             bar: '#f59e0b',
             iconBg: 'bg-amber-50',
             gradientFrom: 'from-amber-400',
@@ -132,7 +132,7 @@ export default function ResourceDashboard({
         blue: {
             light: 'bg-blue-50',
             text: 'text-blue-600',
-            border: 'border-blue-100',
+            border: 'border-blue-200',
             bar: '#3b82f6',
             iconBg: 'bg-blue-50',
             gradientFrom: 'from-blue-500',

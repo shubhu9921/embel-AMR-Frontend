@@ -336,6 +336,12 @@ export default function UsersPage() {
                         </div>
                         <p className="text-lg font-medium text-gray-600">No users found</p>
                         <p className="text-sm">Try adjusting your search or filters</p>
+                        <button
+                          onClick={() => { setSearchTerm(""); setViewStatus("All"); }}
+                          className="mt-2 text-[#ff6e00] text-sm font-bold hover:underline"
+                        >
+                          Clear filters
+                        </button>
                       </div>
                     </td>
                   </tr>
