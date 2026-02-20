@@ -1,21 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, Suspense, lazy } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
-import Dashboard from "./pages/Dashboard";
-import Users from "./pages/Users";
-import GasPage from "./pages/Gas";
-import WaterPage from "./pages/Water";
-import EnergyPage from "./pages/Energy";
-import SolarPage from './pages/Solar';
-import AnalysisPage from "./pages/Analysis";
-import AlertsPage from "./pages/Alerts";
-import DevicesPage from "./pages/Devices";
-import SettingsPage from "./pages/Settings";
-import ReportsPage from "./pages/Reports";
-import BillingPage from "./pages/Billing";
-import PayloadsPage from "./pages/Payloads";
-import LoginPage from "./pages/Login";
+// Lazy Load Pages
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Users = lazy(() => import("./pages/Users"));
+const GasPage = lazy(() => import("./pages/Gas"));
+const WaterPage = lazy(() => import("./pages/Water"));
+const EnergyPage = lazy(() => import("./pages/Energy"));
+const SolarPage = lazy(() => import('./pages/Solar'));
+const AnalysisPage = lazy(() => import("./pages/Analysis"));
+const AlertsPage = lazy(() => import("./pages/Alerts"));
+const DevicesPage = lazy(() => import("./pages/Devices"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
+const ReportsPage = lazy(() => import("./pages/Reports"));
+const BillingPage = lazy(() => import("./pages/Billing"));
+const PayloadsPage = lazy(() => import("./pages/Payloads"));
+const LoginPage = lazy(() => import("./pages/Login"));
+const MyUsagePage = lazy(() => import("./pages/MyUsage"));
+
+// Loading Component
+const Loading = () => (
+  <div className="flex items-center justify-center h-full w-full min-h-[400px]">
+    <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
+  </div>
+);
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(sessionStorage.getItem('isAuthenticated') === 'true');
@@ -64,10 +73,12 @@ export default function App() {
     setActivePage("Dashboard");
   };
 
-
-
   if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} />;
+    return (
+      <Suspense fallback={<Loading />}>
+        <LoginPage onLogin={handleLogin} />
+      </Suspense>
+    );
   }
 
   return (
@@ -94,19 +105,22 @@ export default function App() {
 
         {/* Page content – ONLY this scrolls */}
         <main className="flex-1 overflow-y-auto">
-          {activePage === "Dashboard" && <Dashboard setActivePage={setActivePage} userRole={userRole} />}
-          {activePage === "Users" && <Users />}
-          {activePage === 'Gas' && <GasPage />}
-          {activePage === 'Water' && <WaterPage />}
-          {activePage === 'Energy' && <EnergyPage />}
-          {activePage === 'Solar' && <SolarPage />}
-          {activePage === 'Devices' && <DevicesPage />}
-          {activePage === "Alerts" && <AlertsPage />}
-          {activePage === "Analysis" && <AnalysisPage />}
-          {activePage === "Settings" && <SettingsPage />}
-          {activePage === "Reports" && <ReportsPage />}
-          {activePage === "Billing" && <BillingPage />}
-          {activePage === "Payloads" && <PayloadsPage />}
+          <Suspense fallback={<Loading />}>
+            {activePage === "Dashboard" && <Dashboard setActivePage={setActivePage} userRole={userRole} />}
+            {activePage === "Users" && <Users />}
+            {activePage === 'Gas' && <GasPage setActivePage={setActivePage} />}
+            {activePage === 'Water' && <WaterPage setActivePage={setActivePage} />}
+            {activePage === 'Energy' && <EnergyPage setActivePage={setActivePage} />}
+            {activePage === 'Solar' && <SolarPage setActivePage={setActivePage} />}
+            {activePage === 'Devices' && <DevicesPage />}
+            {activePage === "Alerts" && <AlertsPage />}
+            {activePage === "Analysis" && <AnalysisPage />}
+            {activePage === "Settings" && <SettingsPage />}
+            {activePage === "Reports" && <ReportsPage />}
+            {activePage === "Billing" && <BillingPage userRole={userRole} />}
+            {activePage === "My Usage" && <MyUsagePage />}
+            {activePage === "Payloads" && <PayloadsPage />}
+          </Suspense>
         </main>
       </div>
     </div>

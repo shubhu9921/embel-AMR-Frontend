@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, IndianRupee, Gauge, Zap, AlertTriangle, List, Thermometer, Battery, Activity, BarChart3, CloudSun, Leaf, ArrowUpRight } from 'lucide-react';
+import { Sun, IndianRupee, Gauge, Zap, List, Thermometer, Battery, Activity, BarChart3, CloudSun, Leaf, ArrowUpRight } from 'lucide-react';
 import ResourceDashboard from './ResourceDashboard';
 
 /* -------------------- MOCK DATA -------------------- */
@@ -56,7 +56,7 @@ const allSolarInverters = [
     { deviceId: 'INV-004', deviceName: 'Backup Unit', location: 'Basement', status: 'active', dailyConsumption: '15 kWh', currentFlow: '5' },
 ];
 
-export default function SolarPage() {
+export default function SolarPage({ setActivePage }) {
     const chartData = {
         day: solarDataDay,
         week: solarDataWeek,
@@ -88,6 +88,11 @@ export default function SolarPage() {
             flowUnit="kW"
             chartTitle="Generation Analytics"
             meterSectionTitle="Inverters"
+            withGreeting={true}
+            greetingTitle="Hello, Domestic User! 👋"
+            greetingSubtitle="Here's your home's solar overview."
+            onDownloadReport={() => alert("Report download started...")}
+            onPayBill={() => setActivePage && setActivePage('Billing')}
         />
     );
 }

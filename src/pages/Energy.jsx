@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, IndianRupee, Gauge, Activity, AlertTriangle, List, Thermometer, Filter, Settings, ShieldCheck, Battery, Plug, RotateCw, Factory, Waves } from 'lucide-react';
+import { Zap, IndianRupee, Gauge, Activity, RotateCw, Factory, Waves, Plug, Battery } from 'lucide-react';
 import ResourceDashboard from './ResourceDashboard';
 
 /* -------------------- MOCK DATA -------------------- */
@@ -57,7 +57,7 @@ const allEnergyMeters = [
   { deviceId: 'EM-005', deviceName: 'Workshop', location: 'Basement', status: 'warning', dailyConsumption: '85 kWh', currentFlow: '28' },
 ];
 
-export default function EnergyPage() {
+export default function EnergyPage({ setActivePage }) {
   const chartData = {
     day: energyDataDay,
     week: energyDataWeek,
@@ -86,6 +86,11 @@ export default function EnergyPage() {
       systemParams={commonParameters}
       meterModalTitle="Energy Meters List"
       flowUnit="kW"
+      withGreeting={true}
+      greetingTitle="Hello, Domestic User! 👋"
+      greetingSubtitle="Here's your home's energy overview."
+      onDownloadReport={() => alert("Report download started...")}
+      onPayBill={() => setActivePage && setActivePage('Billing')}
     />
   );
 }

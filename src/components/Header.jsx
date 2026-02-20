@@ -35,54 +35,61 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
 
   /* -------------------- SEARCH DATA & LOGIC -------------------- */
 
-
-  const [allSearchData, setAllSearchData] = useState([]);
-
-  useEffect(() => {
-    const pages = PAGES_DATA.map(p => ({ ...p, category: 'Pages' }));
-
-    const devices = initialDevicesData.map(d => ({
-      id: `dev-${d.id}`,
-      type: 'Device',
-      category: 'Devices',
-      label: d.name,
-      value: d.deviceId, // Searchable sub-text
-      status: d.status,
-      target: 'Devices'
-    }));
-
-    const users = initialUsers.map(u => ({
-      id: `usr-${u.id}`,
-      type: 'User',
-      category: 'Users',
-      label: `${u.firstName} ${u.lastName}`,
-      value: u.email,
-      status: u.status,
-      target: 'Users'
-    }));
-
-    const locations = sites.map(s => ({
-      id: `loc-${s.id}`,
-      type: 'Location',
-      category: 'Locations',
-      label: s.name,
-      value: 'Site',
-      status: s.status,
-      target: 'Dashboard'
-    }));
-
-    const params = PARAMS_DATA.map(p => ({ ...p, category: 'Parameters' }));
-
-    setAllSearchData([...pages, ...devices, ...users, ...locations, ...params]);
-  }, []);
-
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
 
-    if (query.length > 0) {
+    if (query.trim().length > 0) {
       const lowerQuery = query.toLowerCase();
-      const filtered = allSearchData.filter(item =>
+      // Since allSearchData was removed from state in the previous revert, we need to declare the dataset
+      let pages = PAGES_DATA.map(p => ({ ...p, category: 'Pages' }));
+      let devices = initialDevicesData.map(d => ({
+        id: `dev-${d.id}`,
+        type: 'Device',
+        category: 'Devices',
+        label: d.name,
+        value: d.deviceId,
+        status: d.status,
+        target: 'Devices'
+      }));
+
+      if (userRole === 'Domestic') {
+        const allowedPages = ['Dashboard', 'My Usage', 'Billing', 'Alerts', 'Settings'];
+        pages = pages.filter(p => allowedPages.includes(p.label));
+        devices = devices.filter(d => d.assignedUser === 'John Doe' || d.userEmail === 'john@amr.com');
+      }
+
+      const users = initialUsers.map(u => ({
+        id: `usr-${u.id}`,
+        type: 'User',
+        category: 'Users',
+        label: `${u.firstName} ${u.lastName}`,
+        value: u.email,
+        status: u.status,
+        target: 'Users'
+      }));
+
+      const locations = sites.map(s => ({
+        id: `loc-${s.id}`,
+        type: 'Location',
+        category: 'Locations',
+        label: s.name,
+        value: 'Site',
+        status: s.status,
+        target: 'Dashboard'
+      }));
+
+      const params = PARAMS_DATA.map(p => ({ ...p, category: 'Parameters' }));
+
+      const allData = [
+        ...pages,
+        ...devices,
+        ...(userRole === 'Admin' || userRole === 'Super Admin' ? users : []),
+        ...(userRole === 'Admin' || userRole === 'Super Admin' ? locations : []),
+        ...(userRole === 'Admin' || userRole === 'Super Admin' ? params : [])
+      ];
+
+      const filtered = allData.filter(item =>
         item.label.toLowerCase().includes(lowerQuery) ||
         (item.value && item.value.toLowerCase().includes(lowerQuery)) ||
         item.type.toLowerCase().includes(lowerQuery)
@@ -117,7 +124,7 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
     { id: 3, type: 'info', title: 'Usage Update', desc: 'Weekly usage report is available.', time: '1d ago' },
   ];
 
-  const notifications = userRole === 'Admin' ? adminNotifications : userNotifications;
+  const notifications = userRole === 'Admin' || userRole === 'Super Admin' ? adminNotifications : userNotifications;
 
 
   return (
@@ -138,38 +145,42 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
           />
 
           {/* Search Results Dropdown */}
-          {showSearchDropdown && (
+          {showSearchDropdown && searchQuery.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-[400px] overflow-y-auto custom-scrollbar">
               <div className="p-2">
-                {['Pages', 'Devices', 'Users', 'Locations', 'Parameters'].map(category => {
-                  const items = searchResults.filter(r => r.category === category);
-                  if (items.length === 0) return null;
-                  return (
-                    <div key={category} className="mb-2 last:mb-0">
-                      <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1">{category}</div>
-                      {items.map(item => (
-                        <button
-                          key={item.id}
-                          onClick={() => handleResultClick(item)}
-                          className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 flex items-center justify-between gap-3 transition-colors group"
-                        >
-                          <div className="flex flex-col overflow-hidden">
-                            <span className="font-medium truncate">{item.label}</span>
-                            {item.value && <span className="text-xs text-gray-400 group-hover:text-orange-500/80 truncate">{item.value}</span>}
-                          </div>
-                          {item.status && (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 font-bold ${item.status === 'Active' ? 'bg-emerald-100 text-emerald-700' :
-                              item.status === 'Warning' ? 'bg-amber-100 text-amber-700' :
-                                item.status === 'Inactive' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-600'
-                              }`}>
-                              {item.status}
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )
-                })}
+                {searchResults.length === 0 ? (
+                  <div className="p-4 text-center text-sm font-medium text-gray-500">No results found</div>
+                ) : (
+                  ['Pages', 'Devices', 'Users', 'Locations', 'Parameters'].map(category => {
+                    const items = searchResults.filter(r => r.category === category);
+                    if (items.length === 0) return null;
+                    return (
+                      <div key={category} className="mb-2 last:mb-0">
+                        <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1">{category}</div>
+                        {items.map(item => (
+                          <button
+                            key={item.id}
+                            onClick={() => handleResultClick(item)}
+                            className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 flex items-center justify-between gap-3 transition-colors group"
+                          >
+                            <div className="flex flex-col overflow-hidden">
+                              <span className="font-medium truncate">{item.label}</span>
+                              {item.value && <span className="text-xs text-gray-400 group-hover:text-orange-500/80 truncate">{item.value}</span>}
+                            </div>
+                            {item.status && (
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 font-bold ${item.status === 'Active' ? 'bg-emerald-100 text-emerald-700' :
+                                item.status === 'Warning' ? 'bg-amber-100 text-amber-700' :
+                                  item.status === 'Inactive' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-600'
+                                }`}>
+                                {item.status}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           )}
@@ -184,40 +195,9 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
         </button>
       </div>
 
-      {/* Center: Resource shortcuts (Desktop only) */}
-      <div className="hidden md:flex flex-wrap items-center gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/10 max-w-full shadow-[0_4px_20px_rgba(251,146,60,0.15)] backdrop-blur-sm">
-        <Resource
-          icon={Sun}
-          label="Solar"
-          activeColor="bg-amber-100 text-amber-700 shadow-sm"
-          inactiveColor="text-gray-500 hover:text-amber-600 hover:bg-amber-50"
-          active={activePage === "Solar"}
-          onClick={() => setActivePage("Solar")}
-        />
-        <Resource
-          icon={Droplet}
-          label="Water"
-          activeColor="bg-cyan-100 text-cyan-700 shadow-sm"
-          inactiveColor="text-gray-500 hover:text-cyan-600 hover:bg-cyan-50"
-          active={activePage === "Water"}
-          onClick={() => setActivePage("Water")}
-        />
-        <Resource
-          icon={Flame}
-          label="Gas"
-          activeColor="bg-orange-100 text-orange-700 shadow-sm"
-          inactiveColor="text-gray-500 hover:text-orange-600 hover:bg-orange-50"
-          active={activePage === "Gas"}
-          onClick={() => setActivePage("Gas")}
-        />
-        <Resource
-          icon={Zap}
-          label="Energy"
-          activeColor="bg-emerald-100 text-emerald-700 shadow-sm"
-          inactiveColor="text-gray-500 hover:text-emerald-600 hover:bg-emerald-50"
-          active={activePage === "Energy"}
-          onClick={() => setActivePage("Energy")}
-        />
+      {/* Center: Resource shortcuts (Desktop only) removed per request */}
+      <div className="hidden md:flex flex-wrap items-center gap-3 max-w-full">
+        {/* Placeholder for center alignment if needed */}
       </div>
 
       {/* Right Actions */}
@@ -286,11 +266,13 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
             title="Profile"
           >
             <div className="hidden lg:block text-right">
-              <p className="text-sm font-semibold text-slate-700 leading-none group-hover:text-orange-600 transition">Admin User</p>
-              <p className="text-[11px] text-slate-500 mt-0.5 group-hover:text-slate-700">Super Admin</p>
+              <p className="text-sm font-semibold text-slate-700 leading-none group-hover:text-orange-600 transition">
+                {userRole === 'Domestic' ? 'Home Owner' : 'Admin User'}
+              </p>
+              <p className="text-[11px] text-slate-500 mt-0.5 group-hover:text-slate-700">{userRole}</p>
             </div>
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-blue-500/20 group-hover:shadow-lg group-hover:scale-105 transition-all duration-300">
-              AU
+              {userRole === 'Domestic' ? 'HO' : 'AU'}
             </div>
           </button>
 
@@ -300,10 +282,12 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
               <div className="p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                 <div className="relative z-10 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-lg font-bold border-2 border-white/20">AU</div>
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-lg font-bold border-2 border-white/20">
+                    {userRole === 'Domestic' ? 'HO' : 'AU'}
+                  </div>
                   <div>
-                    <p className="font-bold text-lg">Admin User</p>
-                    <p className="text-xs text-slate-300">admin@embel.io</p>
+                    <p className="font-bold text-lg">{userRole === 'Domestic' ? 'Home Owner' : 'Admin User'}</p>
+                    <p className="text-xs text-slate-300">{userRole === 'Domestic' ? 'user@home.com' : 'admin@embel.io'}</p>
                   </div>
                 </div>
               </div>

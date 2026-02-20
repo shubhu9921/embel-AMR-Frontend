@@ -1,0 +1,178 @@
+import React, { useState, useEffect } from 'react';
+import { X, Receipt, Download, AlertCircle, Eye } from 'lucide-react';
+
+export default function GenerateBillModal({ onClose, userEmail = 'user@example.com' }) {
+    const [step, setStep] = useState(1); // 1: Select Source, 2: Preview
+    const [selectedSource, setSelectedSource] = useState('ELECTRIC');
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    useEffect(() => {
+        let timeoutId;
+        if (isGenerating) {
+            timeoutId = setTimeout(() => {
+                setIsGenerating(false);
+                alert(`Bill for ${selectedSource} downloaded successfully.`);
+                onClose();
+            }, 1500);
+        }
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, [isGenerating, selectedSource, onClose]);
+
+    // Mock calculation based on source
+    const getMockBillData = (source) => {
+        const baseAmount = source === 'ELECTRIC' ? 4500 : source === 'WATER' ? 1200 : source === 'GAS' ? 2100 : 800; // Solar
+        const tax = baseAmount * 0.18;
+        return {
+            subtotal: baseAmount,
+            tax: tax,
+            total: baseAmount + tax,
+            consumption: source === 'ELECTRIC' ? '450 kWh' : source === 'WATER' ? '120 kL' : source === 'GAS' ? '45 m³' : '150 kWh',
+            rate: source === 'ELECTRIC' ? '₹10/kWh' : source === 'WATER' ? '₹10/kL' : source === 'GAS' ? '₹46/m³' : '₹5.3/kWh'
+        };
+    };
+
+    const billData = getMockBillData(selectedSource);
+
+    const handleGenerate = () => {
+        setStep(2);
+    };
+
+    const handleDownload = () => {
+        setIsGenerating(true);
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-orange-100 text-orange-600 rounded-xl">
+                            {step === 1 ? <Receipt size={24} /> : <Eye size={24} />}
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900">
+                                {step === 1 ? 'Generate New Bill' : 'Bill Preview'}
+                            </h2>
+                            <p className="text-sm font-medium text-gray-500">
+                                {step === 1 ? 'Select a resource to generate' : `${selectedSource} Billing Statement`}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 flex-1 overflow-y-auto">
+                    {step === 1 ? (
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Select Resource</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {['ELECTRIC', 'WATER', 'GAS', 'SOLAR'].map(source => (
+                                        <button
+                                            key={source}
+                                            onClick={() => setSelectedSource(source)}
+                                            className={`p-4 flex flex-col items-center gap-2 rounded-xl border-2 transition-all ${selectedSource === source
+                                                ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-md shadow-orange-100'
+                                                : 'border-gray-100 hover:border-orange-200 hover:bg-orange-50/50 text-gray-600'
+                                                }`}
+                                        >
+                                            <span className="font-bold">{source}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="bg-blue-50 p-4 rounded-xl flex gap-3 text-blue-800 border border-blue-100 text-sm">
+                                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                <p>Generating a bill will fetch your consumption data from the start of your billing cycle to current time. Proceed to preview the amounts.</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Account</p>
+                                        <p className="font-bold text-gray-900">{userEmail}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Resource</p>
+                                        <p className="font-bold text-gray-900">{selectedSource}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600 font-medium">Total Consumption</span>
+                                        <span className="font-bold text-gray-900">{billData.consumption}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600 font-medium">Applicable Rate</span>
+                                        <span className="font-bold text-gray-900">{billData.rate}</span>
+                                    </div>
+                                    <div className="pt-4 border-t border-gray-200 flex justify-between text-sm">
+                                        <span className="text-gray-600 font-medium">Subtotal</span>
+                                        <span className="font-bold text-gray-900">₹{billData.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600 font-medium">Taxes (18% GST)</span>
+                                        <span className="font-bold text-gray-900">₹{billData.tax.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-orange-50 rounded-2xl p-6 border border-orange-100 flex justify-between items-center">
+                                <span className="font-bold text-orange-900">Total Amount Due</span>
+                                <span className="text-2xl font-black text-orange-700">₹{billData.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer Controls */}
+                <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+                    <button
+                        onClick={step === 1 ? onClose : () => setStep(1)}
+                        className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 shadow-sm transition-all"
+                    >
+                        {step === 1 ? 'Cancel' : 'Back'}
+                    </button>
+
+                    {step === 1 ? (
+                        <button
+                            onClick={handleGenerate}
+                            className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-md shadow-orange-500/20 transition-all active:scale-95"
+                        >
+                            Preview Bill
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleDownload}
+                            disabled={isGenerating}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-md shadow-orange-500/20 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {isGenerating ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <Download size={16} />
+                            )}
+                            {isGenerating ? 'Generating...' : 'Download Final Bill'}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

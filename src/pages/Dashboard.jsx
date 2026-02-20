@@ -8,10 +8,10 @@ import {
     BarChart, Bar, Label
 } from "recharts";
 import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckCircle, Maximize2, X, Gauge, Sun, Activity, Users, CreditCard, FileText, Cpu, Clock, AlertCircle, MapPin, Eye, Filter } from "lucide-react";
-import { TimeFilter } from "./TimeFilter";
-import { AlertsPanel } from "./AlertsPanel";
-import { StatCard } from "./StatCard";
-import { LocationDetailsModal } from "./LocationDetailsModal";
+import { TimeFilter } from "../components/dashboard/TimeFilter";
+import { AlertsPanel } from "../components/dashboard/AlertsPanel";
+import { StatCard } from "../components/dashboard/StatCard";
+import { LocationDetailsModal } from "../components/modals/LocationDetailsModal";
 import DomesticDashboard from "./DomesticDashboard";
 import { sites, userDataDetailed, initialDevicesData, initialMetersData, initialUsers } from "../data/mockData";
 
@@ -145,8 +145,6 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         { name: "Deactivated", value: 15, color: "#ef4444" },
     ];
 
-    /* -------------------- SITES (MAP DATA) -------------------- */
-
 
     /* -------------------- CONSUMPTION DATA (MULTI-RESOURCE) -------------------- */
     const multiResourceDataDay = [
@@ -216,8 +214,8 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         <main className="w-full flex flex-col gap-6 min-h-screen mb-20">
 
             {/* -------------------- HEADER (Floating Card Style) -------------------- */}
-            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-blue-50/90 mx-4 mt-4">
-                <div className="flex items-center justify-between gap-4">
+            <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mx-4 mt-4 mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
                             <LayoutDashboard size={24} />

@@ -13,8 +13,8 @@ import {
     Clock,
     ChevronDown
 } from 'lucide-react';
-import ReportDetailsModal from './ReportDetailsModal';
-import { StatCard } from './StatCard';
+import ReportDetailsModal from "../components/modals/ReportDetailsModal";
+import { StatCard } from "../components/dashboard/StatCard";
 
 const initialReports = [
     { id: 1, name: "Monthly Consumption Report", type: "Consumption", meter: "ELECTRIC", period: "December 2024", generated: "2025-01-07", status: "Ready", size: "2.4 MB" },
@@ -98,8 +98,8 @@ export default function ReportsPage() {
     return (
         <div className="w-full min-h-screen p-6 md:p-8 font-sans">
             {/* Top Header */}
-            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mb-6">
-                <div className="flex items-center justify-between gap-4">
+            <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
                             <FileText size={24} />

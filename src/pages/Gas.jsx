@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, IndianRupee, Gauge, Wind, AlertTriangle, Thermometer, Activity, Filter, Settings, ShieldCheck, Battery, TestTube } from 'lucide-react';
+import { Flame, IndianRupee, Gauge, Wind, Thermometer, Activity, Filter, Settings, ShieldCheck, Battery, TestTube } from 'lucide-react';
 import ResourceDashboard from './ResourceDashboard';
 
 /* -------------------- MOCK DATA -------------------- */
@@ -60,7 +60,7 @@ const allGasMeters = [
   { deviceId: 'GAS-008', deviceName: 'Lab 2', location: 'Wing C', status: 'active', dailyConsumption: '9 m³', currentFlow: '0.4' },
 ];
 
-export default function GasPage() {
+export default function GasPage({ setActivePage }) {
   const chartData = {
     day: gasDataDay,
     week: gasDataWeek,
@@ -69,11 +69,11 @@ export default function GasPage() {
   };
 
   const kpiData = [
-    { title: "Total Usage", value: "845 m³", icon: <Flame className="w-4 h-4" />, trend: 2.5, color: "orange", description: "Monthly cumulative volume" },
-    { title: "Est. Cost", value: "₹ 45,230", icon: <IndianRupee className="w-4 h-4" />, trend: -1.2, color: "green", description: "Projected billing cycle cost" },
-    { title: "Avg Pressure", value: "2.4 bar", icon: <Gauge className="w-4 h-4" />, color: "blue", description: "System-wide average" },
-    { title: "Peak Flow", value: "42 m³/h", icon: <Activity className="w-4 h-4" />, subValue: "14:00", color: "purple", description: "Highest recorded flow rate" },
-    { title: "Alerts", value: alerts.length, icon: <AlertTriangle className="w-4 h-4" />, subValue: "Active", color: "red", description: "Requires immediate attention" },
+    { title: "Total Consumption", value: "450 m³", icon: <Flame className="w-4 h-4" />, trend: 5.4, color: "orange", description: "Monthly cumulative usage" },
+    { title: "Est. Cost", value: "₹ 2,450", icon: <IndianRupee className="w-4 h-4" />, trend: 2.1, color: "blue", description: "Projected billing cycle cost" },
+    { title: "Avg Daily", value: "15 m³", icon: <Activity className="w-4 h-4" />, color: "emerald", description: "Daily average consumption" },
+    { title: "Peak Demand", value: "2.5 m³/h", icon: <Gauge className="w-4 h-4" />, subValue: "18:45", color: "red", description: "Highest recorded flow rate" },
+    { title: "Pressure", value: "Normal", icon: <Wind className="w-4 h-4" />, subValue: "2.1 psi", color: "purple", description: "System pressure status" },
   ];
 
   return (
@@ -89,6 +89,11 @@ export default function GasPage() {
       systemParams={commonParameters}
       meterModalTitle="Gas Meters List"
       flowUnit="m³/h"
+      withGreeting={true}
+      greetingTitle="Hello, Domestic User! 👋"
+      greetingSubtitle="Here's your home's gas overview."
+      onDownloadReport={() => alert("Report download started...")}
+      onPayBill={() => setActivePage && setActivePage('Billing')}
     />
   );
 }

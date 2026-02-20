@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { IndianRupee, Gauge, List, AlertTriangle } from 'lucide-react';
-import { StatCard } from './StatCard';
-import { TimeFilter } from './TimeFilter';
-import { DeviceCard } from './DeviceCard';
-import { AlertsPanel } from './AlertsPanel';
+import { IndianRupee, Gauge, List, AlertTriangle, Download, CreditCard } from 'lucide-react';
+import { StatCard } from '../components/dashboard/StatCard';
+import { TimeFilter } from '../components/dashboard/TimeFilter';
+import { DeviceCard } from '../components/dashboard/DeviceCard';
+import { AlertsPanel } from '../components/dashboard/AlertsPanel';
 import { MetersModal } from '../components/MetersModal';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label,
@@ -48,6 +48,11 @@ export default function ResourceDashboard({
     chartTitle = "Consumption Overview",
     meterSectionTitle = "Meters",
     flowUnit = "Unit",
+    withGreeting = false, // New Prop
+    greetingTitle = "Hello, Domestic User! 👋", // New Prop
+    greetingSubtitle = "Here's your home's resource overview.", // New Prop
+    onDownloadReport, // New Prop
+    onPayBill, // New Prop
     children
 }) {
     const [timeRange, setTimeRange] = useState('week');
@@ -180,24 +185,49 @@ export default function ResourceDashboard({
             />
 
             {/* Header */}
-            <div className={`sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl ${theme.hoverBg} mx-4 mt-4`}>
-                <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${theme.gradientFrom} ${theme.gradientTo} text-white shadow-lg transition-transform duration-300 group-hover:scale-105`}>
-                            {icon}
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                                {title}
-                            </h1>
-                            <p className="text-sm font-medium text-gray-500">
-                                Real-time usage & status
-                            </p>
-                        </div>
+            {withGreeting ? (
+                <div className="p-5 border-b border-gray-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-[20px] shadow-sm mx-4 mt-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{greetingTitle}</h1>
+                        <p className="text-gray-500 font-medium mt-1">{greetingSubtitle}</p>
                     </div>
-                    <div className={`h-1.5 w-24 rounded-full bg-gradient-to-r ${theme.lineStart} ${theme.lineEnd} opacity-20`} />
+                    <div className="flex gap-3">
+                        <button
+                            onClick={onDownloadReport || (() => alert("Report download started..."))}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+                        >
+                            <Download className="w-4 h-4" />
+                            <span className="hidden sm:inline">Download Report</span>
+                        </button>
+                        <button
+                            onClick={onPayBill || (() => console.log("Navigate to Billing"))}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
+                        >
+                            <CreditCard className="w-4 h-4" />
+                            <span className="hidden sm:inline">Pay Bill</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <div className={`sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl ${theme.hoverBg} mx-4 mt-4`}>
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${theme.gradientFrom} ${theme.gradientTo} text-white shadow-lg transition-transform duration-300 group-hover:scale-105`}>
+                                {icon}
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                                    {title}
+                                </h1>
+                                <p className="text-sm font-medium text-gray-500">
+                                    Real-time usage & status
+                                </p>
+                            </div>
+                        </div>
+                        <div className={`h-1.5 w-24 rounded-full bg-gradient-to-r ${theme.lineStart} ${theme.lineEnd} opacity-20`} />
+                    </div>
+                </div>
+            )}
 
             <div className="flex-1 p-5 flex flex-col gap-5">
 

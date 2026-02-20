@@ -14,8 +14,9 @@ import {
     ChevronDown,
     Receipt
 } from 'lucide-react';
-import BillingDetailsModal from './BillingDetailsModal';
-import { StatCard } from './StatCard';
+import BillingDetailsModal from '../components/modals/BillingDetailsModal';
+import { StatCard } from '../components/dashboard/StatCard';
+import GenerateBillModal from '../components/modals/GenerateBillModal';
 
 const initialInvoices = [
     {
@@ -59,7 +60,7 @@ const initialInvoices = [
     { id: 'INV-2024-089', customer: 'Emma Wilson', email: 'emma@amr.com', meter: 'MTR-008', resourceType: 'GAS', type: 'Consumption', amount: '₹4,012', date: '2024-12-30', status: 'Paid' },
 ];
 
-export default function BillingPage() {
+export default function BillingPage({ userRole = 'Admin' }) {
     const [invoices] = useState(initialInvoices);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
@@ -67,6 +68,7 @@ export default function BillingPage() {
     const [filterMeter, setFilterMeter] = useState("All");
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
 
     // Dropdown states
     const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
@@ -102,7 +104,12 @@ export default function BillingPage() {
         setIsModalOpen(true);
     };
 
-    const filteredInvoices = invoices.filter(inv => {
+    // Filter invoices (Domestic sees only their own bills - using placeholder "John Doe" or specific email as proxy)
+    const displayInvoices = userRole === 'Domestic'
+        ? invoices.filter(inv => inv.email === 'john@amr.com') // Mocking current user
+        : invoices;
+
+    const filteredInvoices = displayInvoices.filter(inv => {
         const matchesSearch = inv.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
             inv.id.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = filterStatus === "All" || inv.status === filterStatus;
@@ -130,19 +137,19 @@ export default function BillingPage() {
         }
     };
 
-    // Calculate totals
-    const totalBilling = "₹" + invoices.reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
-    const totalPaid = "₹" + invoices.filter(i => i.status === 'Paid').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
-    const totalPending = "₹" + invoices.filter(i => i.status === 'Pending').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
-    const totalOverdue = "₹" + invoices.filter(i => i.status === 'Overdue').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
+    // Calculate totals based on displayed invoices
+    const totalBilling = "₹" + displayInvoices.reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
+    const totalPaid = "₹" + displayInvoices.filter(i => i.status === 'Paid').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
+    const totalPending = "₹" + displayInvoices.filter(i => i.status === 'Pending').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
+    const totalOverdue = "₹" + displayInvoices.filter(i => i.status === 'Overdue').reduce((acc, curr) => acc + parseInt(curr.amount.replace(/[^0-9]/g, '')), 0).toLocaleString();
 
     return (
         <main className="w-full min-h-screen p-4 md:p-6 font-sans">
 
             {/* Top Header */}
             {/* Top Header */}
-            <div className="sticky top-0 z-30 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-orange-50/90 mb-6">
-                <div className="flex items-center justify-between gap-4">
+            <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
                             <Receipt size={24} />
@@ -318,12 +325,23 @@ export default function BillingPage() {
                             <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
 
                             {/* Action Buttons */}
-                            <button
-                                className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
-                            >
-                                <Plus className="w-5 h-5 stroke-[2.5]" />
-                                <span className="hidden sm:inline">Create Invoice</span>
-                            </button>
+                            {userRole !== 'Domestic' ? (
+                                <button
+                                    onClick={() => alert("Create Invoice functionality coming soon!")}
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
+                                >
+                                    <Plus className="w-5 h-5 stroke-[2.5]" />
+                                    <span className="hidden sm:inline">Create Invoice</span>
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setIsGenerateModalOpen(true)}
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
+                                >
+                                    <Receipt className="w-5 h-5 stroke-[2.5]" />
+                                    <span className="hidden sm:inline">Generate Bill</span>
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -333,7 +351,7 @@ export default function BillingPage() {
                             <thead className="bg-gray-50/50 text-gray-500 text-xs uppercase font-extrabold tracking-wider sticky top-0 z-10 backdrop-blur-md">
                                 <tr>
                                     <th className="px-6 py-4 border-b border-gray-100">Invoice</th>
-                                    <th className="px-6 py-4 border-b border-gray-100">Customer</th>
+                                    {userRole !== 'Domestic' && <th className="px-6 py-4 border-b border-gray-100">Customer</th>}
                                     <th className="px-6 py-4 border-b border-gray-100">Meter</th>
                                     <th className="px-6 py-4 border-b border-gray-100">Type</th>
                                     <th className="px-6 py-4 border-b border-gray-100">Amount</th>
@@ -359,12 +377,14 @@ export default function BillingPage() {
                                                 </div>
                                             </td>
 
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-gray-800 text-sm">{inv.customer}</span>
-                                                    <span className="text-xs text-gray-400 font-medium mt-0.5">{inv.email}</span>
-                                                </div>
-                                            </td>
+                                            {userRole !== 'Domestic' && (
+                                                <td className="px-6 py-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-gray-800 text-sm">{inv.customer}</span>
+                                                        <span className="text-xs text-gray-400 font-medium mt-0.5">{inv.email}</span>
+                                                    </div>
+                                                </td>
+                                            )}
 
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border ${getResourceTypeColor(inv.resourceType)}`}>
@@ -448,6 +468,12 @@ export default function BillingPage() {
                 onClose={() => setIsModalOpen(false)}
                 invoice={selectedInvoice}
             />
+            {isGenerateModalOpen && (
+                <GenerateBillModal
+                    onClose={() => setIsGenerateModalOpen(false)}
+                    userEmail="user@example.com"
+                />
+            )}
         </main >
     );
 }

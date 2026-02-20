@@ -1,5 +1,5 @@
 import React from 'react';
-import { Droplet, IndianRupee, Gauge, Droplets, AlertTriangle, Thermometer, Waves, TestTube, FlaskConical, Diamond, Zap, Activity, ShieldCheck, Battery, Signal } from 'lucide-react';
+import { IndianRupee, Gauge, Droplets, Thermometer, Waves, TestTube, FlaskConical, Diamond, Zap, Activity, ShieldCheck, Battery, Signal } from 'lucide-react';
 import ResourceDashboard from './ResourceDashboard';
 
 /* -------------------- MOCK DATA -------------------- */
@@ -54,7 +54,7 @@ const allWaterMeters = [
   { deviceName: 'Cafeteria', deviceId: 'WM-004', location: 'Floor 1', status: 'active', currentFlow: '25.4', flowUnit: 'L/min', dailyConsumption: '150 L' },
 ];
 
-export default function Water() {
+export default function WaterPage({ setActivePage }) {
   const chartData = {
     day: waterDataDay,
     week: waterDataWeek,
@@ -63,17 +63,17 @@ export default function Water() {
   };
 
   const kpiData = [
-    { title: "Total Usage", value: "2,027 L", icon: <Droplet className="w-4 h-4" />, trend: -12.5, color: "blue", description: "Monthly cumulative volume" },
-    { title: "Est. Cost", value: "₹ 2,450", icon: <IndianRupee className="w-4 h-4" />, trend: 8.2, color: "green", description: "Projected billing cycle cost" },
-    { title: "Daily Avg", value: "289 L", icon: <Droplets className="w-4 h-4" />, trend: -5.2, color: "purple", description: "Based on 30-day average" },
-    { title: "Peak Flow", value: "18 L/m", icon: <Gauge className="w-4 h-4" />, subValue: "07:30", color: "orange", description: "Highest recorded flow rate" },
-    { title: "Alerts", value: alerts.length, icon: <AlertTriangle className="w-4 h-4" />, subValue: "Active", color: "red", description: "Requires immediate attention" },
+    { title: "Total Usage", value: "1850 L", icon: <Droplets className="w-4 h-4" />, trend: 5.4, color: "cyan", description: "Monthly cumulative usage" },
+    { title: "Est. Cost", value: "₹ 1,250", icon: <IndianRupee className="w-4 h-4" />, trend: 2.1, color: "blue", description: "Projected billing cycle cost" },
+    { title: "Avg Daily", value: "450 L", icon: <Activity className="w-4 h-4" />, color: "emerald", description: "Daily average consumption" },
+    { title: "Peak Flow", value: "45 L/m", icon: <Gauge className="w-4 h-4" />, subValue: "08:30", color: "orange", description: "Highest recorded flow rate" },
+    { title: "Quality", value: "Good", icon: <ShieldCheck className="w-4 h-4" />, subValue: "pH 7.2", color: "purple", description: "Water quality index" },
   ];
 
   return (
     <ResourceDashboard
       title="Water Dashboard"
-      icon={<Droplet size={24} />}
+      icon={<Droplets size={24} />}
       colorTheme="cyan"
       kpiData={kpiData}
       chartData={chartData}
@@ -82,7 +82,12 @@ export default function Water() {
       meters={allWaterMeters}
       systemParams={commonParameters}
       meterModalTitle="Water Meters List"
-      flowUnit="L/min"
+      flowUnit="L"
+      withGreeting={true}
+      greetingTitle="Hello, Domestic User! 👋"
+      greetingSubtitle="Here's your home's water overview."
+      onDownloadReport={() => alert("Report download started...")}
+      onPayBill={() => setActivePage && setActivePage('Billing')}
     />
   );
 }

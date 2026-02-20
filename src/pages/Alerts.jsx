@@ -38,8 +38,8 @@ export default function AlertsPage() {
     <div className="w-full h-full flex flex-col overflow-hidden relative">
 
       {/* Page Header */}
-      <div className="sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-blue-50/90 mx-6 mt-6 mb-2">
-        <div className="flex items-center justify-between gap-4">
+      <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-[20px] shadow-sm mx-6 mt-6 mb-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
               <AlertTriangle size={24} />

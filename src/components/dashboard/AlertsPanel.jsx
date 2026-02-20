@@ -44,11 +44,17 @@ const alertConfig = {
   },
 };
 
-export function AlertsPanel({ alerts, compact = false }) {
+export function AlertsPanel({ alerts, compact = false, userRole = 'Admin' }) {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
   const filteredAlerts = alerts.filter(a => {
+    // If Domestic, hide system-wide critical alerts unless explicitly tagged for them
+    if (userRole === 'Domestic') {
+      const isSystemAlert = (a.title && a.title.toLowerCase().includes('server') || a.title.toLowerCase().includes('offline'));
+      if (isSystemAlert) return false;
+    }
+
     const type = (a.type === 'error' ? 'critical' : a.type).toLowerCase();
     const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase()) ||
       (a.message || "").toLowerCase().includes(search.toLowerCase());
@@ -130,7 +136,7 @@ export function AlertsPanel({ alerts, compact = false }) {
             return (
               <div
                 key={alert.id}
-                className="group relative bg-white border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:border-orange-200 hover:bg-orange-50 transition-all duration-300 cursor-default"
+                className="relative bg-white border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:border-orange-200 hover:bg-orange-50 transition-all duration-300 cursor-default"
               >
                 {/* Left Accent Bar */}
                 <div className={`absolute left-0 top-3 bottom-3 w-1 ${config.bgColor.replace('bg-', 'bg-').replace('50', '500')} rounded-r-full`}></div>

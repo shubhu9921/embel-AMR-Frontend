@@ -5,8 +5,8 @@ import {
 } from 'recharts';
 import { Zap, Flame, Droplet, Sun, Gauge, List, Filter, Activity, CheckCircle2, AlertCircle, XCircle, Thermometer } from 'lucide-react';
 import { MetersModal } from '../components/MetersModal';
-import { DeviceCard } from './DeviceCard';
-import { TimeFilter } from './TimeFilter';
+import { DeviceCard } from '../components/dashboard/DeviceCard';
+import { TimeFilter } from '../components/dashboard/TimeFilter';
 
 // Color system
 const COLORS = {
@@ -107,8 +107,8 @@ export default function AnalysisPage() {
       />
 
       {/* Header */}
-      <div className={`sticky top-0 z-20 group bg-white/90 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md transition-all duration-300 hover:shadow-xl hover:bg-indigo-50/90`}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-[20px] shadow-sm mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-4">
             <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${COLORS[activeTab].gradient} text-white shadow-lg transition-transform duration-300 group-hover:scale-105`}>
               <ThemeIcon size={24} />
