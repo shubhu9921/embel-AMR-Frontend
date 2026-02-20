@@ -11,6 +11,8 @@ import { LayoutDashboard, Flame, Droplet, Zap, Wind, AlertTriangle, Info, CheckC
 import { TimeFilter } from "../components/dashboard/TimeFilter";
 import { AlertsPanel } from "../components/dashboard/AlertsPanel";
 import { StatCard } from "../components/dashboard/StatCard";
+import { PerformanceChart } from "../components/dashboard/PerformanceChart";
+import { DeviceStatusChart } from "../components/dashboard/DeviceStatusChart";
 import { LocationDetailsModal } from "../components/modals/LocationDetailsModal";
 import DomesticDashboard from "./DomesticDashboard";
 import { sites, userDataDetailed, initialDevicesData, initialMetersData, initialUsers } from "../data/mockData";
@@ -432,57 +434,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                             </div>
                         </div>
                         <div className="flex-1 w-full min-h-0">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={multiResourceData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }} barGap={2}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis
-                                        dataKey="name"
-                                        tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 500 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                        dy={10}
-                                    >
-                                        <Label
-                                            content={({ viewBox }) => (
-                                                <text x={viewBox.x + viewBox.width / 2} y={viewBox.y + viewBox.height} fill="#94a3b8" fontSize="11px" fontWeight={500} textAnchor="middle">
-                                                    <tspan dy="1em">Time</tspan>
-                                                </text>
-                                            )}
-                                        />
-                                    </XAxis>
-                                    <YAxis
-                                        tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 500 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                    >
-                                        <Label value="Consumption" angle={-90} position="insideLeft" style={{ fill: '#94a3b8', fontSize: '11px', fontWeight: 500 }} />
-                                    </YAxis>
-                                    <Tooltip
-                                        contentStyle={{
-                                            borderRadius: '16px',
-                                            border: 'none',
-                                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                                            padding: '12px'
-                                        }}
-                                        cursor={{ fill: '#f8fafc', opacity: 0.8 }}
-                                        itemStyle={{ fontSize: '12px', fontWeight: 600 }}
-                                    />
-
-                                    {/* Render bars based on activeResource */}
-                                    {(activeResource === 'All' || activeResource === 'Energy') && (
-                                        <Bar dataKey="Energy" fill="#10b981" radius={[4, 4, 0, 0]} barSize={activeResource === 'All' ? 12 : 32} />
-                                    )}
-                                    {(activeResource === 'All' || activeResource === 'Water') && (
-                                        <Bar dataKey="Water" fill="#06b6d4" radius={[4, 4, 0, 0]} barSize={activeResource === 'All' ? 12 : 32} />
-                                    )}
-                                    {(activeResource === 'All' || activeResource === 'Gas') && (
-                                        <Bar dataKey="Gas" fill="#f97316" radius={[4, 4, 0, 0]} barSize={activeResource === 'All' ? 12 : 32} />
-                                    )}
-                                    {(activeResource === 'All' || activeResource === 'Solar') && (
-                                        <Bar dataKey="Solar" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={activeResource === 'All' ? 12 : 32} />
-                                    )}
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <PerformanceChart data={multiResourceData} />
                         </div>
                     </div>
 
@@ -602,618 +554,632 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                     </div>
                                     <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-lg">Processing</span>
                                 </div>
+
+                                {/* SYSTEM PARAMETERS (Compact) */}
+                                <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all flex flex-col">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                                            <Gauge size={18} className="text-emerald-500" />
+                                            System Status
+                                        </h3>
+                                        <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                                    </div>
+                                    <div className={`grid ${isAdmin ? 'grid-cols-2 lg:grid-cols-2' : 'grid-cols-2 md:grid-cols-4'} gap-3 flex-1 content-start`}>
+                                        {[
+                                            { label: 'Grid Freq', value: '50.02 Hz', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                                            { label: 'Water Pres', value: '3.4 bar', icon: Droplet, color: 'text-cyan-500', bg: 'bg-cyan-50' },
+                                            { label: 'Gas PSI', value: '2.1 psi', icon: Flame, color: 'text-orange-500', bg: 'bg-orange-50' },
+                                            { label: 'Solar Out', value: '4.2 kW', icon: Sun, color: 'text-amber-500', bg: 'bg-amber-50' },
+                                        ].map((p, i) => (
+                                            <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-colors">
+                                                <div className={`p-2 rounded-lg ${p.bg} ${p.color}`}>
+                                                    <p.icon size={16} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase">{p.label}</p>
+                                                    <p className="text-sm font-bold text-gray-900">{p.value}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    {/* SYSTEM PARAMETERS (Compact) */}
-                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                                <Gauge size={18} className="text-emerald-500" />
-                                System Status
-                            </h3>
-                            <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                        </div>
-                        <div className={`grid ${isAdmin ? 'grid-cols-2 lg:grid-cols-2' : 'grid-cols-2 md:grid-cols-4'} gap-3 flex-1 content-start`}>
-                            {[
-                                { label: 'Grid Freq', value: '50.02 Hz', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                                { label: 'Water Pres', value: '3.4 bar', icon: Droplet, color: 'text-cyan-500', bg: 'bg-cyan-50' },
-                                { label: 'Gas PSI', value: '2.1 psi', icon: Flame, color: 'text-orange-500', bg: 'bg-orange-50' },
-                                { label: 'Solar Out', value: '4.2 kW', icon: Sun, color: 'text-amber-500', bg: 'bg-amber-50' },
-                            ].map((p, i) => (
-                                <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-colors">
-                                    <div className={`p-2 rounded-lg ${p.bg} ${p.color}`}>
-                                        <p.icon size={16} />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase">{p.label}</p>
-                                        <p className="text-sm font-bold text-gray-900">{p.value}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-            </div> {/* End of px-4 container */}
-
-            {/* -------------------- ADMIN MAP MODAL -------------------- */}
-            {showMapModal && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-5xl h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900">Global Site Locations</h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Live operational status map</p>
-                            </div>
-                            <button
-                                onClick={() => setShowMapModal(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="flex-1 w-full bg-white relative">
-                            <MapContainer
-                                center={[21.7679, 78.8718]}
-                                zoom={5}
-                                style={{ height: "100%", width: "100%" }}
-                            >
-                                <TileLayer
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                                />
-                                {sites.map(site => (
-                                    <Marker key={site.id} position={site.location}>
-                                        <Popup>
-                                            <div className="p-2 min-w-[150px]">
-                                                <h3 className="font-bold text-gray-900 mb-1">{site.name}</h3>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`w - 2 h - 2 rounded - full ${site.status === 'Active' ? 'bg-green-500' :
-                                                        site.status === 'Inactive' ? 'bg-amber-500' : 'bg-red-500'
-                                                        } `} />
-                                                    <span className="text-sm text-gray-600 font-medium">{site.status}</span>
-                                                </div>
-                                            </div>
-                                        </Popup>
-                                    </Marker>
-                                ))}
-                            </MapContainer>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {/* -------------------- LOCATION DETAILS MODAL -------------------- */}
-            {showLocationModal && (
-                <LocationDetailsModal onClose={() => setShowLocationModal(false)} />
-            )}
-
-
-            {/* -------------------- DEVICE DETAILS MODAL -------------------- */}
-            {showDeviceDetailsModal && selectedUserDevice && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900">{selectedUserDevice.name}</h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Device Details & Parameters</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    setShowDeviceDetailsModal(false);
-                                    setShowUserDevicesModal(true); // Return to list
-                                }}
-                                className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="p-6 space-y-6">
-                            {/* Device Info Grid */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Status</p>
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${selectedUserDevice.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : selectedUserDevice.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                        {selectedUserDevice.status}
-                                    </span>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Type</p>
-                                    <p className="font-semibold text-gray-900">{selectedUserDevice.source}</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Location</p>
-                                    <p className="font-semibold text-gray-900">{selectedUserDevice.location}</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Parameters</p>
-                                    <p className="font-semibold text-gray-900">{selectedUserDevice.params}</p>
-                                </div>
-                            </div>
-
-                            {/* Detailed Params (Mock) */}
-                            <div>
-                                <h3 className="font-bold text-gray-900 mb-3 text-sm flex items-center gap-2">
-                                    <Activity size={16} className="text-blue-500" />
-                                    Live Telemetry
-                                </h3>
-                                <div className="bg-slate-900 text-slate-300 p-4 rounded-xl font-mono text-sm space-y-2">
-                                    <div className="flex justify-between">
-                                        <span>Current:</span>
-                                        <span className="text-emerald-400">4.2A</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Voltage:</span>
-                                        <span className="text-amber-400">230.1V</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Power Factor:</span>
-                                        <span className="text-blue-400">0.98</span>
-                                    </div>
-                                    <div className="flex justify-between border-t border-slate-700 pt-2 mt-2">
-                                        <span>Last Update:</span>
-                                        <span className="text-slate-500">Just now</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {/* -------------------- METER DETAILS MODAL -------------------- */}
-            {showMeterDetailsModal && selectedUserMeter && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900">{selectedUserMeter.name}</h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Meter Readings & Status</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    setShowMeterDetailsModal(false);
-                                    setShowUserMetersModal(true); // Return to list
-                                }}
-                                className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="p-6 space-y-6">
-                            {/* Meter Info Grid */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Status</p>
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${selectedUserMeter.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : selectedUserMeter.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                        {selectedUserMeter.status}
-                                    </span>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Type</p>
-                                    <p className="font-semibold text-gray-900">{selectedUserMeter.source}</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Location</p>
-                                    <p className="font-semibold text-gray-900">{selectedUserMeter.location}</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Last Sync</p>
-                                    <p className="font-semibold text-gray-900">Just now</p>
-                                </div>
-                            </div>
-
-                            {/* Current Reading */}
-                            <div>
-                                <h3 className="font-bold text-gray-900 mb-3 text-sm flex items-center gap-2">
-                                    <Gauge size={16} className="text-indigo-500" />
-                                    Current Reading
-                                </h3>
-                                <div className="bg-indigo-50 text-indigo-900 p-6 rounded-2xl flex flex-col items-center justify-center border border-indigo-100">
-                                    <span className="text-4xl font-bold font-mono tracking-tighter">{selectedUserMeter.reading}</span>
-                                    <span className="text-xs font-bold uppercase tracking-widest text-indigo-400 mt-1">Kilowatt Hours</span>
-                                </div>
-                            </div>
-
-                            {/* Recent Consumption (Mock) */}
-                            <div>
-                                <h3 className="font-bold text-gray-900 mb-3 text-sm">Recent History</h3>
-                                <div className="space-y-2">
-                                    {[
-                                        { time: '10:00 AM', val: '45.2 kWh' },
-                                        { time: '09:00 AM', val: '42.8 kWh' },
-                                        { time: '08:00 AM', val: '38.5 kWh' },
-                                    ].map((h, i) => (
-                                        <div key={i} className="flex justify-between items-center p-2 rounded-lg bg-gray-50 text-sm">
-                                            <span className="text-gray-500">{h.time}</span>
-                                            <span className="font-mono font-bold text-gray-900">{h.val}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {showUserDevicesModal && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900">Assigned Devices</h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of hardware assigned to you</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
-                                    <Filter size={16} className="text-gray-400 ml-2" />
-                                    <select
-                                        value={userDeviceFilter}
-                                        onChange={(e) => setUserDeviceFilter(e.target.value)}
-                                        className="bg-transparent text-sm font-medium text-gray-700 border-none focus:ring-0 cursor-pointer py-1 pr-8 pl-1"
-                                    >
-                                        <option value="All">All Status</option>
-                                        <option value="Active">Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                        <option value="Deactive">Deactive</option>
-                                    </select>
-                                </div>
-                                <button onClick={() => setShowUserDevicesModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
-                            </div>
-                        </div>
-                        <div className="overflow-auto p-6">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                                        <th className="py-3 px-4">Device Name</th>
-                                        <th className="py-3 px-4">Type/Source</th>
-                                        <th className="py-3 px-4">Parameters</th>
-                                        <th className="py-3 px-4">Status</th>
-                                        <th className="py-3 px-4">Location</th>
-                                        <th className="py-3 px-4 text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-sm">
-                                    {userDataDetailed.devices
-                                        .filter(d => userDeviceFilter === 'All' || d.status === userDeviceFilter)
-                                        .map((device, i) => (
-                                            <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                                <td className="py-3 px-4 font-semibold text-gray-900">{device.name}</td>
-                                                <td className="py-3 px-4 text-gray-600">{device.source}</td>
-                                                <td className="py-3 px-4 text-gray-600">{device.params}</td>
-                                                <td className="py-3 px-4">
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${device.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : device.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                                        {device.status}
-                                                    </span>
-                                                </td>
-                                                <td className="py-3 px-4 text-gray-500">{device.location}</td>
-                                                <td className="py-3 px-4 text-center">
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedUserDevice(device);
-                                                            setShowUserDevicesModal(false);
-                                                            setShowDeviceDetailsModal(true);
-                                                        }}
-                                                        className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                                        title="View Details"
-                                                    >
-                                                        <Eye size={18} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                </tbody>
-                            </table>
-                            {userDataDetailed.devices.filter(d => userDeviceFilter === 'All' || d.status === userDeviceFilter).length === 0 && (
-                                <div className="text-center py-8 text-gray-500 text-sm">No devices found matching this filter.</div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* -------------------- SYSTEM ISSUES MODAL -------------------- */}
-            {showIssuesModal && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                    <AlertTriangle className="text-red-500" />
-                                    System Issues & Alerts
-                                </h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">
-                                    Items requiring attention ({inactiveDevices.length + inactiveMeters.length + inactiveUsers.length})
-                                </p>
-                            </div>
-                            <button onClick={() => setShowIssuesModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-
-                            {/* Devices Section */}
-                            {inactiveDevices.length > 0 && (
-                                <div>
-                                    <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                        <Cpu size={18} className="text-gray-400" />
-                                        Devices ({inactiveDevices.length})
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {inactiveDevices.map(d => (
-                                            <div
-                                                key={d.id}
-                                                onClick={() => {
-                                                    sessionStorage.setItem('devicesPageTab', 'devices');
-                                                    setActivePage('Devices');
-                                                    setShowIssuesModal(false);
-                                                }}
-                                                className="p-3 border border-red-100 bg-red-50/50 rounded-xl flex justify-between items-center group hover:bg-red-50 transition-colors cursor-pointer"
-                                            >
-                                                <div>
-                                                    <p className="font-semibold text-gray-900 text-sm group-hover:text-red-700 transition-colors">{d.name}</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">{d.deviceId}</p>
-                                                </div>
-                                                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${d.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {d.status}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Meters Section */}
-                            {inactiveMeters.length > 0 && (
-                                <div>
-                                    <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                        <Gauge size={18} className="text-gray-400" />
-                                        Meters ({inactiveMeters.length})
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {inactiveMeters.map(m => (
-                                            <div
-                                                key={m.id}
-                                                onClick={() => {
-                                                    sessionStorage.setItem('devicesPageTab', 'meters');
-                                                    setActivePage('Devices');
-                                                    setShowIssuesModal(false);
-                                                }}
-                                                className="p-3 border border-orange-100 bg-orange-50/50 rounded-xl flex justify-between items-center group hover:bg-orange-50 transition-colors cursor-pointer"
-                                            >
-                                                <div>
-                                                    <p className="font-semibold text-gray-900 text-sm group-hover:text-orange-700 transition-colors">{m.name}</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">{m.location}</p>
-                                                </div>
-                                                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${m.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {m.status}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Users Section */}
-                            {inactiveUsers.length > 0 && (
-                                <div>
-                                    <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                        <Users size={18} className="text-gray-400" />
-                                        Users ({inactiveUsers.length})
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {inactiveUsers.map(u => (
-                                            <div
-                                                key={u.id}
-                                                onClick={() => {
-                                                    setActivePage('Users');
-                                                    setShowIssuesModal(false);
-                                                }}
-                                                className="p-3 border border-gray-200 bg-gray-50 rounded-xl flex justify-between items-center group hover:bg-gray-100 transition-colors cursor-pointer"
-                                            >
-                                                <div>
-                                                    <p className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">{u.firstName} {u.lastName}</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">{u.email}</p>
-                                                </div>
-                                                <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-200 text-gray-600">
-                                                    {u.status}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {inactiveDevices.length === 0 && inactiveMeters.length === 0 && inactiveUsers.length === 0 && (
-                                <div className="text-center py-12">
-                                    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <CheckCircle size={32} />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-gray-900">All Systems Operational</h3>
-                                    <p className="text-gray-500 mt-1">No active issues detected across devices, meters, or users.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* User Meters Modal */}
-            {showUserMetersModal && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900">Assigned Meters</h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of meters under your supervision</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
-                                    <Filter size={16} className="text-gray-400 ml-2" />
-                                    <select
-                                        value={userMeterFilter}
-                                        onChange={(e) => setUserMeterFilter(e.target.value)}
-                                        className="bg-transparent text-sm font-medium text-gray-700 border-none focus:ring-0 cursor-pointer py-1 pr-8 pl-1"
-                                    >
-                                        <option value="All">All Status</option>
-                                        <option value="Active">Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                        <option value="Deactive">Deactive</option>
-                                    </select>
-                                </div>
-                                <button onClick={() => setShowUserMetersModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
-                            </div>
-                        </div>
-                        <div className="overflow-auto p-6">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                                        <th className="py-3 px-4">Meter Name</th>
-                                        <th className="py-3 px-4">Type/Source</th>
-                                        <th className="py-3 px-4">Current Reading</th>
-                                        <th className="py-3 px-4">Status</th>
-                                        <th className="py-3 px-4">Location</th>
-                                        <th className="py-3 px-4 text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-sm">
-                                    {userDataDetailed.meters
-                                        .filter(m => userMeterFilter === 'All' || m.status === userMeterFilter)
-                                        .map((meter, i) => (
-                                            <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                                <td className="py-3 px-4 font-semibold text-gray-900">{meter.name}</td>
-                                                <td className="py-3 px-4 text-gray-600">{meter.source}</td>
-                                                <td className="py-3 px-4 text-gray-600 font-mono">{meter.reading}</td>
-                                                <td className="py-3 px-4">
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${meter.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : meter.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                                        {meter.status}
-                                                    </span>
-                                                </td>
-                                                <td className="py-3 px-4 text-gray-500">{meter.location}</td>
-                                                <td className="py-3 px-4 text-center">
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedUserMeter(meter);
-                                                            setShowUserMetersModal(false);
-                                                            setShowMeterDetailsModal(true);
-                                                        }}
-                                                        className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                                        title="View Details"
-                                                    >
-                                                        <Eye size={18} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                </tbody>
-                            </table>
-                            {userDataDetailed.meters.filter(m => userMeterFilter === 'All' || m.status === userMeterFilter).length === 0 && (
-                                <div className="text-center py-8 text-gray-500 text-sm">No meters found matching this filter.</div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* User Locations Modal */}
-            {showUserLocationsModal && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-5xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900">Assigned Locations</h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Select a location to view assigned equipment</p>
-                            </div>
-                            <button onClick={() => { setShowUserLocationsModal(false); setSelectedLocation(null); }} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
-                        </div>
-                        <div className="flex flex-1 overflow-hidden">
-                            {/* Location List Sidebar */}
-                            <div className="w-1/3 border-r border-gray-100 overflow-y-auto bg-gray-50/50">
-                                {userDataDetailed.locations.map((loc) => (
-                                    <button
-                                        key={loc.id}
-                                        onClick={() => setSelectedLocation(loc)}
-                                        className={`w-full text-left p-4 border-b border-gray-100 transition-colors hover:bg-white flex items-center justify-between group ${selectedLocation?.id === loc.id ? 'bg-white shadow-sm border-l-4 border-l-blue-500' : 'border-l-4 border-l-transparent'}`}
-                                    >
+                    {/* -------------------- ADMIN MAP MODAL -------------------- */}
+                    {
+                        showMapModal && (
+                            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                                <div className="bg-white w-full max-w-5xl h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
                                         <div>
-                                            <h3 className={`font-bold ${selectedLocation?.id === loc.id ? 'text-blue-600' : 'text-gray-800'}`}>{loc.name}</h3>
-                                            <p className="text-xs text-gray-500 mt-1">{loc.devices.length} Devices • {loc.meters.length} Meters</p>
+                                            <h2 className="text-xl font-bold text-gray-900">Global Site Locations</h2>
+                                            <p className="text-sm text-gray-500 font-medium mt-1">Live operational status map</p>
                                         </div>
-                                        <MapPin size={18} className={`${selectedLocation?.id === loc.id ? 'text-blue-500' : 'text-gray-300 group-hover:text-gray-400'}`} />
-                                    </button>
-                                ))}
+                                        <button
+                                            onClick={() => setShowMapModal(false)}
+                                            className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            <X size={24} />
+                                        </button>
+                                    </div>
+                                    <div className="flex-1 w-full bg-white relative">
+                                        <MapContainer
+                                            center={[21.7679, 78.8718]}
+                                            zoom={5}
+                                            style={{ height: "100%", width: "100%" }}
+                                        >
+                                            <TileLayer
+                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                                            />
+                                            {sites.map(site => (
+                                                <Marker key={site.id} position={site.location}>
+                                                    <Popup>
+                                                        <div className="p-2 min-w-[150px]">
+                                                            <h3 className="font-bold text-gray-900 mb-1">{site.name}</h3>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`w - 2 h - 2 rounded - full ${site.status === 'Active' ? 'bg-green-500' :
+                                                                    site.status === 'Inactive' ? 'bg-amber-500' : 'bg-red-500'
+                                                                    } `} />
+                                                                <span className="text-sm text-gray-600 font-medium">{site.status}</span>
+                                                            </div>
+                                                        </div>
+                                                    </Popup>
+                                                </Marker>
+                                            ))}
+                                        </MapContainer>
+                                    </div>
+                                </div>
                             </div>
-                            {/* Selected Location Details */}
-                            <div className="w-2/3 overflow-y-auto p-6 bg-white">
-                                {selectedLocation ? (
-                                    <div className="space-y-8">
+                        )
+                    }
+                    {/* -------------------- LOCATION DETAILS MODAL -------------------- */}
+                    {
+                        showLocationModal && (
+                            <LocationDetailsModal onClose={() => setShowLocationModal(false)} />
+                        )
+                    }
+
+
+                    {/* -------------------- DEVICE DETAILS MODAL -------------------- */}
+                    {
+                        showDeviceDetailsModal && selectedUserDevice && (
+                            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                                <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
                                         <div>
-                                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-                                                <Cpu className="text-blue-500" size={20} /> Devices at {selectedLocation.name}
+                                            <h2 className="text-xl font-bold text-gray-900">{selectedUserDevice.name}</h2>
+                                            <p className="text-sm text-gray-500 font-medium mt-1">Device Details & Parameters</p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setShowDeviceDetailsModal(false);
+                                                setShowUserDevicesModal(true); // Return to list
+                                            }}
+                                            className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            <X size={24} />
+                                        </button>
+                                    </div>
+                                    <div className="p-6 space-y-6">
+                                        {/* Device Info Grid */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Status</p>
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${selectedUserDevice.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : selectedUserDevice.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {selectedUserDevice.status}
+                                                </span>
+                                            </div>
+                                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Type</p>
+                                                <p className="font-semibold text-gray-900">{selectedUserDevice.source}</p>
+                                            </div>
+                                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Location</p>
+                                                <p className="font-semibold text-gray-900">{selectedUserDevice.location}</p>
+                                            </div>
+                                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Parameters</p>
+                                                <p className="font-semibold text-gray-900">{selectedUserDevice.params}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Detailed Params (Mock) */}
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 mb-3 text-sm flex items-center gap-2">
+                                                <Activity size={16} className="text-blue-500" />
+                                                Live Telemetry
                                             </h3>
-                                            <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-                                                <table className="w-full text-left text-sm">
-                                                    <thead className="bg-gray-100/50 text-gray-500 font-bold uppercase text-xs">
-                                                        <tr>
-                                                            <th className="py-2 px-4">Name</th>
-                                                            <th className="py-2 px-4">Source</th>
-                                                            <th className="py-2 px-4">Status</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-100">
-                                                        {selectedLocation.devices.map((d, i) => (
-                                                            <tr key={i}>
-                                                                <td className="py-2 px-4 font-medium text-gray-900">{d.name}</td>
-                                                                <td className="py-2 px-4 text-gray-600">{d.source}</td>
-                                                                <td className="py-2 px-4">
-                                                                    <span className={`text-xs font-bold ${d.status === 'Active' ? 'text-emerald-600' : 'text-red-600'}`}>{d.status}</span>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-                                                <Gauge className="text-indigo-500" size={20} /> Meters at {selectedLocation.name}
-                                            </h3>
-                                            <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-                                                <table className="w-full text-left text-sm">
-                                                    <thead className="bg-gray-100/50 text-gray-500 font-bold uppercase text-xs">
-                                                        <tr>
-                                                            <th className="py-2 px-4">Name</th>
-                                                            <th className="py-2 px-4">Reading</th>
-                                                            <th className="py-2 px-4">Status</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-100">
-                                                        {selectedLocation.meters.map((m, i) => (
-                                                            <tr key={i}>
-                                                                <td className="py-2 px-4 font-medium text-gray-900">{m.name}</td>
-                                                                <td className="py-2 px-4 font-mono text-gray-600">{m.reading}</td>
-                                                                <td className="py-2 px-4">
-                                                                    <span className={`text-xs font-bold ${m.status === 'Active' ? 'text-emerald-600' : 'text-red-600'}`}>{m.status}</span>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
+                                            <div className="bg-slate-900 text-slate-300 p-4 rounded-xl font-mono text-sm space-y-2">
+                                                <div className="flex justify-between">
+                                                    <span>Current:</span>
+                                                    <span className="text-emerald-400">4.2A</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Voltage:</span>
+                                                    <span className="text-amber-400">230.1V</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Power Factor:</span>
+                                                    <span className="text-blue-400">0.98</span>
+                                                </div>
+                                                <div className="flex justify-between border-t border-slate-700 pt-2 mt-2">
+                                                    <span>Last Update:</span>
+                                                    <span className="text-slate-500">Just now</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                                        <MapPin size={48} className="mb-4 opacity-20" />
-                                        <p className="text-lg font-medium">Select a location to view details</p>
-                                    </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+                        )
+                    }
+                    {/* -------------------- METER DETAILS MODAL -------------------- */}
+                    {
+                        showMeterDetailsModal && selectedUserMeter && (
+                            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                                <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900">{selectedUserMeter.name}</h2>
+                                            <p className="text-sm text-gray-500 font-medium mt-1">Meter Readings & Status</p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setShowMeterDetailsModal(false);
+                                                setShowUserMetersModal(true); // Return to list
+                                            }}
+                                            className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            <X size={24} />
+                                        </button>
+                                    </div>
+                                    <div className="p-6 space-y-6">
+                                        {/* Meter Info Grid */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Status</p>
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${selectedUserMeter.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : selectedUserMeter.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {selectedUserMeter.status}
+                                                </span>
+                                            </div>
+                                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Type</p>
+                                                <p className="font-semibold text-gray-900">{selectedUserMeter.source}</p>
+                                            </div>
+                                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Location</p>
+                                                <p className="font-semibold text-gray-900">{selectedUserMeter.location}</p>
+                                            </div>
+                                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Last Sync</p>
+                                                <p className="font-semibold text-gray-900">Just now</p>
+                                            </div>
+                                        </div>
 
+                                        {/* Current Reading */}
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 mb-3 text-sm flex items-center gap-2">
+                                                <Gauge size={16} className="text-indigo-500" />
+                                                Current Reading
+                                            </h3>
+                                            <div className="bg-indigo-50 text-indigo-900 p-6 rounded-2xl flex flex-col items-center justify-center border border-indigo-100">
+                                                <span className="text-4xl font-bold font-mono tracking-tighter">{selectedUserMeter.reading}</span>
+                                                <span className="text-xs font-bold uppercase tracking-widest text-indigo-400 mt-1">Kilowatt Hours</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Recent Consumption (Mock) */}
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 mb-3 text-sm">Recent History</h3>
+                                            <div className="space-y-2">
+                                                {[
+                                                    { time: '10:00 AM', val: '45.2 kWh' },
+                                                    { time: '09:00 AM', val: '42.8 kWh' },
+                                                    { time: '08:00 AM', val: '38.5 kWh' },
+                                                ].map((h, i) => (
+                                                    <div key={i} className="flex justify-between items-center p-2 rounded-lg bg-gray-50 text-sm">
+                                                        <span className="text-gray-500">{h.time}</span>
+                                                        <span className="font-mono font-bold text-gray-900">{h.val}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
+                    {
+                        showUserDevicesModal && (
+                            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                                <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900">Assigned Devices</h2>
+                                            <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of hardware assigned to you</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
+                                                <Filter size={16} className="text-gray-400 ml-2" />
+                                                <select
+                                                    value={userDeviceFilter}
+                                                    onChange={(e) => setUserDeviceFilter(e.target.value)}
+                                                    className="bg-transparent text-sm font-medium text-gray-700 border-none focus:ring-0 cursor-pointer py-1 pr-8 pl-1"
+                                                >
+                                                    <option value="All">All Status</option>
+                                                    <option value="Active">Active</option>
+                                                    <option value="Inactive">Inactive</option>
+                                                    <option value="Deactive">Deactive</option>
+                                                </select>
+                                            </div>
+                                            <button onClick={() => setShowUserDevicesModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                                        </div>
+                                    </div>
+                                    <div className="overflow-auto p-6">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                                                    <th className="py-3 px-4">Device Name</th>
+                                                    <th className="py-3 px-4">Type/Source</th>
+                                                    <th className="py-3 px-4">Parameters</th>
+                                                    <th className="py-3 px-4">Status</th>
+                                                    <th className="py-3 px-4">Location</th>
+                                                    <th className="py-3 px-4 text-center">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="text-sm">
+                                                {userDataDetailed.devices
+                                                    .filter(d => userDeviceFilter === 'All' || d.status === userDeviceFilter)
+                                                    .map((device, i) => (
+                                                        <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                                            <td className="py-3 px-4 font-semibold text-gray-900">{device.name}</td>
+                                                            <td className="py-3 px-4 text-gray-600">{device.source}</td>
+                                                            <td className="py-3 px-4 text-gray-600">{device.params}</td>
+                                                            <td className="py-3 px-4">
+                                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${device.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : device.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                                    {device.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-3 px-4 text-gray-500">{device.location}</td>
+                                                            <td className="py-3 px-4 text-center">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSelectedUserDevice(device);
+                                                                        setShowUserDevicesModal(false);
+                                                                        setShowDeviceDetailsModal(true);
+                                                                    }}
+                                                                    className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                    title="View Details"
+                                                                >
+                                                                    <Eye size={18} />
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                            </tbody>
+                                        </table>
+                                        {userDataDetailed.devices.filter(d => userDeviceFilter === 'All' || d.status === userDeviceFilter).length === 0 && (
+                                            <div className="text-center py-8 text-gray-500 text-sm">No devices found matching this filter.</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
+
+                    {/* -------------------- SYSTEM ISSUES MODAL -------------------- */}
+                    {
+                        showIssuesModal && (
+                            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                                <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                                <AlertTriangle className="text-red-500" />
+                                                System Issues & Alerts
+                                            </h2>
+                                            <p className="text-sm text-gray-500 font-medium mt-1">
+                                                Items requiring attention ({inactiveDevices.length + inactiveMeters.length + inactiveUsers.length})
+                                            </p>
+                                        </div>
+                                        <button onClick={() => setShowIssuesModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
+                                            <X size={24} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+
+                                        {/* Devices Section */}
+                                        {inactiveDevices.length > 0 && (
+                                            <div>
+                                                <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                                    <Cpu size={18} className="text-gray-400" />
+                                                    Devices ({inactiveDevices.length})
+                                                </h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    {inactiveDevices.map(d => (
+                                                        <div
+                                                            key={d.id}
+                                                            onClick={() => {
+                                                                sessionStorage.setItem('devicesPageTab', 'devices');
+                                                                setActivePage('Devices');
+                                                                setShowIssuesModal(false);
+                                                            }}
+                                                            className="p-3 border border-red-100 bg-red-50/50 rounded-xl flex justify-between items-center group hover:bg-red-50 transition-colors cursor-pointer"
+                                                        >
+                                                            <div>
+                                                                <p className="font-semibold text-gray-900 text-sm group-hover:text-red-700 transition-colors">{d.name}</p>
+                                                                <p className="text-xs text-gray-500 mt-0.5">{d.deviceId}</p>
+                                                            </div>
+                                                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${d.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                                {d.status}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Meters Section */}
+                                        {inactiveMeters.length > 0 && (
+                                            <div>
+                                                <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                                    <Gauge size={18} className="text-gray-400" />
+                                                    Meters ({inactiveMeters.length})
+                                                </h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    {inactiveMeters.map(m => (
+                                                        <div
+                                                            key={m.id}
+                                                            onClick={() => {
+                                                                sessionStorage.setItem('devicesPageTab', 'meters');
+                                                                setActivePage('Devices');
+                                                                setShowIssuesModal(false);
+                                                            }}
+                                                            className="p-3 border border-orange-100 bg-orange-50/50 rounded-xl flex justify-between items-center group hover:bg-orange-50 transition-colors cursor-pointer"
+                                                        >
+                                                            <div>
+                                                                <p className="font-semibold text-gray-900 text-sm group-hover:text-orange-700 transition-colors">{m.name}</p>
+                                                                <p className="text-xs text-gray-500 mt-0.5">{m.location}</p>
+                                                            </div>
+                                                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${m.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                                {m.status}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Users Section */}
+                                        {inactiveUsers.length > 0 && (
+                                            <div>
+                                                <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                                    <Users size={18} className="text-gray-400" />
+                                                    Users ({inactiveUsers.length})
+                                                </h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    {inactiveUsers.map(u => (
+                                                        <div
+                                                            key={u.id}
+                                                            onClick={() => {
+                                                                setActivePage('Users');
+                                                                setShowIssuesModal(false);
+                                                            }}
+                                                            className="p-3 border border-gray-200 bg-gray-50 rounded-xl flex justify-between items-center group hover:bg-gray-100 transition-colors cursor-pointer"
+                                                        >
+                                                            <div>
+                                                                <p className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">{u.firstName} {u.lastName}</p>
+                                                                <p className="text-xs text-gray-500 mt-0.5">{u.email}</p>
+                                                            </div>
+                                                            <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-200 text-gray-600">
+                                                                {u.status}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {inactiveDevices.length === 0 && inactiveMeters.length === 0 && inactiveUsers.length === 0 && (
+                                            <div className="text-center py-12">
+                                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                    <CheckCircle size={32} />
+                                                </div>
+                                                <h3 className="text-lg font-bold text-gray-900">All Systems Operational</h3>
+                                                <p className="text-gray-500 mt-1">No active issues detected across devices, meters, or users.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
+
+                    {/* User Meters Modal */}
+                    {
+                        showUserMetersModal && (
+                            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                                <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900">Assigned Meters</h2>
+                                            <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of meters under your supervision</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
+                                                <Filter size={16} className="text-gray-400 ml-2" />
+                                                <select
+                                                    value={userMeterFilter}
+                                                    onChange={(e) => setUserMeterFilter(e.target.value)}
+                                                    className="bg-transparent text-sm font-medium text-gray-700 border-none focus:ring-0 cursor-pointer py-1 pr-8 pl-1"
+                                                >
+                                                    <option value="All">All Status</option>
+                                                    <option value="Active">Active</option>
+                                                    <option value="Inactive">Inactive</option>
+                                                    <option value="Deactive">Deactive</option>
+                                                </select>
+                                            </div>
+                                            <button onClick={() => setShowUserMetersModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                                        </div>
+                                    </div>
+                                    <div className="overflow-auto p-6">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                                                    <th className="py-3 px-4">Meter Name</th>
+                                                    <th className="py-3 px-4">Type/Source</th>
+                                                    <th className="py-3 px-4">Current Reading</th>
+                                                    <th className="py-3 px-4">Status</th>
+                                                    <th className="py-3 px-4">Location</th>
+                                                    <th className="py-3 px-4 text-center">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="text-sm">
+                                                {userDataDetailed.meters
+                                                    .filter(m => userMeterFilter === 'All' || m.status === userMeterFilter)
+                                                    .map((meter, i) => (
+                                                        <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                                            <td className="py-3 px-4 font-semibold text-gray-900">{meter.name}</td>
+                                                            <td className="py-3 px-4 text-gray-600">{meter.source}</td>
+                                                            <td className="py-3 px-4 text-gray-600 font-mono">{meter.reading}</td>
+                                                            <td className="py-3 px-4">
+                                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${meter.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : meter.status === 'Inactive' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                                    {meter.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-3 px-4 text-gray-500">{meter.location}</td>
+                                                            <td className="py-3 px-4 text-center">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSelectedUserMeter(meter);
+                                                                        setShowUserMetersModal(false);
+                                                                        setShowMeterDetailsModal(true);
+                                                                    }}
+                                                                    className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                    title="View Details"
+                                                                >
+                                                                    <Eye size={18} />
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                            </tbody>
+                                        </table>
+                                        {userDataDetailed.meters.filter(m => userMeterFilter === 'All' || m.status === userMeterFilter).length === 0 && (
+                                            <div className="text-center py-8 text-gray-500 text-sm">No meters found matching this filter.</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
+
+                    {/* User Locations Modal */}
+                    {
+                        showUserLocationsModal && (
+                            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                                <div className="bg-white w-full max-w-5xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900">Assigned Locations</h2>
+                                            <p className="text-sm text-gray-500 font-medium mt-1">Select a location to view assigned equipment</p>
+                                        </div>
+                                        <button onClick={() => { setShowUserLocationsModal(false); setSelectedLocation(null); }} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                                    </div>
+                                    <div className="flex flex-1 overflow-hidden">
+                                        {/* Location List Sidebar */}
+                                        <div className="w-1/3 border-r border-gray-100 overflow-y-auto bg-gray-50/50">
+                                            {userDataDetailed.locations.map((loc) => (
+                                                <button
+                                                    key={loc.id}
+                                                    onClick={() => setSelectedLocation(loc)}
+                                                    className={`w-full text-left p-4 border-b border-gray-100 transition-colors hover:bg-white flex items-center justify-between group ${selectedLocation?.id === loc.id ? 'bg-white shadow-sm border-l-4 border-l-blue-500' : 'border-l-4 border-l-transparent'}`}
+                                                >
+                                                    <div>
+                                                        <h3 className={`font-bold ${selectedLocation?.id === loc.id ? 'text-blue-600' : 'text-gray-800'}`}>{loc.name}</h3>
+                                                        <p className="text-xs text-gray-500 mt-1">{loc.devices.length} Devices • {loc.meters.length} Meters</p>
+                                                    </div>
+                                                    <MapPin size={18} className={`${selectedLocation?.id === loc.id ? 'text-blue-500' : 'text-gray-300 group-hover:text-gray-400'}`} />
+                                                </button>
+                                            ))}
+                                        </div>
+                                        {/* Selected Location Details */}
+                                        <div className="w-2/3 overflow-y-auto p-6 bg-white">
+                                            {selectedLocation ? (
+                                                <div className="space-y-8">
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
+                                                            <Cpu className="text-blue-500" size={20} /> Devices at {selectedLocation.name}
+                                                        </h3>
+                                                        <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+                                                            <table className="w-full text-left text-sm">
+                                                                <thead className="bg-gray-100/50 text-gray-500 font-bold uppercase text-xs">
+                                                                    <tr>
+                                                                        <th className="py-2 px-4">Name</th>
+                                                                        <th className="py-2 px-4">Source</th>
+                                                                        <th className="py-2 px-4">Status</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody className="divide-y divide-gray-100">
+                                                                    {selectedLocation.devices.map((d, i) => (
+                                                                        <tr key={i}>
+                                                                            <td className="py-2 px-4 font-medium text-gray-900">{d.name}</td>
+                                                                            <td className="py-2 px-4 text-gray-600">{d.source}</td>
+                                                                            <td className="py-2 px-4">
+                                                                                <span className={`text-xs font-bold ${d.status === 'Active' ? 'text-emerald-600' : 'text-red-600'}`}>{d.status}</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
+                                                            <Gauge className="text-indigo-500" size={20} /> Meters at {selectedLocation.name}
+                                                        </h3>
+                                                        <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+                                                            <table className="w-full text-left text-sm">
+                                                                <thead className="bg-gray-100/50 text-gray-500 font-bold uppercase text-xs">
+                                                                    <tr>
+                                                                        <th className="py-2 px-4">Name</th>
+                                                                        <th className="py-2 px-4">Reading</th>
+                                                                        <th className="py-2 px-4">Status</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody className="divide-y divide-gray-100">
+                                                                    {selectedLocation.meters.map((m, i) => (
+                                                                        <tr key={i}>
+                                                                            <td className="py-2 px-4 font-medium text-gray-900">{m.name}</td>
+                                                                            <td className="py-2 px-4 font-mono text-gray-600">{m.reading}</td>
+                                                                            <td className="py-2 px-4">
+                                                                                <span className={`text-xs font-bold ${m.status === 'Active' ? 'text-emerald-600' : 'text-red-600'}`}>{m.status}</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                                                    <MapPin size={48} className="mb-4 opacity-20" />
+                                                    <p className="text-lg font-medium">Select a location to view details</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
+                </div> {/* End of px-4 container */}
+            </div> {/* Fix overall container */}
         </main>
     );
 }
