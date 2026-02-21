@@ -7,6 +7,8 @@ import { Zap, Flame, Droplet, Sun, Gauge, List, Filter, Activity, CheckCircle2, 
 import { MetersModal } from '../components/MetersModal';
 import { DeviceCard } from '../components/dashboard/DeviceCard';
 import { TimeFilter } from '../components/dashboard/TimeFilter';
+import { StatCard } from '../components/dashboard/StatCard';
+import { Cpu } from 'lucide-react';
 
 // Color system
 const COLORS = {
@@ -62,6 +64,14 @@ const systemParameters = [
   { label: 'Water Pressure', value: '3.4 bar', status: 'normal', icon: Droplet, color: 'cyan', theme: 'to-cyan-100/60' },
   { label: 'Gas Line PSI', value: '2.1 psi', status: 'normal', icon: Flame, color: 'orange', theme: 'to-orange-100/60' },
 ];
+
+const analysisStatsMap = {
+  All: { total: 124, new: 12, active: 98, warnings: 21, offline: 5 },
+  Energy: { total: 45, new: 4, active: 38, warnings: 5, offline: 2 },
+  Gas: { total: 22, new: 2, active: 18, warnings: 4, offline: 0 },
+  Water: { total: 34, new: 3, active: 28, warnings: 5, offline: 1 },
+  Solar: { total: 23, new: 3, active: 14, warnings: 7, offline: 2 },
+};
 
 export default function AnalysisPage() {
   const [activeTab, setActiveTab] = useState('All');
@@ -142,39 +152,43 @@ export default function AnalysisPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl shadow-md flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 cursor-pointer group">
-          <div className="flex items-center gap-2 text-indigo-600 mb-1">
-            <Activity size={16} />
-            <span className="text-xs font-bold uppercase tracking-wider">Total Devices</span>
-          </div>
-          <span className="text-2xl font-extrabold text-indigo-900">124</span>
-          <span className="text-xs text-indigo-600 font-medium">+12 new installed</span>
-        </div>
-        <div className="bg-white p-4 rounded-2xl shadow-md flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 cursor-pointer group">
-          <div className="flex items-center gap-2 text-emerald-600 mb-1">
-            <Activity size={16} />
-            <span className="text-xs font-bold uppercase tracking-wider">Active</span>
-          </div>
-          <span className="text-2xl font-extrabold text-emerald-700">98</span>
-          <span className="text-xs text-emerald-600 font-medium">Running normally</span>
-        </div>
-        <div className="bg-white p-4 rounded-2xl shadow-md flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 cursor-pointer group">
-          <div className="flex items-center gap-2 text-amber-600 mb-1">
-            <AlertCircle size={16} />
-            <span className="text-xs font-bold uppercase tracking-wider">Warnings</span>
-          </div>
-          <span className="text-2xl font-extrabold text-amber-700">21</span>
-          <span className="text-xs text-amber-600 font-medium">Requires attention</span>
-        </div>
-        <div className="bg-white p-4 rounded-2xl shadow-md flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50 cursor-pointer group">
-          <div className="flex items-center gap-2 text-rose-600 mb-1">
-            <XCircle size={16} />
-            <span className="text-xs font-bold uppercase tracking-wider">Offline</span>
-          </div>
-          <span className="text-2xl font-extrabold text-rose-700">5</span>
-          <span className="text-xs text-rose-600 font-medium">Check connectivity</span>
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <StatCard
+          title="Total Devices"
+          value={analysisStatsMap[activeTab].total}
+          icon={<Cpu className="w-4 h-4" />}
+          color="indigo"
+          description="Deployed meters & sensors"
+          subValue={`+${analysisStatsMap[activeTab].new} new installed`}
+          compact
+        />
+        <StatCard
+          title="Active"
+          value={analysisStatsMap[activeTab].active}
+          icon={<Activity className="w-4 h-4" />}
+          color="green"
+          description="Running normally"
+          subValue="Healthy connection"
+          compact
+        />
+        <StatCard
+          title="Warnings"
+          value={analysisStatsMap[activeTab].warnings}
+          icon={<AlertCircle className="w-4 h-4" />}
+          color="amber"
+          description="Requires attention"
+          subValue="Potential Issues"
+          compact
+        />
+        <StatCard
+          title="Offline"
+          value={analysisStatsMap[activeTab].offline}
+          icon={<XCircle className="w-4 h-4" />}
+          color="red"
+          description="Check connectivity"
+          subValue="Unreachable units"
+          compact
+        />
       </div>
 
       {/* Charts Section: Bar Chart + Pie Chart Side-by-Side */}
@@ -183,11 +197,11 @@ export default function AnalysisPage() {
         {/* Main Graph Section (Bar Chart) - Takes 2/3 width */}
         <div className="xl:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm h-[450px] flex flex-col">
           <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-            <h3 className="text-lg font-bold text-gray-900">Consumption Trends</h3>
+            <h3 className="text-lg font-bold text-gray-900">Consumption vs Time</h3>
             <TimeFilter selected={timeRange} onChange={setTimeRange} showAll={false} />
           </div>
 
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }} barSize={32}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

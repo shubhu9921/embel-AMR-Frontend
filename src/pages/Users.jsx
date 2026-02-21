@@ -283,7 +283,9 @@ export default function UsersPage() {
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border ${user.roleId === 'ADMIN'
                           ? 'bg-purple-50 text-purple-700 border-purple-200'
-                          : 'bg-blue-50 text-blue-700 border-blue-200'
+                          : user.roleId === 'SUPPORT_ENGINEER'
+                            ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                            : 'bg-blue-50 text-blue-700 border-blue-200'
                           }`}>
                           {user.roleId}
                         </span>

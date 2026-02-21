@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label } from 'recharts';
 
 export const PerformanceChart = ({ data }) => {
     const memoizedData = useMemo(() => data, [data]);
@@ -8,12 +8,12 @@ export const PerformanceChart = ({ data }) => {
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[400px]">
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h2 className="text-lg font-bold text-gray-900">System Performance</h2>
+                    <h2 className="text-lg font-bold text-gray-900">Consumption vs Time</h2>
                     <p className="text-sm font-medium text-gray-500">Resource consumption overview</p>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-bold">
                     <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-blue-500" />
+                        <div className="w-3 h-3 rounded-full bg-emerald-500" />
                         <span className="text-gray-600">Energy</span>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -31,27 +31,9 @@ export const PerformanceChart = ({ data }) => {
                 </div>
             </div>
 
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={memoizedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                            <linearGradient id="colorEnergy" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="colorWater" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="colorGas" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="colorSolar" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
+                    <BarChart data={memoizedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                         <XAxis
                             dataKey="name"
@@ -59,22 +41,33 @@ export const PerformanceChart = ({ data }) => {
                             tickLine={false}
                             tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }}
                             dy={10}
-                        />
+                        >
+                            <Label
+                                content={({ viewBox }) => (
+                                    <text x={viewBox.x + viewBox.width / 2} y={viewBox.y + viewBox.height} fill="#94a3b8" fontSize="11px" fontWeight={500} textAnchor="middle">
+                                        <tspan dy="1em">Time</tspan>
+                                    </text>
+                                )}
+                            />
+                        </XAxis>
                         <YAxis
                             axisLine={false}
                             tickLine={false}
                             tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }}
-                        />
+                        >
+                            <Label value="Consumption" angle={-90} position="insideLeft" style={{ fill: '#94a3b8', fontSize: '11px', fontWeight: 500 }} />
+                        </YAxis>
                         <Tooltip
+                            cursor={{ fill: '#f8fafc' }}
                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                             labelStyle={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}
                             itemStyle={{ fontWeight: 600, fontSize: '13px' }}
                         />
-                        <Area type="monotone" dataKey="Energy" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorEnergy)" />
-                        <Area type="monotone" dataKey="Water" stroke="#06b6d4" strokeWidth={3} fillOpacity={1} fill="url(#colorWater)" />
-                        <Area type="monotone" dataKey="Gas" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorGas)" />
-                        <Area type="monotone" dataKey="Solar" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorSolar)" />
-                    </AreaChart>
+                        <Bar dataKey="Energy" fill="#10b981" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Water" fill="#06b6d4" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Gas" fill="#f97316" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Solar" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                    </BarChart>
                 </ResponsiveContainer>
             </div>
         </div>

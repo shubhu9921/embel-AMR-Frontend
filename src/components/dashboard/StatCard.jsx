@@ -1,5 +1,4 @@
 import React from 'react';
-import { TrendingDown, TrendingUp } from 'lucide-react';
 
 const colorClasses = {
   blue: 'border-transparent',
@@ -11,12 +10,10 @@ const colorClasses = {
   amber: 'border-transparent',
 };
 
-export function StatCard({
+export const StatCard = React.memo(function StatCard({
   title,
   value,
   icon,
-  trend,
-  trendLabel,
   subValue,
   color,
   description,
@@ -25,8 +22,6 @@ export function StatCard({
   statusBreakdown,
   className = "",
 }) {
-  // Negative trend = positive
-  const isPositiveTrend = trend !== undefined && trend < 0;
 
   return (
     <div onClick={onClick} className={`rounded-2xl shadow-md border ${colorClasses[color] || 'border-transparent'} bg-white ${compact ? 'p-3' : 'p-4'} transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50/50 cursor-pointer h-full flex flex-col justify-between relative overflow-hidden group ${className}`}>
@@ -42,22 +37,10 @@ export function StatCard({
 
       <div className="relative z-10 flex items-center justify-between mb-1">
         <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{title}</p>
-
-        {trend !== undefined && (
-          <div
-            className={`flex items-center gap-1 text-[10px] font-medium ${isPositiveTrend ? 'text-green-600' : 'text-red-600'
-              }`}
-          >
-            {isPositiveTrend ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
-            {Math.abs(trend).toFixed(1)}%
-          </div>
-        )}
       </div>
 
       <div className="relative z-10">
         <p className={`${compact ? 'text-xs' : 'text-2xl'} font-medium text-gray-900 leading-tight`}>{value}</p>
-
-        {trendLabel && <p className="text-[10px] text-gray-500 mt-1 font-medium">{trendLabel}</p>}
         {subValue && <p className="text-[10px] text-gray-500 mt-1 font-medium">{subValue}</p>}
         {description && <p className="text-[11px] text-gray-400 mt-1 font-medium leading-tight">{description}</p>}
 
@@ -78,4 +61,4 @@ export function StatCard({
       </div>
     </div>
   );
-}
+});

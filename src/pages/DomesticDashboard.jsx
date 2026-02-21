@@ -1,8 +1,6 @@
 
 import React, { useState } from "react";
 import {
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -11,7 +9,7 @@ import {
     BarChart,
     Bar
 } from "recharts";
-import { Zap, Droplet, Flame, AlertCircle, CheckCircle, CreditCard, TrendingUp, Calendar, ArrowRight, Sun, Leaf, AlertTriangle, Download } from "lucide-react";
+import { Zap, Droplet, Flame, AlertCircle, CheckCircle, CreditCard, TrendingUp, Calendar, ArrowRight, Sun, Leaf, AlertTriangle, Download, HelpCircle } from "lucide-react";
 import { AlertsPanel } from "../components/dashboard/AlertsPanel";
 import { StatCard } from "../components/dashboard/StatCard";
 import SolarDetailsModal from "../components/modals/SolarDetailsModal";
@@ -19,14 +17,17 @@ import EnergyDetailsModal from "../components/modals/EnergyDetailsModal";
 import WaterDetailsModal from "../components/modals/WaterDetailsModal";
 import GasDetailsModal from "../components/modals/GasDetailsModal";
 import OverallReportModal from "../components/modals/OverallReportModal";
+import SupportModal from "../components/modals/SupportModal";
 
 export default function DomesticDashboard({ setActivePage = () => { } }) {
+    const userRole = sessionStorage.getItem('userName') || 'Domestic User';
     const [timeRange, setTimeRange] = useState('week');
     const [showSolarModal, setShowSolarModal] = useState(false);
     const [showEnergyModal, setShowEnergyModal] = useState(false);
     const [showWaterModal, setShowWaterModal] = useState(false);
     const [showGasModal, setShowGasModal] = useState(false);
     const [showOverallReportModal, setShowOverallReportModal] = useState(false);
+    const [showSupportModal, setShowSupportModal] = useState(false);
 
     // Mock Data for Domestic User
     // Mock Data for Domestic User
@@ -67,12 +68,18 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
             {showWaterModal && <WaterDetailsModal onClose={() => setShowWaterModal(false)} />}
             {showGasModal && <GasDetailsModal onClose={() => setShowGasModal(false)} />}
             {showOverallReportModal && <OverallReportModal onClose={() => setShowOverallReportModal(false)} />}
+            {showSupportModal && (
+                <SupportModal
+                    onClose={() => setShowSupportModal(false)}
+                    userDetails={{ name: 'Domestic User', id: 'User2' }}
+                />
+            )}
 
             {/* Greeting Section */}
             <div className="p-5 border-b border-gray-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-[20px] shadow-sm">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Hello, Domestic User! 👋</h1>
-                    <p className="text-gray-500 font-medium mt-1">Here's your home's energy overview.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome Back, {userRole}! 👋</h1>
+                    <p className="text-gray-500 font-medium mt-1">Monitor your home's resource efficiency.</p>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -100,8 +107,6 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
                     icon={<Sun />}
                     color="amber"
                     description="Today"
-                    trend={4.2}
-                    trendLabel="vs yesterday"
                     statusBreakdown={[
                         { label: 'Direct', value: '8.5', color: 'text-emerald-500' },
                         { label: 'Grid', value: '4.0', color: 'text-amber-500' }
@@ -114,8 +119,6 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
                     icon={<Zap />}
                     color="blue"
                     description="Today"
-                    trend={-2.1}
-                    trendLabel="vs yesterday"
                     statusBreakdown={[
                         { label: 'Peak', value: '10.2', color: 'text-rose-500' },
                         { label: 'Off-Peak', value: '8.0', color: 'text-emerald-500' }
@@ -128,8 +131,6 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
                     icon={<Droplet />}
                     color="cyan"
                     description="Today"
-                    trend={5.5}
-                    trendLabel="vs yesterday"
                     statusBreakdown={[
                         { label: 'Kitchen', value: '180', color: 'text-blue-500' },
                         { label: 'Bath', value: '270', color: 'text-indigo-500' }
@@ -142,28 +143,7 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
                     icon={<Flame />}
                     color="orange"
                     description="Today"
-                    trend={-1.2}
-                    trendLabel="vs yesterday"
                     onClick={() => setShowGasModal(true)}
-                />
-                <StatCard
-                    title="Est. Monthly Cost"
-                    value="₹2,450"
-                    icon={<CreditCard />}
-                    color="purple"
-                    description="This Month"
-                    trend={3.0}
-                    trendLabel="vs last month"
-                    onClick={() => setActivePage('Billing')}
-                />
-                <StatCard
-                    title="Solar Savings"
-                    value="₹850"
-                    icon={<TrendingUp />}
-                    color="green"
-                    description="This Month"
-                    trend={12.5}
-                    trendLabel="vs last month"
                 />
                 <StatCard
                     title="Active Alerts"
@@ -171,7 +151,10 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
                     icon={<AlertTriangle />}
                     color="red"
                     description="Critical Attention Needed"
-                    subValue="1 Critical, 2 Warnings"
+                    statusBreakdown={[
+                        { label: 'Critical', value: 1, color: 'text-red-600' },
+                        { label: 'Warning', value: 2, color: 'text-orange-600' }
+                    ]}
                     onClick={() => setActivePage('Alerts')}
                 />
                 <StatCard
@@ -180,8 +163,32 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
                     icon={<Leaf />}
                     color="emerald"
                     description="Today"
-                    trend={15.0}
-                    trendLabel="vs yesterday"
+                />
+                <StatCard
+                    title="Support Tickets"
+                    value="15"
+                    icon={<HelpCircle />}
+                    color="indigo"
+                    description="User request status"
+                    statusBreakdown={[
+                        { label: 'Active', value: 6, color: 'text-amber-600' },
+                        { label: 'Resolved', value: 9, color: 'text-emerald-600' }
+                    ]}
+                    onClick={() => setShowSupportModal(true)}
+                />
+                <StatCard
+                    title="Monthly Costing"
+                    value="₹2,450"
+                    icon={<CreditCard />}
+                    color="purple"
+                    description="Monthly consumption cost"
+                    statusBreakdown={[
+                        { label: 'Solar', value: '₹400', color: 'text-amber-500' },
+                        { label: 'Water', value: '₹350', color: 'text-blue-500' },
+                        { label: 'Energy', value: '₹1,200', color: 'text-emerald-500' },
+                        { label: 'Gas', value: '₹500', color: 'text-orange-500' },
+                    ]}
+                    onClick={() => setActivePage('Billing')}
                 />
             </div>
 
@@ -208,7 +215,7 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
                         </div>
                     </div>
 
-                    <div className="h-[300px] w-full">
+                    <div className="h-[300px] min-h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={usageData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

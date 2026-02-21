@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     FileText,
     Search,
-    Filter,
-    Plus,
     Download,
     Eye,
     Mail,
@@ -12,11 +10,13 @@ import {
     AlertCircle,
     CheckCircle,
     ChevronDown,
-    Receipt
+    Receipt,
+    Plus
 } from 'lucide-react';
 import BillingDetailsModal from '../components/modals/BillingDetailsModal';
 import { StatCard } from '../components/dashboard/StatCard';
 import GenerateBillModal from '../components/modals/GenerateBillModal';
+import { useTable } from '../hooks/useTable';
 
 const initialInvoices = [
     {
@@ -61,62 +61,47 @@ const initialInvoices = [
 ];
 
 export default function BillingPage({ userRole = 'Admin' }) {
-    const [invoices] = useState(initialInvoices);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filterStatus, setFilterStatus] = useState("All");
-    const [filterType, setFilterType] = useState("All");
-    const [filterMeter, setFilterMeter] = useState("All");
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
 
     // Dropdown states
-    const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
-    const [isTypeFilterOpen, setIsTypeFilterOpen] = useState(false);
-    const [isMeterFilterOpen, setIsMeterFilterOpen] = useState(false);
+    const [openDropdown, setOpenDropdown] = useState(null); // 'status', 'type', 'resource'
+    const dropdownRef = useRef(null);
 
-    // Refs for click outside
-    const statusFilterRef = useRef(null);
-    const typeFilterRef = useRef(null);
-    const meterFilterRef = useRef(null);
+    // Filter invoices based on role
+    const displayInvoices = React.useMemo(() =>
+        userRole === 'Domestic' ? initialInvoices.filter(inv => inv.customer === 'John Doe') : initialInvoices
+        , [userRole]);
+
+    const {
+        searchTerm, setSearchTerm,
+        filters, setFilters,
+        currentPage, totalPages,
+        filteredData: invoices,
+        allFilteredData,
+        handlePrevPage, handleNextPage,
+    } = useTable(displayInvoices, {
+        searchFields: ['customer', 'id'],
+        initialFilters: { status: 'All', type: 'All', resourceType: 'All' },
+        pageSize: 5
+    });
 
     // Close dropdown when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
-            if (statusFilterRef.current && !statusFilterRef.current.contains(event.target)) {
-                setIsStatusFilterOpen(false);
-            }
-            if (typeFilterRef.current && !typeFilterRef.current.contains(event.target)) {
-                setIsTypeFilterOpen(false);
-            }
-            if (meterFilterRef.current && !meterFilterRef.current.contains(event.target)) {
-                setIsMeterFilterOpen(false);
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setOpenDropdown(null);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [setOpenDropdown]);
 
     const handleViewInvoice = (invoice) => {
         setSelectedInvoice(invoice);
         setIsModalOpen(true);
     };
-
-    // Filter invoices (Domestic sees only their own bills - using placeholder "John Doe" or specific email as proxy)
-    const displayInvoices = userRole === 'Domestic'
-        ? invoices.filter(inv => inv.email === 'john@amr.com') // Mocking current user
-        : invoices;
-
-    const filteredInvoices = displayInvoices.filter(inv => {
-        const matchesSearch = inv.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            inv.id.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = filterStatus === "All" || inv.status === filterStatus;
-        const matchesType = filterType === "All" || inv.type === filterType;
-        const matchesMeter = filterMeter === "All" || inv.resourceType === filterMeter;
-        return matchesSearch && matchesStatus && matchesType && matchesMeter;
-    });
 
     const getResourceTypeColor = (type) => {
         switch (type) {
@@ -145,208 +130,72 @@ export default function BillingPage({ userRole = 'Admin' }) {
 
     return (
         <main className="w-full min-h-screen p-4 md:p-6 font-sans">
-
-            {/* Top Header */}
-            {/* Top Header */}
             <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mb-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
-                            <Receipt size={24} />
-                        </div>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg transition-transform duration-300 group-hover:scale-105"><Receipt size={24} /></div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                                Billing & Invoices
-                            </h1>
-                            <p className="text-sm font-medium text-gray-500">
-                                Manage payments & statements
-                            </p>
+                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Billing & Invoices</h1>
+                            <p className="text-sm font-medium text-gray-500">Manage payments & statements</p>
                         </div>
                     </div>
-                    <div className="h-1.5 w-24 rounded-full bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
                 </div>
             </div>
 
             <div className="max-w-[1920px] mx-auto space-y-6">
-
-                {/* KPI Section */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                    <StatCard
-                        title="Total Billing"
-                        value={totalBilling}
-                        icon={<CreditCard className="w-4 h-4" />}
-                        color="orange"
-                        description="Cumulative invoiced amount"
-                        compact
-                    />
-                    <StatCard
-                        title="Paid Amount"
-                        value={totalPaid}
-                        icon={<CheckCircle className="w-4 h-4" />}
-                        color="green"
-                        description="Total collected revenue"
-                        compact
-                    />
-                    <StatCard
-                        title="Pending"
-                        value={totalPending}
-                        icon={<Clock className="w-4 h-4" />}
-                        color="amber" // Using amber for pending as per plan
-                        description="Awaiting payment"
-                        compact
-                    />
-                    <StatCard
-                        title="Overdue"
-                        value={totalOverdue}
-                        icon={<AlertCircle className="w-4 h-4" />}
-                        color="red"
-                        description="Payment deadline crossed"
-                        compact
-                    />
+                    <StatCard title="Total Billing" value={totalBilling} icon={<CreditCard className="w-4 h-4" />} color="orange" description="Cumulative invoiced amount" compact />
+                    <StatCard title="Paid Amount" value={totalPaid} icon={<CheckCircle className="w-4 h-4" />} color="green" description="Total collected revenue" compact />
+                    <StatCard title="Pending" value={totalPending} icon={<Clock className="w-4 h-4" />} color="amber" description="Awaiting payment" compact />
+                    <StatCard title="Overdue" value={totalOverdue} icon={<AlertCircle className="w-4 h-4" />} color="red" description="Payment deadline crossed" compact />
                 </div>
 
-                {/* Content Card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">
-
-                    {/* Header Controls */}
                     <div className="p-5 border-b border-gray-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-t-2xl">
-                        {/* Left: Title & Search */}
-                        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full xl:w-auto">
-                            <div className="relative w-full md:w-80 group">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
-                                <input
-                                    type="text"
-                                    placeholder="Search invoices..."
-                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-md shadow-orange-100 hover:shadow-orange-200 group-hover:bg-white"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
+                        <div className="relative w-full md:w-80 group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
+                            <input type="text" placeholder="Search invoices..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#ff6e00]/20 focus:border-[#ff6e00] transition-all shadow-md shadow-orange-100" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                         </div>
 
-                        {/* Right: Actions & Filter */}
-                        <div className="flex flex-wrap items-center gap-3">
-                            {/* Status Filter Dropdown */}
-                            <div className="relative min-w-[140px]" ref={statusFilterRef}>
-                                <button
-                                    onClick={() => setIsStatusFilterOpen(!isStatusFilterOpen)}
-                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 ${isStatusFilterOpen
-                                        ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
-                                        : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                >
-                                    <span className="truncate">
-                                        {filterStatus === 'All' ? 'All Status' : filterStatus}
-                                    </span>
-                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isStatusFilterOpen ? 'rotate-180' : ''}`} />
+                        <div className="flex flex-wrap items-center gap-3" ref={dropdownRef}>
+                            {/* Status Filter */}
+                            <div className="relative min-w-[140px]">
+                                <button onClick={() => setOpenDropdown(openDropdown === 'status' ? null : 'status')} className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all ${openDropdown === 'status' ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20' : 'border-gray-200'}`}>
+                                    <span className="truncate">{filters.status === 'All' ? 'All Status' : filters.status}</span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${openDropdown === 'status' ? 'rotate-180' : ''}`} />
                                 </button>
-                                <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isStatusFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
-                                    }`}>
-                                    {['All', 'Paid', 'Pending', 'Overdue'].map((option) => (
-                                        <button
-                                            key={option}
-                                            onClick={() => {
-                                                setFilterStatus(option);
-                                                setIsStatusFilterOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${filterStatus === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
-                                                }`}
-                                        >
-                                            {option === 'All' ? 'All Status' : option}
-                                        </button>
-                                    ))}
-                                </div>
+                                {openDropdown === 'status' && (
+                                    <div className="absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm">
+                                        {['All', 'Paid', 'Pending', 'Overdue'].map(opt => (
+                                            <button key={opt} onClick={() => { setFilters('status', opt); setOpenDropdown(null); }} className={`w-full text-left px-4 py-2.5 font-medium hover:bg-orange-50 ${filters.status === opt ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'}`}>{opt === 'All' ? 'All Status' : opt}</button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Meter Filter Dropdown */}
-                            <div className="relative min-w-[140px]" ref={meterFilterRef}>
-                                <button
-                                    onClick={() => setIsMeterFilterOpen(!isMeterFilterOpen)}
-                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 ${isMeterFilterOpen
-                                        ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
-                                        : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                >
-                                    <span className="truncate">
-                                        {filterMeter === 'All' ? 'All Meters' : filterMeter}
-                                    </span>
-                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isMeterFilterOpen ? 'rotate-180' : ''}`} />
+                            {/* Resource Filter */}
+                            <div className="relative min-w-[140px]">
+                                <button onClick={() => setOpenDropdown(openDropdown === 'resource' ? null : 'resource')} className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all ${openDropdown === 'resource' ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20' : 'border-gray-200'}`}>
+                                    <span className="truncate">{filters.resourceType === 'All' ? 'All Meters' : filters.resourceType}</span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${openDropdown === 'resource' ? 'rotate-180' : ''}`} />
                                 </button>
-                                <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isMeterFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
-                                    }`}>
-                                    {['All', 'SOLAR', 'WATER', 'ELECTRIC', 'GAS'].map((option) => (
-                                        <button
-                                            key={option}
-                                            onClick={() => {
-                                                setFilterMeter(option);
-                                                setIsMeterFilterOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${filterMeter === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
-                                                }`}
-                                        >
-                                            {option === 'All' ? 'All Meters' : option}
-                                        </button>
-                                    ))}
-                                </div>
+                                {openDropdown === 'resource' && (
+                                    <div className="absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm">
+                                        {['All', 'SOLAR', 'WATER', 'ELECTRIC', 'GAS'].map(opt => (
+                                            <button key={opt} onClick={() => { setFilters('resourceType', opt); setOpenDropdown(null); }} className={`w-full text-left px-4 py-2.5 font-medium hover:bg-orange-50 ${filters.resourceType === opt ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'}`}>{opt === 'All' ? 'All Meters' : opt}</button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Type Filter Dropdown */}
-                            <div className="relative min-w-[140px]" ref={typeFilterRef}>
-                                <button
-                                    onClick={() => setIsTypeFilterOpen(!isTypeFilterOpen)}
-                                    className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all outline-none shadow-sm shadow-orange-100 hover:shadow-md hover:shadow-orange-200 ${isTypeFilterOpen
-                                        ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20'
-                                        : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                >
-                                    <span className="truncate">
-                                        {filterType === 'All' ? 'All Types' : filterType}
-                                    </span>
-                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isTypeFilterOpen ? 'rotate-180' : ''}`} />
-                                </button>
-                                <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isTypeFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
-                                    }`}>
-                                    {['All', 'Consumption', 'Usage', 'Generation', 'Maintenance', 'Billing'].map((option) => (
-                                        <button
-                                            key={option}
-                                            onClick={() => {
-                                                setFilterType(option);
-                                                setIsTypeFilterOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${filterType === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
-                                                }`}
-                                        >
-                                            {option === 'All' ? 'All Types' : option}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden md:block"></div>
-
-                            {/* Action Buttons */}
-                            {userRole !== 'Domestic' ? (
-                                <button
-                                    onClick={() => alert("Create Invoice functionality coming soon!")}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
-                                >
-                                    <Plus className="w-5 h-5 stroke-[2.5]" />
-                                    <span className="hidden sm:inline">Create Invoice</span>
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => setIsGenerateModalOpen(true)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
-                                >
-                                    <Receipt className="w-5 h-5 stroke-[2.5]" />
-                                    <span className="hidden sm:inline">Generate Bill</span>
-                                </button>
-                            )}
+                            <button onClick={() => setIsGenerateModalOpen(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff6e00] hover:bg-[#e66300] text-white rounded-xl text-sm font-bold shadow-lg transition-all active:scale-95">
+                                <Receipt size={20} />
+                                <span className="hidden sm:inline">Generate Bill</span>
+                            </button>
                         </div>
                     </div>
 
-                    {/* Table */}
-                    <div className="overflow-x-auto min-h-[400px] rounded-b-2xl">
+                    <div className="overflow-x-auto min-h-[400px]">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-gray-50/50 text-gray-500 text-xs uppercase font-extrabold tracking-wider sticky top-0 z-10 backdrop-blur-md">
                                 <tr>
@@ -355,125 +204,51 @@ export default function BillingPage({ userRole = 'Admin' }) {
                                     <th className="px-6 py-4 border-b border-gray-100">Meter</th>
                                     <th className="px-6 py-4 border-b border-gray-100">Type</th>
                                     <th className="px-6 py-4 border-b border-gray-100">Amount</th>
-                                    <th className="px-6 py-4 border-b border-gray-100">Due Date</th>
                                     <th className="px-6 py-4 border-b border-gray-100">Status</th>
                                     <th className="px-6 py-4 border-b border-gray-100 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {filteredInvoices.length > 0 ? (
-                                    filteredInvoices.map((inv) => (
-                                        <tr
-                                            key={inv.id}
-                                            onClick={() => handleViewInvoice(inv)}
-                                            className="group hover:bg-orange-50/50 transition-colors duration-200 cursor-pointer"
-                                        >
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-white border border-gray-200 rounded-lg group-hover:border-[#ff6e00] transition-colors">
-                                                        <FileText className="w-5 h-5 text-gray-400 group-hover:text-[#ff6e00]" />
-                                                    </div>
-                                                    <span className="font-bold text-gray-700 group-hover:text-[#ff6e00] transition-colors">{inv.id}</span>
-                                                </div>
-                                            </td>
-
-                                            {userRole !== 'Domestic' && (
-                                                <td className="px-6 py-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-bold text-gray-800 text-sm">{inv.customer}</span>
-                                                        <span className="text-xs text-gray-400 font-medium mt-0.5">{inv.email}</span>
-                                                    </div>
-                                                </td>
-                                            )}
-
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border ${getResourceTypeColor(inv.resourceType)}`}>
-                                                    {inv.resourceType}
-                                                </span>
-                                            </td>
-
-                                            <td className="px-6 py-4">
-                                                <span className="text-sm font-medium text-gray-600">{inv.type}</span>
-                                            </td>
-
-                                            <td className="px-6 py-4 font-black text-gray-800 group-hover:text-[#ff6e00] transition-colors">
-                                                {inv.amount}
-                                            </td>
-
-                                            <td className="px-6 py-4 text-sm text-gray-500 font-medium">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Clock className="w-3.5 h-3.5 text-gray-400" />
-                                                    {inv.date}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-6 py-4">
-                                                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(inv.status)}`}>
-                                                    {inv.status === 'Paid' && <CheckCircle className="w-3 h-3" />}
-                                                    {inv.status === 'Pending' && <Clock className="w-3 h-3" />}
-                                                    {inv.status === 'Overdue' && <AlertCircle className="w-3 h-3" />}
-                                                    {inv.status}
-                                                </div>
-                                            </td>
-
+                                {invoices.length > 0 ? (
+                                    invoices.map((inv) => (
+                                        <tr key={inv.id} onClick={() => handleViewInvoice(inv)} className="group hover:bg-orange-50/50 transition-colors cursor-pointer">
+                                            <td className="px-6 py-4"><div className="flex items-center gap-3"><FileText className="w-5 h-5 text-gray-400 transition-colors group-hover:text-[#ff6e00]" /><span className="font-bold text-gray-700">{inv.id}</span></div></td>
+                                            {userRole !== 'Domestic' && <td className="px-6 py-4"><div><span className="font-bold text-gray-800 text-sm block">{inv.customer}</span><span className="text-xs text-gray-400">{inv.email}</span></div></td>}
+                                            <td className="px-6 py-4"><span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold border ${getResourceTypeColor(inv.resourceType)}`}>{inv.resourceType}</span></td>
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-600">{inv.type}</td>
+                                            <td className="px-6 py-4 font-black text-gray-800">{inv.amount}</td>
+                                            <td className="px-6 py-4"><div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(inv.status)}`}>{inv.status}</div></td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:shadow-md transition-all active:scale-90"
-                                                        title="View Details"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            alert(`Downloading invoice ${inv.id}...`);
-                                                        }}
-                                                        className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-green-500 hover:text-green-600 hover:shadow-md transition-all active:scale-90"
-                                                        title="Download Invoice"
-                                                    >
-                                                        <Download className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:border-purple-500 hover:text-purple-600 hover:shadow-md transition-all active:scale-90"
-                                                        title="Email Invoice"
-                                                    >
-                                                        <Mail className="w-4 h-4" />
-                                                    </button>
+                                                    <button className="p-2 bg-white border border-gray-200 rounded-lg hover:text-blue-600 transition-all"><Eye size={16} /></button>
+                                                    <button className="p-2 bg-white border border-gray-200 rounded-lg hover:text-green-600 transition-all"><Download size={16} /></button>
+                                                    <button className="p-2 bg-white border border-gray-200 rounded-lg hover:text-purple-600 transition-all"><Mail size={16} /></button>
                                                 </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
-                                    <tr>
-                                        <td colSpan={8} className="px-6 py-12 text-center">
-                                            <div className="flex flex-col items-center justify-center text-gray-400">
-                                                <div className="p-4 bg-gray-50 rounded-full mb-3">
-                                                    <Search className="w-8 h-8 opacity-50" />
-                                                </div>
-                                                <p className="text-lg font-medium text-gray-600">No invoices found</p>
-                                                <p className="text-sm">Try adjusting your search or filters</p>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400">No invoices found matching criteria.</td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination */}
+                    <div className="border-t border-gray-100 bg-gray-50 p-4 flex items-center justify-between rounded-b-2xl">
+                        <div className="text-sm text-gray-500 font-medium tracking-tight">
+                            Showing <span className="font-bold text-gray-900">{allFilteredData.length > 0 ? (currentPage - 1) * 5 + 1 : 0}</span> to <span className="font-bold text-gray-900">{Math.min(currentPage * 5, allFilteredData.length)}</span> of <span className="font-bold text-gray-900">{allFilteredData.length}</span>
+                        </div>
+                        <div className="flex gap-2">
+                            <button onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1.5 border border-gray-200 bg-white rounded-lg text-sm font-bold disabled:opacity-50 hover:bg-gray-50 transition-all">Prev</button>
+                            <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1.5 border border-gray-200 bg-white rounded-lg text-sm font-bold disabled:opacity-50 hover:bg-gray-50 transition-all">Next</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <BillingDetailsModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                invoice={selectedInvoice}
-            />
-            {isGenerateModalOpen && (
-                <GenerateBillModal
-                    onClose={() => setIsGenerateModalOpen(false)}
-                    userEmail="user@example.com"
-                />
-            )}
-        </main >
+            <BillingDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} invoice={selectedInvoice} />
+            {isGenerateModalOpen && <GenerateBillModal onClose={() => setIsGenerateModalOpen(false)} userEmail={sessionStorage.getItem('userEmail') || 'user@example.com'} />}
+        </main>
     );
 }

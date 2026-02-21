@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertCircle, X, CheckCircle, Info, AlertTriangle, Filter, Search, ChevronLeft, ChevronRight, CheckSquare } from 'lucide-react';
+import { AlertCircle, X, CheckCircle, Info, AlertTriangle, Filter, Search, ChevronLeft, ChevronRight, CheckSquare, Bell } from 'lucide-react';
 import { useAlerts } from "../context/AlertContext";
 
 const alertStyles = {
@@ -20,10 +20,22 @@ export default function AlertsPage() {
   const unreadCount = alerts.filter(a => !a.read).length;
 
   // Filter and search
+  const userRole = sessionStorage.getItem('userRole') || 'Admin';
+
+  // Filter and search
   const filteredAlerts = alerts.filter(a => {
+    // Role-based visibility
+    if (userRole === 'Domestic') {
+      if (a.role && a.role !== 'Domestic') return false;
+      if (a.category && a.category === 'System') return false;
+    } else if (userRole === 'Industrial') {
+      if (a.role && a.role === 'Domestic') return false;
+    }
+
     const matchesSearch =
       a.title.toLowerCase().includes(search.toLowerCase()) ||
-      a.message.toLowerCase().includes(search.toLowerCase());
+      a.message.toLowerCase().includes(search.toLowerCase()) ||
+      (a.category || "").toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filterType === 'all' || a.type === filterType;
     return matchesSearch && matchesFilter;
   });
@@ -132,18 +144,31 @@ export default function AlertsPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h3 className={`text-sm font-bold ${style.text} mb-1 flex items-center gap-2`}>
+                          {alert.priority === 1 && <span className="w-2 h-2 rounded-full bg-red-500 shadow-sm shadow-red-200" title="High Priority" />}
                           {alert.title}
                           {!alert.read && <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
                         </h3>
-                        <p className="text-sm text-gray-600 leading-relaxed">{alert.message}</p>
+                        <p className="text-sm text-gray-600 leading-relaxed mb-2">
+                          {alert.category && (
+                            <span className="font-black text-indigo-500 mr-2 uppercase tracking-tighter text-[10px] opacity-70">
+                              [{alert.category}]
+                            </span>
+                          )}
+                          {alert.message}
+                        </p>
                       </div>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); dismissAlert(alert.id); }}
-                        className="text-gray-300 hover:text-gray-500 transition-colors p-1 hover:bg-gray-100 rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100"
-                        title="Dismiss"
-                      >
-                        <X size={16} />
-                      </button>
+                      <div className="flex flex-col items-end gap-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); dismissAlert(alert.id); }}
+                          className="text-gray-300 hover:text-gray-500 transition-colors p-1 hover:bg-gray-100 rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100"
+                          title="Dismiss"
+                        >
+                          <X size={16} />
+                        </button>
+                        {alert.priority === 1 && (
+                          <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[9px] font-black uppercase rounded border border-red-200">Urgent</span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-4 mt-3">

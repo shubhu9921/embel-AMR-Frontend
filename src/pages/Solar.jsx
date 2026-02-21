@@ -89,8 +89,8 @@ export default function SolarPage({ setActivePage }) {
             chartTitle="Generation Analytics"
             meterSectionTitle="Inverters"
             withGreeting={true}
-            greetingTitle="Hello, Domestic User! 👋"
-            greetingSubtitle="Here's your home's solar overview."
+            greetingTitle="Solar Usage"
+            greetingSubtitle="Real-time monitoring and analytics"
             onDownloadReport={() => alert("Report download started...")}
             onPayBill={() => setActivePage && setActivePage('Billing')}
         />

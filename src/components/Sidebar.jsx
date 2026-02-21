@@ -9,11 +9,12 @@ import {
   Sun,
   Menu,
   Settings,
-  LineChart,
+  TrendingUp,
   FileText,
   CreditCard,
   Database,
-  LogOut
+  LogOut,
+  HelpCircle
 } from "lucide-react";
 
 const adminMenu = [
@@ -27,6 +28,7 @@ const adminMenu = [
   { name: "Billing", icon: CreditCard },
   { name: "Payloads", icon: Database },
   { name: "Alerts", icon: Bell },
+  { name: "Support", icon: HelpCircle },
   { name: "Settings", icon: Settings }
 ];
 
@@ -36,14 +38,14 @@ const userMenu = [
   { name: "Water", icon: Droplet },
   { name: "Energy", icon: Zap },
   { name: "Solar", icon: Sun },
-  { name: "Analysis", icon: LineChart },
+  { name: "Analysis", icon: TrendingUp },
   { name: "Alerts", icon: Bell },
   { name: "Settings", icon: Settings }
 ];
 
 const domesticMenu = [
   { name: "Dashboard", icon: LayoutDashboard },
-  { name: "My Usage", icon: LineChart },
+  { name: "My Usage", icon: TrendingUp },
   { name: "Billing", icon: CreditCard },
   { name: "Alerts", icon: Bell },
   { name: "Settings", icon: Settings }

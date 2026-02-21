@@ -49,15 +49,21 @@ export function AlertsPanel({ alerts, compact = false, userRole = 'Admin' }) {
   const [activeFilter, setActiveFilter] = useState("all");
 
   const filteredAlerts = alerts.filter(a => {
-    // If Domestic, hide system-wide critical alerts unless explicitly tagged for them
+    // Role-based visibility
     if (userRole === 'Domestic') {
-      const isSystemAlert = (a.title && a.title.toLowerCase().includes('server') || a.title.toLowerCase().includes('offline'));
-      if (isSystemAlert) return false;
+      // Domestic users only see Residential alerts or alerts explicitly for them
+      if (a.role && a.role !== 'Domestic') return false;
+      if (a.category && a.category === 'System') return false;
+    } else if (userRole === 'Industrial') {
+      // Industrial users see Industrial, Safety, and System alerts
+      if (a.role && a.role === 'Domestic') return false;
     }
+    // Admin sees everything (no filter by role needed)
 
     const type = (a.type === 'error' ? 'critical' : a.type).toLowerCase();
     const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase()) ||
-      (a.message || "").toLowerCase().includes(search.toLowerCase());
+      (a.message || "").toLowerCase().includes(search.toLowerCase()) ||
+      (a.category || "").toLowerCase().includes(search.toLowerCase());
     const matchesFilter = activeFilter === 'all' || type === activeFilter;
     return matchesSearch && matchesFilter;
   });
@@ -158,6 +164,11 @@ export function AlertsPanel({ alerts, compact = false, userRole = 'Admin' }) {
                     </div>
 
                     <p className="text-[11px] text-gray-600 leading-snug line-clamp-2">
+                      {alert.category && (
+                        <span className="font-black text-indigo-500 mr-2 uppercase tracking-tighter text-[9px] opacity-70">
+                          [{alert.category}]
+                        </span>
+                      )}
                       {alert.message}
                     </p>
                   </div>

@@ -4,7 +4,35 @@ import { X, Receipt, Download, AlertCircle, Eye } from 'lucide-react';
 export default function GenerateBillModal({ onClose, userEmail = 'user@example.com' }) {
     const [step, setStep] = useState(1); // 1: Select Source, 2: Preview
     const [selectedSource, setSelectedSource] = useState('ELECTRIC');
+    const [startMonth, setStartMonth] = useState('January');
+    const [startYear, setStartYear] = useState(new Date().getFullYear().toString());
+    const [endMonth, setEndMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
+    const [endYear, setEndYear] = useState(new Date().getFullYear().toString());
     const [isGenerating, setIsGenerating] = useState(false);
+
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const years = ["2023", "2024", "2025", "2026"];
+
+    const currentMonthIndex = new Date().getMonth();
+    const currentYearNum = new Date().getFullYear();
+
+    const getDateValue = (month, year) => {
+        return parseInt(year) * 12 + months.indexOf(month);
+    };
+
+    const isFutureDate = (month, year) => {
+        const monthIndex = months.indexOf(month);
+        const yearNum = parseInt(year);
+        if (yearNum > currentYearNum) return true;
+        if (yearNum === currentYearNum && monthIndex > currentMonthIndex) return true;
+        return false;
+    };
+
+    const isInvalidRange = () => {
+        const startVal = getDateValue(startMonth, startYear);
+        const endVal = getDateValue(endMonth, endYear);
+        return endVal < startVal || isFutureDate(endMonth, endYear);
+    };
 
     useEffect(() => {
         let timeoutId;
@@ -60,7 +88,7 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
                                 {step === 1 ? 'Generate New Bill' : 'Bill Preview'}
                             </h2>
                             <p className="text-sm font-medium text-gray-500">
-                                {step === 1 ? 'Select a resource to generate' : `${selectedSource} Billing Statement`}
+                                {step === 1 ? 'Select a resource and period' : `${selectedSource} Billing Statement`}
                             </p>
                         </div>
                     </div>
@@ -73,7 +101,7 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
                 </div>
 
                 {/* Content */}
-                <div className="p-6 flex-1 overflow-y-auto">
+                <div className="p-6 flex-1 overflow-y-auto max-h-[70vh]">
                     {step === 1 ? (
                         <div className="space-y-6">
                             <div>
@@ -94,9 +122,76 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
                                 </div>
                             </div>
 
+                            <div className="space-y-4 pt-2">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-gray-700">Starting Month</label>
+                                        <select
+                                            value={startMonth}
+                                            onChange={(e) => setStartMonth(e.target.value)}
+                                            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-orange-500/20 outline-none"
+                                        >
+                                            {months.map(m => (
+                                                <option key={m} value={m}>{m}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-gray-700">Starting Year</label>
+                                        <select
+                                            value={startYear}
+                                            onChange={(e) => setStartYear(e.target.value)}
+                                            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-orange-500/20 outline-none"
+                                        >
+                                            {years.map(y => (
+                                                <option key={y} value={y}>{y}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-gray-700">Ending Month</label>
+                                        <select
+                                            value={endMonth}
+                                            onChange={(e) => setEndMonth(e.target.value)}
+                                            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-orange-500/20 outline-none"
+                                        >
+                                            {months.map(m => (
+                                                <option key={m} value={m} disabled={isFutureDate(m, endYear)}>{m}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-gray-700">Ending Year</label>
+                                        <select
+                                            value={endYear}
+                                            onChange={(e) => setEndYear(e.target.value)}
+                                            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-orange-500/20 outline-none"
+                                        >
+                                            {years.map(y => (
+                                                <option key={y} value={y} disabled={parseInt(y) > currentYearNum}>{y}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {isInvalidRange() && (
+                                <div className="bg-red-50 p-4 rounded-xl flex gap-3 text-red-700 border border-red-100 text-sm">
+                                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                    <p>
+                                        {getDateValue(endMonth, endYear) < getDateValue(startMonth, startYear)
+                                            ? "Ending date cannot be before starting date."
+                                            : "Billing cannot be generated for future dates."}
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="bg-blue-50 p-4 rounded-xl flex gap-3 text-blue-800 border border-blue-100 text-sm">
                                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                                <p>Generating a bill will fetch your consumption data from the start of your billing cycle to current time. Proceed to preview the amounts.</p>
+                                <p>Generating a bill for <strong>{startMonth} {startYear} - {endMonth} {endYear}</strong> will fetch your consumption data for this range.</p>
                             </div>
                         </div>
                     ) : (
@@ -108,8 +203,8 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
                                         <p className="font-bold text-gray-900">{userEmail}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Resource</p>
-                                        <p className="font-bold text-gray-900">{selectedSource}</p>
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Billing Period</p>
+                                        <p className="font-bold text-orange-600">{startMonth} {startYear} - {endMonth} {endYear}</p>
                                     </div>
                                 </div>
 
@@ -153,7 +248,8 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
                     {step === 1 ? (
                         <button
                             onClick={handleGenerate}
-                            className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-md shadow-orange-500/20 transition-all active:scale-95"
+                            disabled={isInvalidRange()}
+                            className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-md shadow-orange-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Preview Bill
                         </button>

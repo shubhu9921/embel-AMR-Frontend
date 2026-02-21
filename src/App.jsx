@@ -18,6 +18,7 @@ const BillingPage = lazy(() => import("./pages/Billing"));
 const PayloadsPage = lazy(() => import("./pages/Payloads"));
 const LoginPage = lazy(() => import("./pages/Login"));
 const MyUsagePage = lazy(() => import("./pages/MyUsage"));
+const SupportManagementPage = lazy(() => import("./pages/SupportManagement"));
 
 // Loading Component
 const Loading = () => (
@@ -120,6 +121,7 @@ export default function App() {
             {activePage === "Billing" && <BillingPage userRole={userRole} />}
             {activePage === "My Usage" && <MyUsagePage />}
             {activePage === "Payloads" && <PayloadsPage />}
+            {activePage === "Support" && <SupportManagementPage />}
           </Suspense>
         </main>
       </div>

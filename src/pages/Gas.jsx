@@ -90,8 +90,8 @@ export default function GasPage({ setActivePage }) {
       meterModalTitle="Gas Meters List"
       flowUnit="m³/h"
       withGreeting={true}
-      greetingTitle="Hello, Domestic User! 👋"
-      greetingSubtitle="Here's your home's gas overview."
+      greetingTitle="Gas Usage"
+      greetingSubtitle="Real-time monitoring and analytics"
       onDownloadReport={() => alert("Report download started...")}
       onPayBill={() => setActivePage && setActivePage('Billing')}
     />

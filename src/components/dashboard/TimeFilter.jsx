@@ -1,10 +1,9 @@
-export function TimeFilter({ selected, onChange, onEnlarge, compact = false, showAll = false }) {
+export function TimeFilter({ selected, onChange, onEnlarge, compact = false }) {
   const options = [
     { value: 'day', label: '1D' },
     { value: 'week', label: '1W' },
     { value: 'month', label: '1M' },
     { value: 'year', label: '1Y' },
-    ...(showAll ? [{ value: 'all', label: 'All' }] : []),
   ];
 
   return (

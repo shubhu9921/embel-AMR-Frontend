@@ -87,8 +87,8 @@ export default function EnergyPage({ setActivePage }) {
       meterModalTitle="Energy Meters List"
       flowUnit="kW"
       withGreeting={true}
-      greetingTitle="Hello, Domestic User! 👋"
-      greetingSubtitle="Here's your home's energy overview."
+      greetingTitle="Energy Usage"
+      greetingSubtitle="Real-time monitoring and analytics"
       onDownloadReport={() => alert("Report download started...")}
       onPayBill={() => setActivePage && setActivePage('Billing')}
     />

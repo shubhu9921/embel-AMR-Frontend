@@ -94,6 +94,7 @@ export const PAGES_DATA = [
     { id: 'p10', type: 'Page', label: 'Billing', target: 'Billing' },
     { id: 'p11', type: 'Page', label: 'Reports', target: 'Reports' },
     { id: 'p12', type: 'Page', label: 'Settings', target: 'Settings' },
+    { id: 'p13', type: 'Page', label: 'Support Management', target: 'Support' },
 ];
 
 export const PARAMS_DATA = [
@@ -353,7 +354,64 @@ export const multiResourceDataYear = [
     { name: "Oct", Energy: 8800, Water: 4800, Gas: 2300, Solar: 7800 },
 ];
 export const dashboardAlerts = [
-    { id: 1, type: "critical", title: "Meters Offline", message: "South Hub: 5 meters offline", timestamp: "10m" },
-    { id: 2, type: "warning", title: "High Usage", message: "West Plant: Usage spike detected", timestamp: "25m" },
-    { id: 3, type: "info", title: "Maintenance", message: "North Branch: Scheduled maintenance", timestamp: "1h" },
+    {
+        id: 1,
+        type: "critical",
+        category: "System",
+        priority: 1,
+        title: "Meters Offline",
+        message: "South Hub: 5 meters offline",
+        timestamp: "10m",
+        role: "Admin"
+    },
+    {
+        id: 2,
+        type: "warning",
+        category: "Industrial",
+        priority: 2,
+        title: "High Usage",
+        message: "West Plant: Usage spike detected",
+        timestamp: "25m",
+        role: "Industrial"
+    },
+    {
+        id: 3,
+        type: "info",
+        category: "Maintenance",
+        priority: 3,
+        title: "North Branch: Scheduled maintenance",
+        message: "Scheduled maintenance for power lines in North Branch from 2 PM to 4 PM.",
+        timestamp: "1h",
+        role: "Admin"
+    },
+    {
+        id: 4,
+        type: "critical",
+        category: "Safety",
+        priority: 1,
+        title: "Gas Leak Detected",
+        message: "Unit 4: Minor gas leak detected in supply line. Valve auto-shut triggered.",
+        timestamp: "5h",
+        role: "Industrial"
+    },
+    {
+        id: 5,
+        type: "warning",
+        category: "Residential",
+        priority: 2,
+        title: "Unusual Water Flow",
+        message: "Continuous water flow detected for 4 hours at User 2 residence.",
+        timestamp: "12h",
+        role: "Domestic"
+    },
+    {
+        id: 6,
+        type: "success",
+        category: "System",
+        priority: 3,
+        title: "Backup Battery Restored",
+        message: "Backup power system in Central Wing is now fully charged and operational.",
+        timestamp: "1d",
+        role: "Admin"
+    }
 ];

@@ -16,7 +16,7 @@ export function ConsumptionChart({
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col min-h-[400px] lg:h-full transition-shadow hover:shadow-lg">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <div>
-                    <h3 className="text-lg font-bold text-gray-900">System Consumption</h3>
+                    <h3 className="text-lg font-bold text-gray-900">Consumption vs Time</h3>
                     <p className="text-xs text-gray-500 font-medium mt-1">
                         {activeResource === 'All' ? 'Multi-resource usage breakdown' : `${activeResource} usage over time`}
                     </p>
@@ -53,7 +53,7 @@ export function ConsumptionChart({
                     <TimeFilter selected={consumptionTimeRange} onChange={setConsumptionTimeRange} showAll={true} />
                 </div>
             </div>
-            <div className="flex-1 w-full min-h-0">
+            <div className="flex-1 w-full min-h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }} barGap={2}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
