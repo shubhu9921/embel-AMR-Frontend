@@ -458,7 +458,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
 
                     <div className="lg:col-span-1 h-full min-h-[400px]">
                         <div className="bg-white rounded-2xl shadow-md border border-gray-100 h-full overflow-hidden">
-                            <AlertsPanel alerts={alerts} />
+                            <AlertsPanel alerts={dashboardAlerts} />
                         </div>
                     </div>
                 </div>

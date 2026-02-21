@@ -11,10 +11,10 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
     const [isGenerating, setIsGenerating] = useState(false);
 
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const years = ["2023", "2024", "2025", "2026"];
+    const currentYearNum = new Date().getFullYear();
+    const years = Array.from({ length: currentYearNum - 2023 + 1 }, (_, i) => (2023 + i).toString());
 
     const currentMonthIndex = new Date().getMonth();
-    const currentYearNum = new Date().getFullYear();
 
     const getDateValue = (month, year) => {
         return parseInt(year) * 12 + months.indexOf(month);
