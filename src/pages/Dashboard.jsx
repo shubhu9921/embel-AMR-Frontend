@@ -43,6 +43,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         calculateBillingPercentage
     } = useDashboard();
     const [showSupportModal, setShowSupportModal] = React.useState(false);
+    const [isAlertsExpanded, setIsAlertsExpanded] = React.useState(false);
 
     if (userRole === 'Domestic') {
         return <DomesticDashboard setActivePage={setActivePage} />;
@@ -228,43 +229,49 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
 
                 {/* GRAPHS & ALERTS */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col min-h-[400px]">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900">System Consumption</h3>
-                                <p className="text-xs text-gray-500 font-medium mt-1">
-                                    {activeResource === RESOURCES.ALL ? 'Multi-resource usage breakdown' : `${activeResource} usage over time`}
-                                </p>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-2">
-                                <div className="flex bg-white p-1 rounded-xl border border-gray-100 shadow-sm shadow-orange-100">
-                                    {RESOURCE_CONFIG.map(res => (
-                                        <button
-                                            key={res.id}
-                                            onClick={() => setActiveResource(res.id)}
-                                            className={`
-                                                flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all duration-300
-                                                ${activeResource === res.id ? res.activeBg : res.inactiveBg}
-                                            `}
-                                        >
-                                            {res.id !== RESOURCES.ALL && <res.icon size={14} strokeWidth={2.5} />}
-                                            {res.label}
-                                        </button>
-                                    ))}
+                    {!isAlertsExpanded && (
+                        <div className="lg:col-span-2 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col min-h-[450px]">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900">Time vs Consumption</h3>
+                                    <p className="text-xs text-gray-500 font-medium mt-1">
+                                        {activeResource === RESOURCES.ALL ? 'Multi-resource usage breakdown' : `${activeResource} usage over time`}
+                                    </p>
                                 </div>
-                                <TimeFilter selected={consumptionTimeRange} onChange={setConsumptionTimeRange} />
+
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex bg-white p-1 rounded-xl border border-gray-100 shadow-sm shadow-orange-100">
+                                        {RESOURCE_CONFIG.map(res => (
+                                            <button
+                                                key={res.id}
+                                                onClick={() => setActiveResource(res.id)}
+                                                className={`
+                                                    flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all duration-300
+                                                    ${activeResource === res.id ? res.activeBg : res.inactiveBg}
+                                                `}
+                                            >
+                                                {res.id !== RESOURCES.ALL && <res.icon size={14} strokeWidth={2.5} />}
+                                                {res.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <TimeFilter selected={consumptionTimeRange} onChange={setConsumptionTimeRange} />
+                                </div>
+                            </div>
+                            <div className="flex-1 w-full min-h-0">
+                                <PerformanceChart data={multiResourceData} />
                             </div>
                         </div>
-                        <div className="flex-1 w-full min-h-0">
-                            <PerformanceChart data={multiResourceData} />
-                        </div>
-                    </div>
+                    )}
 
-                    <div className="lg:col-span-1 h-full min-h-[400px]">
-                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 h-full overflow-hidden">
-                            <AlertsPanel alerts={dashboardAlerts} />
-                        </div>
+                    <div className={`${isAlertsExpanded ? 'lg:col-span-3' : 'lg:col-span-1'} h-full min-h-[450px]`}>
+                        <AlertsPanel
+                            alerts={dashboardAlerts}
+                            userRole={userRole}
+                            setActivePage={setActivePage}
+                            isExpanded={isAlertsExpanded}
+                            setIsExpanded={setIsAlertsExpanded}
+                        />
                     </div>
                 </div>
 

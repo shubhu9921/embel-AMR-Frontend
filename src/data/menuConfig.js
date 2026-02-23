@@ -21,6 +21,7 @@ export const adminMenu = [
     { name: "Water", icon: Droplet },
     { name: "Energy", icon: Zap },
     { name: "Solar", icon: Sun },
+    { name: "Gas", icon: Flame },
     { name: "Devices", icon: Cpu },
     { name: "Users", icon: Users },
     { name: "Reports", icon: FileText },

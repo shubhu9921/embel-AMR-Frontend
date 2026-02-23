@@ -24,7 +24,7 @@ export default function Sidebar({
       className={`
         bg-white/50 backdrop-blur-md transition-all duration-300 shadow-[4px_0_24px_rgba(0,0,0,0.15)] z-50 border-r border-gray-100
         ${collapsed ? "w-20" : "w-64"}
-        flex flex-col min-h-full
+        flex flex-col h-screen sticky top-0
       `}
     >
       {/* Logo */}
@@ -44,52 +44,50 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Menu */}
-      <nav className="flex-1 py-3 overflow-visible flex flex-col gap-1">
+      {/* Menu - Scrollable Area (Scrollbar hidden) */}
+      <nav className="flex-1 py-1.5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-0.5">
         {menu.map((item) => (
           <button
             key={item.name}
             onClick={() => setActivePage(item.name)}
             title={collapsed ? item.name : ""}
             className={`
-              flex items-center gap-3 w-full py-3 transition-all duration-200 group
+              flex items-center gap-3 w-full py-2 transition-all duration-200 group shrink-0
               ${collapsed ? "justify-center rounded-lg mx-2 w-auto" : "pl-3 rounded-r-full rounded-l-none mr-2"}
               ${activePage === item.name
                 ? "bg-[#19325c] text-white font-bold border-l-4 border-[#ff6e00]"
                 : "text-slate-600 font-medium hover:bg-[#19325c] hover:text-white hover:font-bold border-l-4 border-transparent"}
             `}
           >
-            <item.icon size={20} className={activePage === item.name ? "text-[#ff6e00]" : "text-slate-700 group-hover:text-[#ff6e00] transition-colors"} />
+            <item.icon size={18} className={activePage === item.name ? "text-[#ff6e00]" : "text-slate-700 group-hover:text-[#ff6e00] transition-colors"} />
             {!collapsed && (
-              <span className="text-sm">{item.name}</span>
+              <span className="text-[13px]">{item.name}</span>
             )}
           </button>
         ))}
       </nav>
 
-
-
-      {/* Logout Button */}
-      <div className="px-2 py-2 border-t border-gray-100">
+      {/* Logout Button - Fixed in Bottom Section */}
+      <div className="px-2 py-1.5 border-t border-gray-100 shrink-0">
         <button
           onClick={onLogout}
           title={collapsed ? "Logout" : ""}
           className={`
-            flex items-center gap-3 w-full py-3 transition-all duration-200 group rounded-lg hover:bg-red-50
+            flex items-center gap-3 w-full py-2 transition-all duration-200 group rounded-lg hover:bg-red-50
             ${collapsed ? "justify-center" : "pl-3"}
           `}
         >
-          <LogOut size={20} className="text-slate-600 group-hover:text-red-600 transition-colors" />
+          <LogOut size={18} className="text-slate-600 group-hover:text-red-600 transition-colors" />
           {!collapsed && (
-            <span className="text-sm font-medium text-slate-600 group-hover:text-red-600">Logout</span>
+            <span className="text-[13px] font-medium text-slate-600 group-hover:text-red-600">Logout</span>
           )}
         </button>
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 shrink-0 text-center bg-gray-100">
-        <p className="text-xs text-slate-500/60">
-          {collapsed ? "©" : "© 2026 Embel Tech"}
+      <div className="px-4 py-2 shrink-0 text-center bg-gray-50 border-t border-gray-100">
+        <p className="text-[9px] font-bold text-slate-400 tracking-tight">
+          {collapsed ? "©" : "© 2026 EMBEL TECH"}
         </p>
       </div>
     </aside >

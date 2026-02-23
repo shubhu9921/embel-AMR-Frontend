@@ -195,9 +195,40 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
         </button>
       </div>
 
-      {/* Center: Resource shortcuts (Desktop only) removed per request */}
-      <div className="hidden md:flex flex-wrap items-center gap-3 max-w-full">
-        {/* Placeholder for center alignment if needed */}
+      {/* Center: Resource shortcuts (Desktop only) */}
+      <div className="hidden md:flex flex-wrap items-center gap-2 max-w-full">
+        <Resource
+          icon={Droplet}
+          label="Water"
+          activeColor="bg-blue-100 text-blue-700 shadow-sm shadow-blue-200"
+          inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+          active={activePage === 'Water'}
+          onClick={() => setActivePage('Water')}
+        />
+        <Resource
+          icon={Sun}
+          label="Solar"
+          activeColor="bg-amber-100 text-amber-700 shadow-sm shadow-amber-200"
+          inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+          active={activePage === 'Solar'}
+          onClick={() => setActivePage('Solar')}
+        />
+        <Resource
+          icon={Zap}
+          label="Energy"
+          activeColor="bg-yellow-100 text-yellow-700 shadow-sm shadow-yellow-200"
+          inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+          active={activePage === 'Energy'}
+          onClick={() => setActivePage('Energy')}
+        />
+        <Resource
+          icon={Flame}
+          label="Gas"
+          activeColor="bg-orange-100 text-orange-700 shadow-sm shadow-orange-200"
+          inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+          active={activePage === 'Gas'}
+          onClick={() => setActivePage('Gas')}
+        />
       </div>
 
       {/* Right Actions */}
