@@ -1,57 +1,5 @@
-import {
-  LayoutDashboard,
-  Droplet,
-  Flame,
-  Zap,
-  Cpu,
-  Users,
-  Bell,
-  Sun,
-  Menu,
-  Settings,
-  TrendingUp,
-  FileText,
-  CreditCard,
-  Database,
-  LogOut,
-  HelpCircle
-} from "lucide-react";
-
-const adminMenu = [
-  { name: "Dashboard", icon: LayoutDashboard },
-  { name: "Water", icon: Droplet },
-  { name: "Energy", icon: Zap },
-  { name: "Solar", icon: Sun },
-  { name: "Devices", icon: Cpu },
-  { name: "Users", icon: Users },
-  { name: "Reports", icon: FileText },
-  { name: "Billing", icon: CreditCard },
-  { name: "Payloads", icon: Database },
-  { name: "Alerts", icon: Bell },
-  { name: "Support", icon: HelpCircle },
-  { name: "Settings", icon: Settings }
-];
-
-const userMenu = [
-  { name: "Dashboard", icon: LayoutDashboard },
-  { name: "Gas", icon: Flame },
-  { name: "Water", icon: Droplet },
-  { name: "Energy", icon: Zap },
-  { name: "Solar", icon: Sun },
-  { name: "Analysis", icon: TrendingUp },
-  { name: "Alerts", icon: Bell },
-  { name: "Settings", icon: Settings }
-];
-
-const domesticMenu = [
-  { name: "Dashboard", icon: LayoutDashboard },
-  { name: "My Usage", icon: TrendingUp },
-  { name: "Billing", icon: CreditCard },
-  { name: "Alerts", icon: Bell },
-  { name: "Settings", icon: Settings }
-];
-
-// Menu selection logic moved inside component or uses prop
+import { Menu, LogOut } from "lucide-react";
+import { adminMenu, userMenu, domesticMenu } from "../data/menuConfig";
 
 export default function Sidebar({
   collapsed,

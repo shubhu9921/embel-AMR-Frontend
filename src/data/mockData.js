@@ -353,65 +353,67 @@ export const multiResourceDataYear = [
     { name: "Jul", Energy: 10500, Water: 6000, Gas: 2800, Solar: 9200 },
     { name: "Oct", Energy: 8800, Water: 4800, Gas: 2300, Solar: 7800 },
 ];
+
+export const domesticAlerts = [
+    { id: 'da1', name: "Water leakage detected", source: "Water", deviceName: "WM-Res-01", location: "Kitchen", date: "2024-02-23", time: "08:30 AM", status: "Active", type: "critical", message: "Continuous flow detected for 2 hours.", role: "Domestic" },
+    { id: 'da2', name: "Low water pressure", source: "Water", deviceName: "WM-Res-01", location: "Main Line", date: "2024-02-22", time: "10:15 PM", status: "Active", type: "warning", message: "Pressure dropped below 1.5 bar.", role: "Domestic" },
+    { id: 'da3', name: "High electricity usage", source: "Energy", deviceName: "EM-Res-05", location: "Living Room", date: "2024-02-23", time: "09:00 AM", status: "Active", type: "warning", message: "Usage spike of 5kW detected.", role: "Domestic" },
+    { id: 'da4', name: "Gas leakage detected", source: "Gas", deviceName: "GM-Res-03", location: "Kitchen", date: "2024-02-21", time: "11:45 AM", status: "Active", type: "critical", message: "Gas trace detected near valve.", role: "Domestic" },
+    { id: 'da5', name: "Solar low generation", source: "Solar", deviceName: "SL-Res-08", location: "Roof", date: "2024-02-23", time: "11:00 AM", status: "Active", type: "info", message: "Generation 30% lower than average.", role: "Domestic" },
+    { id: 'da6', name: "Device offline", source: "System", deviceName: "WM-Res-02", location: "Bathroom", date: "2024-02-20", time: "04:20 PM", status: "Active", type: "critical", message: "Communication lost with device.", role: "Domestic" },
+    { id: 'da7', name: "Battery low", source: "System", deviceName: "GM-Res-07", location: "Utility", date: "2024-02-23", time: "07:10 AM", status: "Active", type: "warning", message: "Battery level at 15%.", role: "Domestic" },
+    { id: 'da8', name: "Usage spike detected", source: "Water", deviceName: "WM-Res-06", location: "External", date: "2024-02-22", time: "02:15 PM", status: "Active", type: "warning", message: "Unusual consumption pattern.", role: "Domestic" },
+    { id: 'da9', name: "Pipe blockage", source: "Water", deviceName: "WM-Res-01", location: "Inlet", date: "2024-02-19", time: "09:40 AM", status: "Active", type: "warning", message: "Flow rate significantly restricted.", role: "Domestic" },
+    { id: 'da10', name: "Unauthorized access detected", source: "System", deviceName: "EM-Res-01", location: "Meter Box", date: "2024-02-23", time: "01:20 AM", status: "Active", type: "critical", message: "Meter box seal tampered.", role: "Domestic" },
+];
+
+export const industrialAlerts = [
+    { id: 'ia1', name: "High energy consumption", source: "Energy", deviceName: "EM-Ind-01", location: "Production Floor", date: "2024-02-23", time: "10:30 AM", status: "Active", type: "warning", message: "Consumption exceeded threshold by 20%.", role: "Industrial" },
+    { id: 'ia2', name: "Industrial water leakage", source: "Water", deviceName: "WM-Ind-02", location: "Cooling Tower", date: "2024-02-23", time: "09:15 AM", status: "Active", type: "critical", message: "Large volume leak detected.", role: "Industrial" },
+    { id: 'ia3', name: "Gas pressure abnormal", source: "Gas", deviceName: "GM-Ind-03", location: "Boiler Room", date: "2024-02-22", time: "11:50 PM", status: "Active", type: "critical", message: "Pressure above safety limits.", role: "Industrial" },
+    { id: 'ia4', name: "Machine overheating", source: "System", deviceName: "MC-Ind-01", location: "Assembly Line", date: "2024-02-23", time: "08:45 AM", status: "Active", type: "critical", message: "Internal temperature at 95°C.", role: "Industrial" },
+    { id: 'ia5', name: "Solar plant low output", source: "Solar", deviceName: "SL-Ind-04", location: "Solar Array", date: "2024-02-23", time: "12:00 PM", status: "Active", type: "info", message: "Inverter efficiency dropped.", role: "Industrial" },
+    { id: 'ia6', name: "Meter communication failure", source: "System", deviceName: "EM-Ind-05", location: "Substation", date: "2024-02-21", time: "03:10 PM", status: "Active", type: "critical", message: "No data received for 4 hours.", role: "Industrial" },
+    { id: 'ia7', name: "Load imbalance", source: "Energy", deviceName: "EM-Ind-01", location: "Main Switch", date: "2024-02-23", time: "02:30 PM", status: "Active", type: "warning", message: "Phase imbalance detected.", role: "Industrial" },
+    { id: 'ia8', name: "Power factor issue", source: "Energy", deviceName: "EM-Ind-02", location: "Capacitor Bank", date: "2024-02-23", time: "11:20 AM", status: "Active", type: "warning", message: "PF dropped below 0.85.", role: "Industrial" },
+    { id: 'ia9', name: "Tank overflow", source: "Water", deviceName: "WM-Ind-03", location: "Storage Tank", date: "2024-02-23", time: "05:15 PM", status: "Active", type: "critical", message: "Upper limit switch triggered.", role: "Industrial" },
+    { id: 'ia10', name: "Device offline", source: "System", deviceName: "GM-Ind-04", location: "Exterior", date: "2024-02-20", time: "01:00 PM", status: "Active", type: "critical", message: "Gateway connection lost.", role: "Industrial" },
+];
+
+export const domesticIssues = [
+    { id: '101', name: "Meter not showing reading", source: "Energy", deviceName: "EM-Res-01", location: "Main Entrance", date: "2024-02-23", time: "10:00 AM", status: "Active", role: "Domestic" },
+    { id: '102', name: "No water supply", source: "Water", deviceName: "WM-Res-01", location: "Kitchen", date: "2024-02-23", time: "07:30 AM", status: "Active", role: "Domestic" },
+    { id: '103', name: "Gas supply problem", source: "Gas", deviceName: "GM-Res-03", location: "Kitchen", date: "2024-02-22", time: "06:15 PM", status: "Resolved", role: "Domestic" },
+    { id: '104', name: "Electricity interruption", source: "Energy", deviceName: "EM-Res-02", location: "Living Room", date: "2024-02-23", time: "11:20 AM", status: "Resolved", role: "Domestic" },
+    { id: '105', name: "Wrong bill generated", source: "Billing", deviceName: "N/A", location: "N/A", date: "2024-02-21", time: "09:00 AM", status: "Processing", role: "Domestic" },
+    { id: '106', name: "App data not updating", source: "System", deviceName: "N/A", location: "N/A", date: "2024-02-23", time: "01:45 PM", status: "Processing", role: "Domestic" },
+    { id: '107', name: "Device display not working", source: "Energy", deviceName: "EM-Res-04", location: "Garage", date: "2024-02-20", time: "03:30 PM", status: "Processing", role: "Domestic" },
+    { id: '108', name: "Solar not working", source: "Solar", deviceName: "SL-Res-08", location: "Roof", date: "2024-02-23", time: "02:10 PM", status: "Processing", role: "Domestic" },
+    { id: '109', name: "Slow updates", source: "System", deviceName: "N/A", location: "N/A", date: "2024-02-22", time: "11:00 AM", status: "Processing", role: "Domestic" },
+    { id: '110', name: "Sensor not working", source: "Water", deviceName: "WM-Res-06", location: "Garden", date: "2024-02-23", time: "04:00 PM", status: "Processing", role: "Domestic" },
+];
+
+export const industrialIssues = [
+    { id: '201', name: "Production power issue", source: "Energy", deviceName: "EM-Ind-01", location: "Main Plant", date: "2024-02-23", time: "09:30 AM", status: "Active", role: "Industrial" },
+    { id: '202', name: "Meter reading mismatch", source: "Energy", deviceName: "EM-Ind-02", location: "Sub-station", date: "2024-02-23", time: "10:15 AM", status: "Processing", role: "Industrial", assignedEngineer: "Rahul Patil" },
+    { id: '203', name: "No water supply", source: "Water", deviceName: "WM-Ind-02", location: "Cooling Tower", date: "2024-02-22", time: "04:50 PM", status: "Active", role: "Industrial" },
+    { id: '204', name: "Gas supply interruption", source: "Gas", deviceName: "GM-Ind-03", location: "Boiler Room", date: "2024-02-23", time: "11:00 AM", status: "Resolved", role: "Industrial", assignedEngineer: "Anita Singh" },
+    { id: '205', name: "Wrong billing", source: "Billing", deviceName: "N/A", location: "N/A", date: "2024-02-21", time: "02:00 PM", status: "Active", role: "Industrial" },
+    { id: '206', name: "Machine reading incorrect", source: "System", deviceName: "MC-Ind-01", location: "Assembly Line", date: "2024-02-23", time: "01:20 PM", status: "Active", role: "Industrial" },
+    { id: '207', name: "Dashboard delay", source: "System", deviceName: "N/A", location: "N/A", date: "2024-02-20", time: "12:45 PM", status: "Processing", role: "Industrial" },
+    { id: '208', name: "Sensor calibration issue", source: "Water", deviceName: "WM-Ind-03", location: "Storage Tank", date: "2024-02-23", time: "03:10 PM", status: "Active", role: "Industrial" },
+    { id: '209', name: "Device breakdown", source: "System", deviceName: "EM-Ind-05", location: "Workshop", date: "2024-02-22", time: "10:00 AM", status: "Resolved", role: "Industrial" },
+    { id: '210', name: "Network issue", source: "System", deviceName: "GT-Ind-01", location: "IT Room", date: "2024-02-23", time: "05:30 PM", status: "Active", role: "Industrial" },
+];
+
 export const dashboardAlerts = [
-    {
-        id: 1,
-        type: "critical",
-        category: "System",
-        priority: 1,
-        title: "Meters Offline",
-        message: "South Hub: 5 meters offline",
-        timestamp: "10m",
-        role: "Admin"
-    },
-    {
-        id: 2,
-        type: "warning",
-        category: "Industrial",
-        priority: 2,
-        title: "High Usage",
-        message: "West Plant: Usage spike detected",
-        timestamp: "25m",
-        role: "Industrial"
-    },
-    {
-        id: 3,
-        type: "info",
-        category: "Maintenance",
-        priority: 3,
-        title: "North Branch: Scheduled maintenance",
-        message: "Scheduled maintenance for power lines in North Branch from 2 PM to 4 PM.",
-        timestamp: "1h",
-        role: "Admin"
-    },
-    {
-        id: 4,
-        type: "critical",
-        category: "Safety",
-        priority: 1,
-        title: "Gas Leak Detected",
-        message: "Unit 4: Minor gas leak detected in supply line. Valve auto-shut triggered.",
-        timestamp: "5h",
-        role: "Industrial"
-    },
-    {
-        id: 5,
-        type: "warning",
-        category: "Residential",
-        priority: 2,
-        title: "Unusual Water Flow",
-        message: "Continuous water flow detected for 4 hours at User 2 residence.",
-        timestamp: "12h",
-        role: "Domestic"
-    },
-    {
-        id: 6,
-        type: "success",
-        category: "System",
-        priority: 3,
-        title: "Backup Battery Restored",
-        message: "Backup power system in Central Wing is now fully charged and operational.",
-        timestamp: "1d",
-        role: "Admin"
-    }
+    ...domesticAlerts,
+    ...industrialAlerts
+];
+
+export const SUPPORT_ENGINEERS = [
+    { id: 'eng1', name: 'Rahul Patil', email: 'rahul@support.com', phone: '9876543210', specialization: 'Energy Devices' },
+    { id: 'eng2', name: 'Sanjay Kumar', email: 'sanjay@support.com', phone: '9876543211', specialization: 'Water Infrastructure' },
+    { id: 'eng3', name: 'Anita Singh', email: 'anita@support.com', phone: '9876543212', specialization: 'Gas Supply' },
+    { id: 'eng4', name: 'Vikram Rao', email: 'vikram@support.com', phone: '9876543213', specialization: 'Solar Panels' },
 ];

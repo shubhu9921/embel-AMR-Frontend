@@ -1,17 +1,19 @@
 import React from "react";
-import { LayoutDashboard, Activity, AlertTriangle, AlertCircle, CreditCard, FileText, MapPin, Cpu, Gauge, Users, Droplet, Flame, Sun, HelpCircle, Bell } from "lucide-react";
+import { LayoutDashboard, Activity, AlertTriangle, AlertCircle, CreditCard, FileText, MapPin, Cpu, Gauge, Users, Droplet, Flame, Sun, HelpCircle, Bell, MessageSquare } from "lucide-react";
 
-import { TimeFilter } from "../components/dashboard/TimeFilter";
-import { AlertsPanel } from "../components/dashboard/AlertsPanel";
-import { StatCard } from "../components/dashboard/StatCard";
-import { PerformanceChart } from "../components/dashboard/PerformanceChart";
+import { TimeFilter, AlertsPanel, StatCard, PerformanceChart, DashboardStats, DashboardBottomInfo } from "../components/dashboard";
 import DomesticDashboard from "./DomesticDashboard";
 
 import { useDashboard } from "../hooks/useDashboard";
 import { DashboardModals } from "../components/dashboard/DashboardModals";
 import { RESOURCE_CONFIG, RESOURCES } from "../utils/resourceUtils";
 import SupportModal from "../components/modals/SupportModal";
-import { dashboardAlerts } from "../data/mockData";
+import {
+    domesticAlerts,
+    industrialAlerts,
+    domesticIssues,
+    industrialIssues
+} from "../data/mockData";
 
 // Fix Leaflet icon issue
 import L from 'leaflet';
@@ -160,12 +162,15 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const currentResStats = resourceStatsMap[activeResource];
 
     /* -------------------- ALERTS DATA -------------------- */
+    const dashboardAlerts = userRole === 'Admin' ? [...domesticAlerts, ...industrialAlerts] : industrialAlerts;
+    const dashboardIssues = userRole === 'Admin' ? [...domesticIssues, ...industrialIssues] : industrialIssues;
 
     return (
         <main className="w-full flex flex-col gap-6 min-h-screen mb-20">
             {showSupportModal && (
                 <SupportModal
                     onClose={() => setShowSupportModal(false)}
+                    setActivePage={setActivePage}
                     userDetails={{ name: isAdmin ? 'System Admin' : 'Industrial User', id: isAdmin ? 'Admin' : 'User1' }}
                 />
             )}
@@ -178,7 +183,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                             <LayoutDashboard size={24} />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome, {userRole || 'User'}! 👋</h1>
+                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome, {sessionStorage.getItem('userName') || userRole || 'User'}! 👋</h1>
                             <p className="text-sm font-medium text-gray-500">System-wide resource analytics & status</p>
                         </div>
                     </div>
@@ -188,238 +193,38 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
             <div className="px-4 md:px-6 flex flex-col gap-6">
 
                 {/* KPI CARDS */}
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    {activeResource !== RESOURCES.ALL ? (
-                        <>
-                            <StatCard
-                                title={`Total ${activeResource} Devices`}
-                                value={currentResStats.total}
-                                icon={<Cpu />}
-                                color="blue"
-                                description="Deployed meters & sensors"
-                                subValue={`${currentResStats.new} New Installed`}
-                            />
-                            <StatCard
-                                title="Operation Status"
-                                value={currentResStats.active}
-                                icon={<Activity />}
-                                color="emerald"
-                                description="Currently active units"
-                                subValue={`${currentResStats.normal} Normal`}
-                                statusBreakdown={currentResStats.stats}
-                            />
-                            <StatCard
-                                title="Device Health"
-                                value={currentResStats.warnings}
-                                icon={<AlertTriangle />}
-                                color="amber"
-                                description="Units needing attention"
-                                subValue={`${currentResStats.attention} Requires Attention`}
-                                statusBreakdown={[
-                                    { label: 'Attention', value: currentResStats.attention, color: 'text-amber-500' },
-                                    { label: 'Critical', value: 0, color: 'text-red-500' }
-                                ]}
-                            />
-                            <StatCard
-                                title="Communication"
-                                value={currentResStats.offline}
-                                icon={<AlertCircle />}
-                                color="red"
-                                description="Currently unreachable"
-                                subValue="Offline Units"
-                                onClick={() => setActivePage('Support')}
-                            />
-                        </>
-                    ) : isAdmin ? (
-                        <>
-                            <StatCard
-                                title="Total Devices"
-                                value={totalDevices}
-                                icon={<Cpu />}
-                                color="blue"
-                                description="Hardware deployed"
-                                subValue="Active: 8"
-                                statusBreakdown={deviceStats}
-                                onClick={() => {
-                                    sessionStorage.setItem('devicesPageTab', 'devices');
-                                    setActivePage('Devices');
-                                }}
-                            />
-                            <StatCard
-                                title="Devices Location"
-                                value="View Details"
-                                icon={<MapPin />}
-                                color="cyan"
-                                description="Filter by location & source"
-                                onClick={() => toggleModal('location', true)}
-                                statusBreakdown={locationStats}
-                            />
-                            <StatCard
-                                title="Total Meters"
-                                value={totalMeters}
-                                icon={<Gauge />}
-                                color="green"
-                                description="Meters monitored"
-                                subValue="Active: 95"
-                                statusBreakdown={meterStats}
-                                onClick={() => {
-                                    sessionStorage.setItem('devicesPageTab', 'meters');
-                                    setActivePage('Devices');
-                                }}
-                            />
-                            <StatCard
-                                title="Total Users"
-                                value={totalUsers}
-                                icon={<Users />}
-                                color="orange"
-                                description="System administrators"
-                                subValue="2 New this week"
-                                statusBreakdown={userStats}
-                                onClick={() => setActivePage('Users')}
-                            />
-                            <StatCard
-                                title="Billing Overview"
-                                value={billingStats.total}
-                                icon={<CreditCard />}
-                                color="purple"
-                                description="Billed this month"
-                                subValue={`Pending: ${billingStats.pending}`}
-                                statusBreakdown={revenueStats}
-                                onClick={() => setActivePage('Billing')}
-                            />
-                            <StatCard
-                                title="Recent Reports"
-                                value={reportsStats.total}
-                                icon={<FileText />}
-                                color="blue"
-                                description="Generated reports"
-                                statusBreakdown={[
-                                    { label: 'Ready', value: reportsStats.ready, color: 'text-green-600' },
-                                    { label: 'Processing', value: reportsStats.processing, color: 'text-amber-600' }
-                                ]}
-                                onClick={() => setActivePage('Reports')}
-                            />
-                            <StatCard
-                                title="Alert Overview"
-                                value={`${dashboardAlerts.filter(a => !a.role || a.role === userRole).length} Total`}
-                                icon={<Bell />}
-                                color="red"
-                                description="Requires immediate action"
-                                statusBreakdown={[
-                                    { label: 'Critical', value: dashboardAlerts.filter(a => a.type === 'critical' && (!a.role || a.role === userRole)).length, color: 'text-red-600' },
-                                    { label: 'Active', value: dashboardAlerts.filter(a => a.type === 'warning' && (!a.role || a.role === userRole)).length, color: 'text-orange-600' },
-                                    { label: 'Info', value: dashboardAlerts.filter(a => a.type === 'info' && (!a.role || a.role === userRole)).length, color: 'text-blue-600' }
-                                ]}
-                                onClick={() => setActivePage('Alerts')}
-                            />
-                            <StatCard
-                                title="Support Management"
-                                value="15"
-                                icon={<HelpCircle />}
-                                color="indigo"
-                                description="User request status"
-                                statusBreakdown={[
-                                    { label: 'Total', value: 15, color: 'text-indigo-600' },
-                                    { label: 'Active', value: 6, color: 'text-amber-600' },
-                                    { label: 'Resolved', value: 9, color: 'text-emerald-600' }
-                                ]}
-                                onClick={() => setActivePage('Support')}
-                            />
-                            <StatCard
-                                title="Active Issues"
-                                value="21"
-                                icon={<AlertCircle />}
-                                color="orange"
-                                description="System task status"
-                                statusBreakdown={[
-                                    { label: 'Active', value: 12, color: 'text-orange-600' },
-                                    { label: 'Critical', value: 4, color: 'text-red-600' },
-                                    { label: 'Resolved', value: 5, color: 'text-emerald-600' }
-                                ]}
-                                onClick={() => setActivePage('Support')}
-                            />
-                            <StatCard
-                                title="Monthly Costing"
-                                value="₹5,250"
-                                icon={<CreditCard />}
-                                color="emerald"
-                                description="Monthly consumption cost"
-                                statusBreakdown={monthlyCostingData}
-                                onClick={() => setActivePage('Billing')}
-                            />
-                        </>
-                    ) : (
-                        <>
-                            <StatCard
-                                title="Assigned Devices"
-                                value={userAssignedDevices}
-                                icon={<Cpu />}
-                                color="blue"
-                                description="Hardware assigned to you"
-                                statusBreakdown={userDeviceStats}
-                                onClick={() => toggleModal('userDevices', true)}
-                            />
-                            <StatCard
-                                title="Assigned Locations"
-                                value={userAssignedLocations}
-                                icon={<MapPin />}
-                                color="cyan"
-                                description="Operational sites"
-                                statusBreakdown={userLocationStats}
-                                onClick={() => toggleModal('userLocations', true)}
-                            />
-                            <StatCard
-                                title="Assigned Meters"
-                                value={userAssignedMeters}
-                                icon={<Gauge />}
-                                color="green"
-                                description="Meters under your supervision"
-                                statusBreakdown={userMeterStats}
-                                onClick={() => toggleModal('userMeters', true)}
-                            />
-                            <StatCard
-                                title="System Health"
-                                value="98.5%"
-                                icon={<Activity />}
-                                color="emerald"
-                                description="Operational Uptime"
-                            />
-                            <StatCard
-                                title="Active Alerts"
-                                value={`${dashboardAlerts.filter(a => (a.type === 'critical' || a.type === 'warning') && (!a.role || a.role === userRole)).length}`}
-                                icon={<AlertTriangle />}
-                                color="red"
-                                description="Requires attention"
-                                statusBreakdown={[
-                                    { label: 'Critical', value: dashboardAlerts.filter(a => a.type === 'critical' && (!a.role || a.role === userRole)).length, color: 'text-red-600' },
-                                    { label: 'Active', value: dashboardAlerts.filter(a => (a.type === 'warning' || a.type === 'info') && (!a.role || a.role === userRole)).length, color: 'text-orange-600' }
-                                ]}
-                                onClick={() => setActivePage('Alerts')}
-                            />
-                            <StatCard
-                                title="Support Tickets"
-                                value="15"
-                                icon={<HelpCircle />}
-                                color="indigo"
-                                description="User request status"
-                                statusBreakdown={[
-                                    { label: 'Active', value: 6, color: 'text-amber-600' },
-                                    { label: 'Resolved', value: 9, color: 'text-emerald-600' }
-                                ]}
-                                onClick={() => setShowSupportModal(true)}
-                            />
-                            <StatCard
-                                title="Monthly Costing"
-                                value="₹5,250"
-                                icon={<CreditCard />}
-                                color="emerald"
-                                description="Monthly consumption cost"
-                                statusBreakdown={monthlyCostingData}
-                                onClick={() => setActivePage('Billing')}
-                            />
-                        </>
-                    )}
-                </div>
+                <DashboardStats
+                    userRole={userRole}
+                    isAdmin={isAdmin}
+                    activeResource={activeResource}
+                    currentResStats={currentResStats}
+                    totalDevices={totalDevices}
+                    deviceStats={deviceStats}
+                    locationStats={locationStats}
+                    totalMeters={totalMeters}
+                    meterStats={meterStats}
+                    totalUsers={totalUsers}
+                    userStats={userStats}
+                    billingStats={billingStats}
+                    revenueStats={revenueStats}
+                    reportsStats={reportsStats}
+                    domesticAlerts={domesticAlerts}
+                    industrialAlerts={industrialAlerts}
+                    domesticIssues={domesticIssues}
+                    industrialIssues={industrialIssues}
+                    userAssignedDevices={userAssignedDevices}
+                    userDeviceStats={userDeviceStats}
+                    userAssignedLocations={userAssignedLocations}
+                    userLocationStats={userLocationStats}
+                    userAssignedMeters={userAssignedMeters}
+                    userMeterStats={userMeterStats}
+                    dashboardAlerts={dashboardAlerts}
+                    dashboardIssues={dashboardIssues}
+                    monthlyCostingData={monthlyCostingData}
+                    toggleModal={toggleModal}
+                    setActivePage={setActivePage}
+                    setShowSupportModal={setShowSupportModal}
+                />
 
                 {/* GRAPHS & ALERTS */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -464,83 +269,13 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                 </div>
 
                 {/* BILLING & REPORTS */}
-                {isAdmin && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                                    <CreditCard size={18} className="text-purple-500" /> Billing Overview
-                                </h3>
-                                <button onClick={() => setActivePage('Billing')} className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">View All</button>
-                            </div>
-                            <div className="grid gap-3">
-                                {[
-                                    { label: 'Collected', val: billingStats.total, color: 'purple', icon: CreditCard },
-                                    { label: 'Pending', val: billingStats.pending, color: 'orange', icon: CreditCard },
-                                    { label: 'Overdue', val: billingStats.overdue, color: 'red', icon: AlertTriangle },
-                                ].map((item, i) => (
-                                    <div key={i} className={`flex items-center gap-3 p-4 rounded-xl ${colorConfig[item.color].bg} border ${colorConfig[item.color].border} cursor-pointer`} onClick={() => setActivePage('Billing')}>
-                                        <div className={`p-2 ${colorConfig[item.color].iconBg} ${colorConfig[item.color].text} rounded-lg`}><item.icon size={18} /></div>
-                                        <div>
-                                            <p className={`text-xs ${colorConfig[item.color].text} font-bold uppercase tracking-wider`}>{item.label}</p>
-                                            <p className="text-lg font-bold text-gray-900">{item.val}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                                    <FileText size={18} className="text-blue-500" /> Recent Reports
-                                </h3>
-                                <button onClick={() => setActivePage('Reports')} className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">View All</button>
-                            </div>
-                            <div className="grid gap-3">
-                                {[
-                                    { title: 'Monthly Data', meta: 'Dec 2024 • 2.4 MB', status: 'Ready' },
-                                    { title: 'Solar Analysis', meta: 'Annual 2024 • 5.2 MB', status: 'Ready' },
-                                    { title: 'Device Health', meta: 'Jan 2025 • Calculating...', status: 'Processing' },
-                                ].map((rep, i) => (
-                                    <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 cursor-pointer" onClick={() => setActivePage('Reports')}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg"><FileText size={18} /></div>
-                                            <div>
-                                                <p className="text-sm font-bold text-gray-800">{rep.title}</p>
-                                                <p className="text-[10px] text-gray-500 font-medium">{rep.meta}</p>
-                                            </div>
-                                        </div>
-                                        <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${rep.status === 'Ready' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{rep.status}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-bold text-gray-800 flex items-center gap-2"><Gauge size={18} className="text-emerald-500" /> System Status</h3>
-                                <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                {[
-                                    { label: 'Grid Freq', value: '50.02 Hz', icon: Activity, color: 'emerald' },
-                                    { label: 'Water Pres', value: '3.4 bar', icon: Droplet, color: 'cyan' },
-                                    { label: 'Gas PSI', value: '2.1 psi', icon: Flame, color: 'orange' },
-                                    { label: 'Solar Out', value: '4.2 kW', icon: Sun, color: 'amber' },
-                                ].map((p, i) => (
-                                    <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100">
-                                        <div className={`p-2 rounded-lg bg-${p.color}-50 text-${p.color}-500`}><p.icon size={16} /></div>
-                                        <div>
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase">{p.label}</p>
-                                            <p className="text-sm font-bold text-gray-900">{p.value}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <DashboardBottomInfo
+                    isAdmin={isAdmin}
+                    billingStats={billingStats}
+                    colorConfig={colorConfig}
+                    reportsStats={reportsStats}
+                    setActivePage={setActivePage}
+                />
             </div>
 
             <DashboardModals

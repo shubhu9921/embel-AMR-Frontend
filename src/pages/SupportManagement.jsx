@@ -1,11 +1,8 @@
 
 import React, { useState } from 'react';
-import {
-    Search, Filter, Clock, CheckCircle, AlertCircle,
-    User, Tag, MessageSquare, ChevronRight,
-    MoreVertical, UserPlus, ExternalLink, Mail, Phone, MapPin
-} from 'lucide-react';
+import { Search, Filter, Clock, CheckCircle, AlertCircle, User, Tag, MessageSquare, ChevronRight, MoreVertical, UserPlus, ExternalLink, Mail, Phone, MapPin } from 'lucide-react';
 import { initialTickets, TICKET_STATUS, TICKET_PRIORITY } from '../data/supportData';
+import { SUPPORT_ENGINEERS } from '../data/mockData';
 import { StatCard } from '../components/dashboard/StatCard';
 
 export default function SupportManagement() {
@@ -152,33 +149,35 @@ export default function SupportManagement() {
                                     <td className="px-6 py-5">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{ticket.id}</span>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">
+                                                {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'N/A'}
+                                            </span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-black border border-indigo-100">
-                                                {ticket.userPic ? <img src={ticket.userPic} alt="" className="w-full h-full object-cover rounded-xl" /> : (ticket.userName || 'U').charAt(0)}
+                                            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-black border border-indigo-100 uppercase">
+                                                {(ticket.userName || 'U').charAt(0)}
                                             </div>
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-bold text-gray-900">{ticket.userName}</span>
-                                                <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1 uppercase tracking-tight"><User size={10} /> {ticket.userId}</span>
+                                                <div className="flex flex-col gap-0.5 mt-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1 uppercase tracking-tight"><Phone size={10} /> {ticket.mobile}</span>
+                                                    <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1 uppercase tracking-tight"><Mail size={10} /> {ticket.email}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 max-w-md">
-                                        <div className="flex flex-col gap-2">
+                                    <td className="px-6 py-5">
+                                        <div className="flex flex-col gap-1.5">
                                             <div className="flex items-center gap-2">
-                                                <select
-                                                    value={ticket.priority}
-                                                    onChange={(e) => handlePriorityChange(ticket.id, e.target.value)}
-                                                    className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border-none outline-none cursor-pointer ${priorityColors[ticket.priority]}`}
-                                                >
-                                                    {Object.values(TICKET_PRIORITY).map(p => <option key={p} value={p}>{p}</option>)}
-                                                </select>
-                                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-tighter opacity-70">/ {ticket.issueType}</span>
+                                                <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${priorityColors[ticket.priority]}`}>
+                                                    {ticket.priority}
+                                                </span>
+                                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-tighter opacity-70">/ {ticket.type}</span>
                                             </div>
-                                            <span className="text-sm font-bold text-gray-800 line-clamp-1">{ticket.title}</span>
+                                            <span className="text-sm font-bold text-gray-800 line-clamp-1">{ticket.description}</span>
+                                            <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1 uppercase tracking-tight"><MapPin size={10} /> {ticket.location}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
@@ -194,9 +193,9 @@ export default function SupportManagement() {
                                                     className="w-full pl-7 pr-3 py-2 bg-gray-50/50 border border-gray-100 rounded-xl text-[10px] font-bold text-gray-600 outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer"
                                                 >
                                                     <option value="" disabled>Assign Engineer...</option>
-                                                    <option value="John Doe (Senior Eng)">John Doe (Senior Eng)</option>
-                                                    <option value="Alice Smith (Field Eng)">Alice Smith (Field Eng)</option>
-                                                    <option value="Bob Wilson (Tech Lead)">Bob Wilson (Tech Lead)</option>
+                                                    {(SUPPORT_ENGINEERS || []).map(eng => (
+                                                        <option key={eng.id} value={eng.name}>{eng.name} ({eng.specialization})</option>
+                                                    ))}
                                                 </select>
                                                 <UserPlus className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                                                 <ChevronRight className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-300 pointer-events-none rotate-90" />
@@ -210,14 +209,21 @@ export default function SupportManagement() {
                                                     onClick={() => handleStatusChange(ticket.id, TICKET_STATUS.RESOLVED)}
                                                     className="p-2 hover:bg-emerald-50 text-emerald-600 rounded-xl transition-all border border-transparent hover:border-emerald-100"
                                                     title="Mark Resolved"
+                                                    aria-label="Mark Ticket as Resolved"
                                                 >
                                                     <CheckCircle size={16} />
                                                 </button>
                                             )}
-                                            <button className="p-2 hover:bg-indigo-50 text-indigo-600 rounded-xl transition-all border border-transparent hover:border-indigo-100">
+                                            <button
+                                                className="p-2 hover:bg-indigo-50 text-indigo-600 rounded-xl transition-all border border-transparent hover:border-indigo-100"
+                                                aria-label="View Details"
+                                            >
                                                 <ExternalLink size={16} />
                                             </button>
-                                            <button className="p-2 hover:bg-gray-50 text-gray-400 rounded-xl transition-all">
+                                            <button
+                                                className="p-2 hover:bg-gray-50 text-gray-400 rounded-xl transition-all"
+                                                aria-label="More Actions"
+                                            >
                                                 <MoreVertical size={16} />
                                             </button>
                                         </div>

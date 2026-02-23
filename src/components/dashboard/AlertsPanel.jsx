@@ -44,11 +44,18 @@ const alertConfig = {
   },
 };
 
-export function AlertsPanel({ alerts, compact = false, userRole = 'Admin' }) {
+export function AlertsPanel({ alerts = [], compact = false, userRole = 'Admin' }) {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
-  const filteredAlerts = alerts.filter(a => {
+  const accentColors = {
+    info: 'bg-blue-500',
+    warning: 'bg-amber-500',
+    critical: 'bg-red-500',
+    success: 'bg-green-500',
+  };
+
+  const filteredAlerts = (alerts || []).filter(a => {
     // Role-based visibility
     if (userRole === 'Domestic') {
       // Domestic users only see Residential alerts or alerts explicitly for them
@@ -76,7 +83,7 @@ export function AlertsPanel({ alerts, compact = false, userRole = 'Admin' }) {
             <div className={`p-2 rounded-lg ${compact ? 'bg-indigo-50 text-indigo-600' : 'bg-indigo-50 text-indigo-600'} shadow-sm`}>
               <Bell size={compact ? 16 : 18} />
             </div>
-            <h3 className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-900 tracking-tight`}>Alerts</h3>
+            <h3 className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-900 tracking-tight`}>System Alerts</h3>
           </div>
           {/* Search */}
           <div className="relative group">
@@ -145,7 +152,7 @@ export function AlertsPanel({ alerts, compact = false, userRole = 'Admin' }) {
                 className="relative bg-white border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:border-orange-200 hover:bg-orange-50 transition-all duration-300 cursor-default"
               >
                 {/* Left Accent Bar */}
-                <div className={`absolute left-0 top-3 bottom-3 w-1 ${config.bgColor.replace('bg-', 'bg-').replace('50', '500')} rounded-r-full`}></div>
+                <div className={`absolute left-0 top-3 bottom-3 w-1 ${accentColors[type] || 'bg-blue-500'} rounded-r-full`}></div>
 
                 <div className="flex gap-3 pl-2.5">
                   {/* Icon Container */}

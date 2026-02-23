@@ -9,7 +9,7 @@ import {
     BarChart,
     Bar
 } from "recharts";
-import { Zap, Droplet, Flame, AlertCircle, CheckCircle, CreditCard, TrendingUp, Calendar, ArrowRight, Sun, Leaf, AlertTriangle, Download, HelpCircle } from "lucide-react";
+import { Zap, Droplet, Flame, AlertCircle, CheckCircle, CreditCard, TrendingUp, Calendar, ArrowRight, Sun, Leaf, AlertTriangle, Download, HelpCircle, MessageSquare } from "lucide-react";
 import { AlertsPanel } from "../components/dashboard/AlertsPanel";
 import { StatCard } from "../components/dashboard/StatCard";
 import SolarDetailsModal from "../components/modals/SolarDetailsModal";
@@ -18,9 +18,10 @@ import WaterDetailsModal from "../components/modals/WaterDetailsModal";
 import GasDetailsModal from "../components/modals/GasDetailsModal";
 import OverallReportModal from "../components/modals/OverallReportModal";
 import SupportModal from "../components/modals/SupportModal";
+import { domesticAlerts, domesticIssues } from "../data/mockData";
 
 export default function DomesticDashboard({ setActivePage = () => { } }) {
-    const userRole = sessionStorage.getItem('userName') || 'Domestic User';
+    const userName = sessionStorage.getItem('userName') || 'User';
     const [timeRange, setTimeRange] = useState('week');
     const [showSolarModal, setShowSolarModal] = useState(false);
     const [showEnergyModal, setShowEnergyModal] = useState(false);
@@ -71,14 +72,15 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
             {showSupportModal && (
                 <SupportModal
                     onClose={() => setShowSupportModal(false)}
-                    userDetails={{ name: 'Domestic User', id: 'User2' }}
+                    setActivePage={setActivePage}
+                    userDetails={{ name: userName, id: sessionStorage.getItem('userId') || 'User2' }}
                 />
             )}
 
             {/* Greeting Section */}
             <div className="p-5 border-b border-gray-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-[20px] shadow-sm">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome Back, {userRole}! 👋</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome Back, {userName}! 👋</h1>
                     <p className="text-gray-500 font-medium mt-1">Monitor your home's resource efficiency.</p>
                 </div>
                 <div className="flex gap-3">
@@ -146,35 +148,28 @@ export default function DomesticDashboard({ setActivePage = () => { } }) {
                     onClick={() => setShowGasModal(true)}
                 />
                 <StatCard
-                    title="Active Alerts"
-                    value="3 Issues"
+                    title="System Alerts"
+                    value={`${domesticAlerts.length}`}
                     icon={<AlertTriangle />}
                     color="red"
-                    description="Critical Attention Needed"
+                    description="System Generated"
                     statusBreakdown={[
-                        { label: 'Critical', value: 1, color: 'text-red-600' },
-                        { label: 'Warning', value: 2, color: 'text-orange-600' }
+                        { label: 'Critical', value: domesticAlerts.filter(a => a.type === 'critical').length, color: 'text-red-600' },
+                        { label: 'Warning', value: domesticAlerts.filter(a => a.type === 'warning').length, color: 'text-orange-600' }
                     ]}
                     onClick={() => setActivePage('Alerts')}
                 />
                 <StatCard
-                    title="Carbon Offset"
-                    value="4.2 kg"
-                    icon={<Leaf />}
-                    color="emerald"
-                    description="Today"
-                />
-                <StatCard
                     title="Support Tickets"
-                    value="15"
-                    icon={<HelpCircle />}
+                    value={domesticIssues.length}
+                    icon={<MessageSquare />}
                     color="indigo"
-                    description="User request status"
+                    description="Issues & Requests"
                     statusBreakdown={[
-                        { label: 'Active', value: 6, color: 'text-amber-600' },
-                        { label: 'Resolved', value: 9, color: 'text-emerald-600' }
+                        { label: 'Pending', value: domesticIssues.filter(i => i.status === 'Pending').length, color: 'text-amber-600' },
+                        { label: 'Resolved', value: domesticIssues.filter(i => i.status === 'Resolved').length, color: 'text-emerald-600' }
                     ]}
-                    onClick={() => setShowSupportModal(true)}
+                    onClick={() => setActivePage('Issues')}
                 />
                 <StatCard
                     title="Monthly Costing"

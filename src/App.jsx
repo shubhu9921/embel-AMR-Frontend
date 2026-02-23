@@ -19,6 +19,8 @@ const PayloadsPage = lazy(() => import("./pages/Payloads"));
 const LoginPage = lazy(() => import("./pages/Login"));
 const MyUsagePage = lazy(() => import("./pages/MyUsage"));
 const SupportManagementPage = lazy(() => import("./pages/SupportManagement"));
+const SupportTicketsPage = lazy(() => import("./pages/SupportTickets"));
+const IssuesPage = lazy(() => import("./pages/Issues"));
 
 // Loading Component
 const Loading = () => (
@@ -114,14 +116,15 @@ export default function App() {
             {activePage === 'Energy' && <EnergyPage setActivePage={setActivePage} />}
             {activePage === 'Solar' && <SolarPage setActivePage={setActivePage} />}
             {activePage === 'Devices' && <DevicesPage />}
-            {activePage === "Alerts" && <AlertsPage />}
+            {activePage === "Alerts" && <AlertsPage setActivePage={setActivePage} />}
             {activePage === "Analysis" && <AnalysisPage />}
             {activePage === "Settings" && <SettingsPage />}
             {activePage === "Reports" && <ReportsPage />}
             {activePage === "Billing" && <BillingPage userRole={userRole} />}
             {activePage === "My Usage" && <MyUsagePage />}
             {activePage === "Payloads" && <PayloadsPage />}
-            {activePage === "Support" && <SupportManagementPage />}
+            {activePage === "Issues" && <IssuesPage setActivePage={setActivePage} />}
+            {activePage === "Support" && (userRole === 'Admin' ? <SupportManagementPage /> : <SupportTicketsPage setActivePage={setActivePage} />)}
           </Suspense>
         </main>
       </div>
