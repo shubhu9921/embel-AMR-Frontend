@@ -1,11 +1,11 @@
-
-import React, { useState } from 'react';
-import { X, Send, HelpCircle, AlertCircle, FileText, Cpu, Gauge, CreditCard, Layout, MoreHorizontal, User, Phone, Mail, MapPin, ShieldCheck, Briefcase } from 'lucide-react';
-import { ISSUE_TYPES, TICKET_STATUS } from '../../data/supportData';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Send, HelpCircle, AlertCircle, FileText, Cpu, Gauge, CreditCard, Layout, MoreHorizontal, User, Phone, Mail, MapPin, ShieldCheck, Briefcase, CheckCircle } from 'lucide-react';
+import { ISSUE_TYPES } from '../../data/supportData';
 import { SUPPORT_ENGINEERS } from '../../data/mockData';
-import { useEffect, useRef } from 'react';
+import { useSupport } from '../../context/SupportContext';
 
 export default function SupportModal({ onClose, userDetails = { name: 'User', id: 'User1' }, editItem = null, setActivePage = () => { } }) {
+    const { addTicket, updateTicket, assignEngineer, TICKET_STATUS } = useSupport();
     const userRole = sessionStorage.getItem('userRole') || 'Industrial';
     const isSuperAdmin = userRole === 'Super Admin' || userRole === 'Admin';
 
@@ -17,24 +17,19 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
         return 'Admin';
     };
 
-    // Auto-fill logic based on role (Mocking different reporters)
+    const isEdit = !!editItem?.id;
+
     // Auto-fill logic based on role
-    const userData = editItem ? {
-        name: editItem.userName || editItem.user,
-        mobile: editItem.mobile || 'N/A',
-        email: editItem.email || 'N/A',
-        location: editItem.location || 'N/A',
-        type: getUserTypeDisplay(editItem)
-    } : {
-        name: sessionStorage.getItem('userName') || userDetails.name,
-        mobile: sessionStorage.getItem('userPhone') || '9876543210',
-        email: sessionStorage.getItem('userEmail') || 'user@example.com',
-        location: sessionStorage.getItem('userLocation') || 'Plant 1',
-        type: getUserTypeDisplay()
+    const userData = {
+        name: isEdit ? (editItem.userName || editItem.user || 'N/A') : (sessionStorage.getItem('userName') || 'N/A'),
+        mobile: isEdit ? (editItem.mobile || 'N/A') : (sessionStorage.getItem('userPhone') || '9876543210'),
+        email: isEdit ? (editItem.email || 'N/A') : (sessionStorage.getItem('userEmail') || 'user@example.com'),
+        location: isEdit ? (editItem.location || 'N/A') : (sessionStorage.getItem('userLocation') || 'Main Plant'),
+        type: getUserTypeDisplay(isEdit ? editItem : null)
     };
 
     const [formData, setFormData] = useState({
-        requestType: editItem?.requestType || (editItem?.type === 'Alert' ? 'Alert' : 'Issue'),
+        requestType: editItem?.requestType || ((editItem?.type || '').toLowerCase() === 'alert' ? 'Alert' : 'Issue'),
         issueType: editItem?.type || 'Devices',
         title: editItem?.name || '',
         description: editItem?.description || '',
@@ -64,7 +59,7 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
             return;
         }
 
-        if (!editItem && (!formData.title.trim() || !formData.deviceId.trim())) {
+        if (!isEdit && (!formData.title.trim() || !formData.deviceId.trim())) {
             setFormError('Please fill all required fields');
             return;
         }
@@ -73,21 +68,40 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
         setIsSubmitting(true);
 
         const timer1 = setTimeout(() => {
-            console.log(isSuperAdmin ? 'Engineer Assigned:' : (editItem ? 'Ticket Updated:' : 'Ticket Created:'), {
+            const ticketData = {
                 ...formData,
-                ticketId: editItem?.id || `TKT-${Date.now().toString().slice(-4)}-${Math.floor(1000 + Math.random() * 9000)}`,
-                status: isSuperAdmin && selectedEngineer ? 'Processing' : (editItem?.status || TICKET_STATUS.PENDING),
-                assignedEngineer: selectedEngineer?.name
-            });
+                name: formData.title,
+                deviceName: formData.deviceId,
+                username: sessionStorage.getItem('userName') || userData.name,
+                userName: userData.name,
+                email: userData.email,
+                mobile: userData.mobile,
+                location: userData.location,
+                role: userRole,
+                type: formData.requestType.toLowerCase(), // Save in lowercase as per new model
+                status: editItem?.status || TICKET_STATUS.PENDING
+            };
+
+            if (editItem) {
+                updateTicket(editItem.id, ticketData);
+                if (isSuperAdmin && selectedEngineer) {
+                    assignEngineer(editItem.id, selectedEngineer.name);
+                }
+            } else {
+                addTicket(ticketData);
+            }
+
             setIsSubmitting(false);
             setIsSuccess(true);
 
             const timer2 = setTimeout(() => {
                 if (!isSuperAdmin) {
-                    if (formData.requestType === 'Alert') {
-                        setActivePage('Alerts');
-                    } else {
+                    if (formData.requestType.toLowerCase() === 'alert') {
+                        setActivePage('Alerts'); // Redirect to specific list
+                    } else if (formData.requestType.toLowerCase() === 'issue') {
                         setActivePage('Issues');
+                    } else {
+                        setActivePage('Support');
                     }
                 }
                 onClose();
@@ -129,10 +143,10 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                         </div>
                         <div>
                             <h2 className="text-xl font-black tracking-tight">
-                                {isSuperAdmin ? 'View & Assign Support Engineer' : (editItem ? 'Edit Support Ticket' : 'Raise Support Request')}
+                                {isSuperAdmin ? 'View & Assign Support Engineer' : (editItem?.id ? 'Edit Support Ticket' : 'Raise Support Request')}
                             </h2>
                             <p className="text-indigo-100 text-xs font-bold uppercase tracking-wider opacity-80">
-                                {editItem ? `Ticket #${editItem.id}` : "Support Management System"}
+                                {editItem?.id ? `Ticket #${editItem.id}` : "Support Management System"}
                             </p>
                         </div>
                     </div>
@@ -145,7 +159,7 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                                 <CheckCircle size={40} />
                             </div>
                             <h3 className="text-2xl font-black text-gray-900 mb-2">
-                                {isSuperAdmin ? 'Engineer Assigned Successfully!' : (editItem ? 'Ticket Updated!' : 'Ticket Raised!')}
+                                {isSuperAdmin ? 'Engineer Assigned Successfully!' : (editItem?.id ? 'Ticket Updated!' : 'Ticket Raised!')}
                             </h3>
                             <p className="text-gray-500 font-medium max-w-xs">
                                 {isSuperAdmin ? 'The ticket status has been updated to Processing.' : `Routing to your ${formData.requestType}s...`}
@@ -214,7 +228,7 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Request Type</label>
-                                            {editItem ? (
+                                            {isEdit ? (
                                                 <div className="px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 text-xs font-black text-indigo-400 uppercase shadow-sm opacity-70">
                                                     {formData.requestType}
                                                 </div>
@@ -232,7 +246,7 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Status</label>
                                             <div className="py-1">
-                                                <StatusBadge status={editItem?.status || 'Active'} />
+                                                <StatusBadge status={editItem?.status || 'Pending'} />
                                             </div>
                                         </div>
                                     </div>
@@ -240,7 +254,7 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Source</label>
-                                            {editItem ? (
+                                            {isEdit ? (
                                                 <div className="px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 text-xs font-bold text-gray-500 shadow-sm opacity-70">
                                                     {formData.source}
                                                 </div>
@@ -254,12 +268,13 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                                                     <option value="Water">Water</option>
                                                     <option value="Gas">Gas</option>
                                                     <option value="Solar">Solar</option>
+                                                    <option value="Other">Other</option>
                                                 </select>
                                             )}
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Device/Meter</label>
-                                            {editItem ? (
+                                            {isEdit ? (
                                                 <div className="px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 text-xs font-bold text-gray-500 shadow-sm opacity-70 truncate">
                                                     {formData.deviceId}
                                                 </div>
@@ -299,7 +314,7 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                                                 if (formError && e.target.value.trim()) setFormError('');
                                             }}
                                             disabled={isSuperAdmin}
-                                            placeholder={editItem ? "Update issue or alert details here" : "Describe the problem in detail (device behavior, errors, leakage, damage, etc.)"}
+                                            placeholder={isEdit ? "Update issue or alert details here" : "Describe the problem in detail (device behavior, errors, leakage, damage, etc.)"}
                                             rows={4}
                                             className={`w-full px-4 py-3 rounded-2xl border text-xs font-medium leading-relaxed shadow-sm transition-all outline-none focus:ring-4 placeholder:text-gray-400 resize-none custom-scrollbar
                                                 ${isSuperAdmin ? 'bg-gray-50 border-gray-100 text-gray-500 opacity-70' :
@@ -409,7 +424,7 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                                             {isSubmitting ? (
                                                 <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>Processing...</>
                                             ) : (
-                                                <><Send size={16} />{editItem ? 'Update Ticket' : 'Submit Support Ticket'}</>
+                                                <><Send size={16} />{editItem?.id ? 'Update Ticket' : 'Submit Support Ticket'}</>
                                             )}
                                         </button>
                                     </div>
@@ -420,13 +435,5 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                 </div>
             </div>
         </div>
-    );
-}
-
-function CheckCircle({ size, className }) {
-    return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
-        </svg>
     );
 }

@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Search, Filter, ChevronLeft, ChevronRight, Eye, MessageSquare, AlertCircle, ChevronDown, CheckCircle, Info, AlertTriangle, Edit } from 'lucide-react';
-import { domesticAlerts, industrialAlerts } from '../data/mockData';
+import { Bell, Search, Filter, ChevronLeft, ChevronRight, Eye, MessageSquare, AlertCircle, ChevronDown, CheckCircle, Info, AlertTriangle, Edit, Plus, HelpCircle } from 'lucide-react';
+import { useSupport } from '../context/SupportContext';
 import AlertIssueDetailsModal from '../components/modals/AlertIssueDetailsModal';
 import SupportModal from '../components/modals/SupportModal';
 
 export default function AlertsPage({ setActivePage = () => { } }) {
-  const userRole = sessionStorage.getItem('userRole') || 'Admin';
+  const { tickets } = useSupport();
+  const userRole = sessionStorage.getItem('userRole') || 'Industrial';
+  const currentUser = sessionStorage.getItem('userName') || userRole;
+
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
@@ -30,14 +33,17 @@ export default function AlertsPage({ setActivePage = () => { } }) {
 
   const pageSize = 8;
 
-  const allAlerts = userRole === 'Domestic' ? domesticAlerts : userRole === 'Industrial' ? industrialAlerts : [...domesticAlerts, ...industrialAlerts];
+  // Get alerts from centralized support state
+  const allAlerts = (userRole === 'Admin' || userRole === 'Super Admin')
+    ? tickets.filter(t => t.type === 'alert')
+    : tickets.filter(t => t.type === 'alert' && (t.username === currentUser || t.userName === currentUser));
 
   const filteredAlerts = allAlerts.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.deviceName.toLowerCase().includes(search.toLowerCase()) ||
-      item.location.toLowerCase().includes(search.toLowerCase());
-    const matchesType = typeFilter === 'all' || item.type.toLowerCase() === typeFilter.toLowerCase();
-    const matchesSource = sourceFilter === 'all' || item.source.toLowerCase() === sourceFilter.toLowerCase();
+    const matchesSearch = (item.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (item.deviceName || '').toLowerCase().includes(search.toLowerCase()) ||
+      (item.location || '').toLowerCase().includes(search.toLowerCase());
+    const matchesType = typeFilter === 'all' || (item.type || '').toLowerCase() === typeFilter.toLowerCase() || (item.severity || '').toLowerCase() === typeFilter.toLowerCase();
+    const matchesSource = sourceFilter === 'all' || (item.source || '').toLowerCase() === sourceFilter.toLowerCase();
     return matchesSearch && matchesType && matchesSource;
   });
 
@@ -49,7 +55,7 @@ export default function AlertsPage({ setActivePage = () => { } }) {
     setShowDetailsModal(true);
   };
 
-  const handleRaiseSupport = (item) => {
+  const handleRaiseSupport = (item = null) => {
     setSupportItem(item);
     setShowSupportModal(true);
   };
@@ -58,6 +64,24 @@ export default function AlertsPage({ setActivePage = () => { } }) {
     critical: 'bg-red-100 text-red-700 border-red-200',
     warning: 'bg-amber-100 text-amber-700 border-amber-200',
     info: 'bg-blue-100 text-blue-700 border-blue-200',
+    alert: 'bg-red-50 text-red-600 border-red-100',
+  };
+
+  // Helper to get severity icon
+  const getSeverityIcon = (severity) => {
+    const lowerSeverity = (severity || '').toLowerCase();
+    switch (lowerSeverity) {
+      case 'critical':
+        return <AlertTriangle size={16} />;
+      case 'warning':
+        return <AlertCircle size={16} />;
+      case 'info':
+        return <Info size={16} />;
+      case 'success':
+        return <CheckCircle size={16} />;
+      default:
+        return <Eye size={16} />;
+    }
   };
 
   return (
@@ -73,6 +97,14 @@ export default function AlertsPage({ setActivePage = () => { } }) {
             <p className="text-sm font-medium text-gray-500">Monitor system-generated notifications</p>
           </div>
         </div>
+
+        <button
+          onClick={() => handleRaiseSupport()}
+          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-black uppercase tracking-wider shadow-lg shadow-indigo-500/20 transition-all active:scale-95"
+        >
+          <Plus className="w-5 h-5" />
+          Raise Support Ticket
+        </button>
       </div>
 
       {/* Filters & Search */}
@@ -166,17 +198,17 @@ export default function AlertsPage({ setActivePage = () => { } }) {
                   <td className="px-6 py-4 text-sm text-gray-600 font-medium">{item.location}</td>
                   <td className="px-6 py-4 text-sm text-gray-500 font-medium">{item.date}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase border ${typeStyles[item.type] || 'bg-gray-100'}`}>
-                      {item.type}
+                    <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase border ${typeStyles[item.type] || typeStyles[item.severity] || 'bg-gray-100'}`}>
+                      {item.type || item.severity}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    {item.assignedEngineer ? (
+                    {(item.engineer || item.assignedEngineer) ? (
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
-                          {item.assignedEngineer.split(' ').map(n => n[0]).join('')}
+                          {(item.engineer || item.assignedEngineer || '').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase()}
                         </div>
-                        <span className="text-xs font-bold text-gray-700">{item.assignedEngineer}</span>
+                        <span className="text-xs font-bold text-gray-700">{item.engineer || item.assignedEngineer}</span>
                       </div>
                     ) : (
                       <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Unassigned</span>
@@ -189,14 +221,14 @@ export default function AlertsPage({ setActivePage = () => { } }) {
                         className="p-2 hover:bg-orange-100 text-orange-600 rounded-lg transition-all"
                         title="View Details"
                       >
-                        <Eye size={16} />
+                        {getSeverityIcon(item.priority || item.severity || 'alert')}
                       </button>
                       <button
                         onClick={() => handleRaiseSupport(item)}
-                        className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg transition-all"
-                        title="Edit Ticket"
+                        className="p-2 hover:bg-indigo-100 text-indigo-600 rounded-lg transition-all"
+                        title="Raise Support"
                       >
-                        <Edit size={16} />
+                        <HelpCircle size={16} />
                       </button>
                     </div>
                   </td>
@@ -250,11 +282,18 @@ export default function AlertsPage({ setActivePage = () => { } }) {
       }
 
       {
-        showSupportModal && supportItem && (
+        showSupportModal && (
           <SupportModal
-            editItem={{ ...supportItem, status: 'Active' }}
-            onClose={() => setShowSupportModal(false)}
+            editItem={supportItem ? { ...supportItem } : { type: 'alert' }}
+            onClose={() => {
+              setShowSupportModal(false);
+              setSupportItem(null);
+            }}
             setActivePage={setActivePage}
+            userDetails={{
+              name: currentUser,
+              id: sessionStorage.getItem('userId') || currentUser
+            }}
           />
         )
       }

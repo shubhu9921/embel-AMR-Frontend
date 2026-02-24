@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { X, Send, MessageSquare, AlertTriangle, Cpu, MapPin, ClipboardList } from 'lucide-react';
+import { useSupport } from '../../context/SupportContext';
 
 export default function RaiseSupportModal({ item, onClose }) {
+    const { addTicket } = useSupport();
     const [description, setDescription] = useState('');
     const [ticketSource, setTicketSource] = useState(item?.source || 'Other');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,14 +15,28 @@ export default function RaiseSupportModal({ item, onClose }) {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Simulate API call
+        const newTicket = {
+            name: item.name,
+            source: ticketSource,
+            deviceName: item.deviceName,
+            location: item.location,
+            description: description,
+            category: item.type === 'critical' || item.type === 'warning' ? 'Alert' : 'Issue',
+            type: item.type === 'critical' || item.type === 'warning' ? 'Alert' : 'Issue',
+            role: item.role || (sessionStorage.getItem('userRole') || 'Industrial')
+        };
+
+        // Call context to add ticket
+        addTicket(newTicket);
+
+        // Simulate processing delay for UX
         setTimeout(() => {
             setIsSubmitting(false);
             setIsSuccess(true);
             setTimeout(() => {
                 onClose();
             }, 2000);
-        }, 1500);
+        }, 1000);
     };
 
     return (

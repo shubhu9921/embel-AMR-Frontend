@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { AlertCircle, Search, ChevronLeft, ChevronRight, Filter, Eye, MessageSquare, ChevronDown, CheckCircle, Info, AlertTriangle, Edit } from 'lucide-react';
-import { domesticIssues, industrialIssues } from '../data/mockData';
+import { AlertCircle, Search, ChevronLeft, ChevronRight, Filter, Eye, MessageSquare, ChevronDown, CheckCircle, Info, AlertTriangle, Edit, Plus, HelpCircle } from 'lucide-react';
+import { useSupport } from '../context/SupportContext';
 import AlertIssueDetailsModal from '../components/modals/AlertIssueDetailsModal';
 import SupportModal from '../components/modals/SupportModal';
 
 export default function IssuesPage({ setActivePage = () => { } }) {
-    const userRole = sessionStorage.getItem('userRole') || 'Admin';
+    const { tickets } = useSupport();
+    const userRole = sessionStorage.getItem('userRole') || 'Industrial';
+    const currentUser = sessionStorage.getItem('userName') || userRole;
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [sourceFilter, setSourceFilter] = useState('all');
@@ -30,14 +32,17 @@ export default function IssuesPage({ setActivePage = () => { } }) {
 
     const pageSize = 8;
 
-    const allIssues = userRole === 'Domestic' ? domesticIssues : userRole === 'Industrial' ? industrialIssues : [...domesticIssues, ...industrialIssues];
+    // Get issues from centralized support state
+    const allIssues = (userRole === 'Admin' || userRole === 'Super Admin')
+        ? tickets.filter(t => t.type === 'issue')
+        : tickets.filter(t => t.type === 'issue' && (t.username === currentUser || t.userName === currentUser));
 
     const filteredIssues = allIssues.filter(item => {
-        const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
-            item.deviceName.toLowerCase().includes(search.toLowerCase()) ||
-            item.location.toLowerCase().includes(search.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || item.status.toLowerCase() === statusFilter.toLowerCase();
-        const matchesSource = sourceFilter === 'all' || item.source.toLowerCase() === sourceFilter.toLowerCase();
+        const matchesSearch = (item.name || '').toLowerCase().includes(search.toLowerCase()) ||
+            (item.deviceName || '').toLowerCase().includes(search.toLowerCase()) ||
+            (item.location || '').toLowerCase().includes(search.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || (item.status || '').toLowerCase() === statusFilter.toLowerCase();
+        const matchesSource = sourceFilter === 'all' || (item.source || '').toLowerCase() === sourceFilter.toLowerCase();
         return matchesSearch && matchesStatus && matchesSource;
     });
 
@@ -49,13 +54,14 @@ export default function IssuesPage({ setActivePage = () => { } }) {
         setShowDetailsModal(true);
     };
 
-    const handleRaiseSupport = (item) => {
+    const handleRaiseSupport = (item = null) => {
         setSupportItem(item);
         setShowSupportModal(true);
     };
 
     const statusStyles = {
         Pending: 'bg-amber-100 text-amber-700 border-amber-200',
+        Assigned: 'bg-blue-100 text-blue-700 border-blue-200',
         Processing: 'bg-blue-100 text-blue-700 border-blue-200',
         Resolved: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     };
@@ -73,6 +79,14 @@ export default function IssuesPage({ setActivePage = () => { } }) {
                         <p className="text-sm font-medium text-gray-500">Track and manage system-wide reported issues</p>
                     </div>
                 </div>
+
+                <button
+                    onClick={() => handleRaiseSupport()}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-black uppercase tracking-wider shadow-lg shadow-indigo-500/20 transition-all active:scale-95"
+                >
+                    <Plus className="w-5 h-5" />
+                    Raise Support Ticket
+                </button>
             </div>
 
             {/* Filters & Search */}
@@ -100,7 +114,7 @@ export default function IssuesPage({ setActivePage = () => { } }) {
                         </button>
                         {openDropdown === 'status' && (
                             <div className="absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm animate-in fade-in zoom-in duration-200">
-                                {['all', 'Pending', 'Processing', 'Resolved'].map(opt => (
+                                {['all', 'Pending', 'Assigned', 'Resolved'].map(opt => (
                                     <button
                                         key={opt}
                                         onClick={() => { setStatusFilter(opt); setOpenDropdown(null); }}
@@ -173,12 +187,12 @@ export default function IssuesPage({ setActivePage = () => { } }) {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        {item.assignedEngineer ? (
+                                        {(item.engineer || item.assignedEngineer) ? (
                                             <div className="flex items-center gap-2">
                                                 <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
-                                                    {item.assignedEngineer.split(' ').map(n => n[0]).join('')}
+                                                    {(item.engineer || item.assignedEngineer || '').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase()}
                                                 </div>
-                                                <span className="text-xs font-bold text-gray-700">{item.assignedEngineer}</span>
+                                                <span className="text-xs font-bold text-gray-700">{item.engineer || item.assignedEngineer}</span>
                                             </div>
                                         ) : (
                                             <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Unassigned</span>
@@ -195,10 +209,10 @@ export default function IssuesPage({ setActivePage = () => { } }) {
                                             </button>
                                             <button
                                                 onClick={() => handleRaiseSupport(item)}
-                                                className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg transition-all"
-                                                title="Edit Ticket"
+                                                className="p-2 hover:bg-indigo-100 text-indigo-600 rounded-lg transition-all"
+                                                title="Raise Support"
                                             >
-                                                <Edit size={16} />
+                                                <HelpCircle size={16} />
                                             </button>
                                         </div>
                                     </td>
@@ -254,11 +268,18 @@ export default function IssuesPage({ setActivePage = () => { } }) {
             }
 
             {
-                showSupportModal && supportItem && (
+                showSupportModal && (
                     <SupportModal
-                        editItem={{ ...supportItem, status: 'Active' }}
-                        onClose={() => setShowSupportModal(false)}
+                        editItem={supportItem ? { ...supportItem } : { type: 'issue' }}
+                        onClose={() => {
+                            setShowSupportModal(false);
+                            setSupportItem(null);
+                        }}
                         setActivePage={setActivePage}
+                        userDetails={{
+                            name: currentUser,
+                            id: sessionStorage.getItem('userId') || currentUser
+                        }}
                     />
                 )
             }

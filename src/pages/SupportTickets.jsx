@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
 import { MessageSquare, Plus, Search, Filter, AlertCircle, Clock, CheckCircle } from 'lucide-react';
-import { industrialIssues, domesticIssues } from '../data/mockData';
+import { useSupport } from '../context/SupportContext';
 import SupportModal from '../components/modals/SupportModal';
 
 export default function SupportTickets({ setActivePage = () => { } }) {
+    const { tickets, deleteTicket, TICKET_STATUS } = useSupport();
     const userRole = sessionStorage.getItem('userRole') || 'Industrial';
-    const allTickets = userRole === 'Domestic' ? domesticIssues : industrialIssues;
+
+    const currentUser = sessionStorage.getItem('userName') || userRole;
+
+    // Filter tickets for current user (industrial1, domestic1, etc.)
+    const allTickets = (userRole === 'Admin' || userRole === 'Super Admin')
+        ? tickets
+        : tickets.filter(t => t.username === currentUser || t.userName === currentUser);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('Active');
+    const [statusFilter, setStatusFilter] = useState('All');
     const [showSupportModal, setShowSupportModal] = useState(false);
     const [editItem, setEditItem] = useState(null);
 
-    const handleRaiseAgain = (ticket) => {
-        const newTicket = {
-            ...ticket,
-            id: Math.floor(100 + Math.random() * 900).toString(),
-            status: 'Active',
-            date: new Date().toISOString().split('T')[0]
-        };
-        // In a real app, this would be an API call and then update state
-        // For now, we simulate by adding it (locally) or logging
-        console.log('Ticket Raised Again:', newTicket);
-        alert(`New Ticket Raised! ID: ${newTicket.id}`);
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this ticket?')) {
+            deleteTicket(id);
+        }
     };
 
     const handleEdit = (ticket) => {
@@ -36,13 +36,13 @@ export default function SupportTickets({ setActivePage = () => { } }) {
 
         const searchLower = searchTerm.toLowerCase();
         const matchesSearch =
-            ticket.id.toString().toLowerCase().includes(searchLower) ||
-            ticket.name.toLowerCase().includes(searchLower) ||
-            ticket.source.toLowerCase().includes(searchLower) ||
-            ticket.deviceName.toLowerCase().includes(searchLower) ||
-            ticket.location.toLowerCase().includes(searchLower) ||
-            ticket.date.toLowerCase().includes(searchLower) ||
-            ticket.status.toLowerCase().includes(searchLower);
+            (ticket.id || '').toString().toLowerCase().includes(searchLower) ||
+            (ticket.name || '').toLowerCase().includes(searchLower) ||
+            (ticket.type || '').toLowerCase().includes(searchLower) ||
+            (ticket.source || '').toLowerCase().includes(searchLower) ||
+            (ticket.deviceName || '').toLowerCase().includes(searchLower) ||
+            (ticket.location || '').toLowerCase().includes(searchLower) ||
+            (ticket.date || '').toLowerCase().includes(searchLower);
 
         return matchesStatus && matchesSearch;
     });
@@ -57,7 +57,7 @@ export default function SupportTickets({ setActivePage = () => { } }) {
                     }}
                     setActivePage={setActivePage}
                     userDetails={{
-                        name: sessionStorage.getItem('userName') || (userRole === 'Domestic' ? 'Domestic User' : 'Industrial User'),
+                        name: currentUser,
                         id: sessionStorage.getItem('userId') || 'User1'
                     }}
                     editItem={editItem}
@@ -102,8 +102,8 @@ export default function SupportTickets({ setActivePage = () => { } }) {
                             className="w-full md:w-48 pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
                         >
                             <option value="All">All Tickets</option>
-                            <option value="Active">Active</option>
-                            <option value="Processing">Processing</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Assigned">Assigned</option>
                             <option value="Resolved">Resolved</option>
                         </select>
                     </div>
@@ -129,21 +129,27 @@ export default function SupportTickets({ setActivePage = () => { } }) {
                             <tr>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Ticket ID</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Issue Name</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Type</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Source</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Device</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Location</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date Raised</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Engineer</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {filteredTickets.length > 0 ? filteredTickets.map(ticket => (
                                 <tr key={ticket.id} className="hover:bg-indigo-50/20 transition-colors group">
-                                    <td className="px-6 py-4 font-black text-xs text-gray-500 group-hover:text-indigo-600 transition-colors">{ticket.id}</td>
+                                    <td className="px-6 py-4 font-black text-xs text-gray-500 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{ticket.id}</td>
                                     <td className="px-6 py-4">
                                         <span className="text-sm font-bold text-gray-900 line-clamp-1">{ticket.name}</span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`text-[10px] font-black px-2 py-1 rounded-lg uppercase border ${(ticket.type || '').toLowerCase() === 'alert' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
+                                            {ticket.type}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="text-[10px] font-black px-2 py-1 bg-gray-100 text-gray-600 rounded-lg uppercase border border-gray-200">{ticket.source}</span>
@@ -154,50 +160,46 @@ export default function SupportTickets({ setActivePage = () => { } }) {
                                     <td className="px-6 py-4">
                                         <div className={`px-2.5 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2
                                             ${ticket.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                ticket.status === 'Processing' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                ticket.status === 'Processing' || ticket.status === 'Assigned' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                                                     'bg-amber-50 text-amber-700 border-amber-100'}`}>
                                             <span className={`w-1.5 h-1.5 rounded-full
                                                 ${ticket.status === 'Resolved' ? 'bg-emerald-500' :
-                                                    ticket.status === 'Processing' ? 'bg-blue-500' : 'bg-amber-500'}`}></span>
+                                                    ticket.status === 'Processing' || ticket.status === 'Assigned' ? 'bg-blue-500' : 'bg-amber-500'}`}></span>
                                             {ticket.status}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        {ticket.assignedEngineer ? (
+                                        {(ticket.engineer || ticket.assignedEngineer) ? (
                                             <div className="flex items-center gap-2">
                                                 <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
-                                                    {(ticket.assignedEngineer || '').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase()}
+                                                    {(ticket.engineer || ticket.assignedEngineer || '').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase()}
                                                 </div>
-                                                <span className="text-xs font-bold text-gray-700">{ticket.assignedEngineer}</span>
+                                                <span className="text-xs font-bold text-gray-700">{ticket.engineer || ticket.assignedEngineer}</span>
                                             </div>
                                         ) : (
                                             <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Unassigned</span>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        {ticket.status === 'Resolved' ? (
-                                            <button
-                                                onClick={() => handleRaiseAgain(ticket)}
-                                                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
-                                            >
-                                                Raise Again
-                                            </button>
-                                        ) : (
+                                        <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={() => handleEdit(ticket)}
-                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all
-                                                    ${userRole === 'Super Admin'
-                                                        ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                                                        : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
+                                                className="px-2 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
                                             >
-                                                {userRole === 'Super Admin' ? 'View' : 'Edit'}
+                                                Edit
                                             </button>
-                                        )}
+                                            <button
+                                                onClick={() => handleDelete(ticket.id)}
+                                                className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="9" className="px-6 py-20 text-center flex flex-col items-center">
+                                    <td colSpan="10" className="px-6 py-20 text-center flex flex-col items-center">
                                         <div className="w-16 h-16 bg-gray-50 text-gray-200 rounded-full flex items-center justify-center mb-4">
                                             <AlertCircle size={32} />
                                         </div>

@@ -1,31 +1,27 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, Clock, CheckCircle, AlertCircle, User, Tag, MessageSquare, ChevronRight, MoreVertical, UserPlus, ExternalLink, Mail, Phone, MapPin } from 'lucide-react';
-import { initialTickets, TICKET_STATUS, TICKET_PRIORITY } from '../data/supportData';
 import { SUPPORT_ENGINEERS } from '../data/mockData';
 import { StatCard } from '../components/dashboard/StatCard';
+import { useSupport } from '../context/SupportContext';
 
 export default function SupportManagement() {
-    const [tickets, setTickets] = useState(initialTickets);
+    const { tickets, assignEngineer, resolveTicket, updateTicket, TICKET_STATUS, TICKET_PRIORITY } = useSupport();
     const [filter, setFilter] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
 
     const handleStatusChange = (id, newStatus) => {
-        setTickets(prev => prev.map(t =>
-            t.id === id ? { ...t, status: newStatus } : t
-        ));
+        if (newStatus === TICKET_STATUS.RESOLVED) {
+            resolveTicket(id);
+        }
     };
 
     const handlePriorityChange = (id, newPriority) => {
-        setTickets(prev => prev.map(t =>
-            t.id === id ? { ...t, priority: newPriority } : t
-        ));
+        // Context currently doesn't have a specific priority change method, 
+        // using updateTicket or we can add it later.
     };
 
     const handleEngineerChange = (id, engineer) => {
-        setTickets(prev => prev.map(t =>
-            t.id === id ? { ...t, assignedTo: engineer, status: TICKET_STATUS.ASSIGNED } : t
-        ));
+        assignEngineer(id, engineer);
     };
 
     const statusColors = {

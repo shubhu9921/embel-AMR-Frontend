@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { X, Info, MapPin, Cpu, Calendar, Clock, User, Phone, Mail, Tag } from 'lucide-react';
+import { X, Info, MapPin, Cpu, Calendar, Clock, User, Phone, Mail, Tag, Droplet } from 'lucide-react';
 import EngineerAssignmentModal from './EngineerAssignmentModal';
 import SupportModal from './SupportModal';
+import { useSupport } from '../../context/SupportContext';
 
 export default function AlertIssueDetailsModal({ item, onClose, setActivePage }) {
+    const { updateTicket } = useSupport();
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [showSupportModal, setShowSupportModal] = useState(false);
     const [description, setDescription] = useState(item.message || item.description || "");
@@ -15,7 +17,7 @@ export default function AlertIssueDetailsModal({ item, onClose, setActivePage })
 
     const handleAssign = (engineerName) => {
         setCurrentStatus("Processing");
-        // We could also store the assigned engineer name in state if needed
+        // updateTicket is called inside EngineerAssignmentModal now
     };
 
     return (
@@ -152,6 +154,7 @@ export default function AlertIssueDetailsModal({ item, onClose, setActivePage })
                     onClose={() => setShowAssignModal(false)}
                     alertName={item.name || item.title}
                     onAssign={handleAssign}
+                    ticketId={item.id}
                 />
             )}
 
@@ -189,9 +192,3 @@ function DetailItem({ label, value, isStatus, icon }) {
         </div>
     );
 }
-
-const Droplet = ({ size, className }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5L12 2 8 9.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path>
-    </svg>
-);

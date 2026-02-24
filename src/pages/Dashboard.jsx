@@ -10,9 +10,7 @@ import { RESOURCE_CONFIG, RESOURCES } from "../utils/resourceUtils";
 import SupportModal from "../components/modals/SupportModal";
 import {
     domesticAlerts,
-    industrialAlerts,
-    domesticIssues,
-    industrialIssues
+    industrialAlerts
 } from "../data/mockData";
 
 // Fix Leaflet icon issue
@@ -89,7 +87,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const userDeviceStats = [
         { label: 'Active', value: 3, color: 'text-emerald-500' },
         { label: 'Inactive', value: 1, color: 'text-amber-500' },
-        { label: 'Deactive', value: 1, color: 'text-red-500' },
+        { label: 'Deactivated', value: 1, color: 'text-red-500' },
     ];
 
     const userAssignedLocations = 2;
@@ -102,7 +100,7 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const userMeterStats = [
         { label: 'Active', value: 6, color: 'text-emerald-500' },
         { label: 'Inactive', value: 1, color: 'text-amber-500' },
-        { label: 'Deactive', value: 1, color: 'text-red-500' },
+        { label: 'Deactivated', value: 1, color: 'text-red-500' },
     ];
 
     const reportsStats = { ready: 4, processing: 1, total: 6 };
@@ -164,7 +162,6 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
 
     /* -------------------- ALERTS DATA -------------------- */
     const dashboardAlerts = userRole === 'Admin' ? [...domesticAlerts, ...industrialAlerts] : industrialAlerts;
-    const dashboardIssues = userRole === 'Admin' ? [...domesticIssues, ...industrialIssues] : industrialIssues;
 
     return (
         <main className="w-full flex flex-col gap-6 min-h-screen mb-20">
@@ -211,8 +208,6 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                     reportsStats={reportsStats}
                     domesticAlerts={domesticAlerts}
                     industrialAlerts={industrialAlerts}
-                    domesticIssues={domesticIssues}
-                    industrialIssues={industrialIssues}
                     userAssignedDevices={userAssignedDevices}
                     userDeviceStats={userDeviceStats}
                     userAssignedLocations={userAssignedLocations}
@@ -220,7 +215,6 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                     userAssignedMeters={userAssignedMeters}
                     userMeterStats={userMeterStats}
                     dashboardAlerts={dashboardAlerts}
-                    dashboardIssues={dashboardIssues}
                     monthlyCostingData={monthlyCostingData}
                     toggleModal={toggleModal}
                     setActivePage={setActivePage}

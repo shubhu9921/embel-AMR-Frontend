@@ -101,13 +101,25 @@ export const DashboardModals = ({
                             <div>
                                 <h3 className="font-bold text-gray-900 mb-3 text-sm flex items-center gap-2">
                                     <Activity size={16} className="text-blue-500" />
-                                    Live Telemetry
+                                    Simulated Telemetry
                                 </h3>
-                                <div className="bg-slate-900 text-slate-300 p-4 rounded-xl font-mono text-sm space-y-2">
-                                    <div className="flex justify-between"><span>Current:</span><span className="text-emerald-400">4.2A</span></div>
-                                    <div className="flex justify-between"><span>Voltage:</span><span className="text-amber-400">230.1V</span></div>
-                                    <div className="flex justify-between"><span>Power Factor:</span><span className="text-blue-400">0.98</span></div>
-                                    <div className="flex justify-between border-t border-slate-700 pt-2 mt-2"><span>Last Update:</span><span className="text-slate-500">Just now</span></div>
+                                <div className="bg-slate-900 text-slate-300 p-5 rounded-2xl font-mono text-sm space-y-3 shadow-inner">
+                                    <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
+                                        <span className="text-gray-400">Current:</span>
+                                        <span className="text-emerald-400 font-bold text-lg">4.2A</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
+                                        <span className="text-gray-400">Voltage:</span>
+                                        <span className="text-amber-400 font-bold text-lg">230.1V</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
+                                        <span className="text-gray-400">Power Factor:</span>
+                                        <span className="text-blue-400 font-bold text-lg">0.98</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-t border-slate-700 pt-3 mt-2 text-xs">
+                                        <span className="text-slate-500">Last Update:</span>
+                                        <span className="text-slate-400 italic">Just now</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -154,9 +166,9 @@ export const DashboardModals = ({
                                     <Gauge size={16} className="text-indigo-500" />
                                     Current Reading
                                 </h3>
-                                <div className="bg-indigo-50 text-indigo-900 p-6 rounded-2xl flex flex-col items-center justify-center border border-indigo-100">
-                                    <span className="text-4xl font-bold font-mono tracking-tighter">{selectedUserMeter.reading}</span>
-                                    <span className="text-xs font-bold uppercase tracking-widest text-indigo-400 mt-1">Kilowatt Hours</span>
+                                <div className="bg-indigo-50 text-indigo-900 p-8 rounded-[32px] flex flex-col items-center justify-center border border-indigo-100 shadow-sm">
+                                    <span className="text-5xl font-black font-mono tracking-tighter mb-2">{selectedUserMeter.reading}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Kilowatt Hours</span>
                                 </div>
                             </div>
                         </div>
@@ -167,58 +179,66 @@ export const DashboardModals = ({
             {/* -------------------- USER DEVICES MODAL -------------------- */}
             {userDevices && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-[40px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gray-50/50">
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">Assigned Devices</h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of hardware assigned to you</p>
+                                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Assigned Devices</h2>
+                                <p className="text-sm text-gray-500 font-bold mt-1">Detailed list of hardware assigned to you</p>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
-                                    <Filter size={16} className="text-gray-400 ml-2" />
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 bg-white rounded-2xl px-4 py-2 border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                                    <Filter size={16} className="text-gray-400" />
                                     <select
                                         value={userFilters.device}
                                         onChange={(e) => setUserFilters(prev => ({ ...prev, device: e.target.value }))}
-                                        className="bg-transparent text-sm font-medium text-gray-700 border-none focus:ring-0 cursor-pointer py-1 pr-8 pl-1"
+                                        className="bg-transparent text-sm font-black text-gray-700 border-none focus:ring-0 cursor-pointer min-w-[120px]"
                                     >
                                         <option value="All">All Status</option>
                                         <option value="Active">Active</option>
                                         <option value="Inactive">Inactive</option>
-                                        <option value="Deactive">Deactive</option>
+                                        <option value="Deactivated">Deactivated</option>
                                     </select>
                                 </div>
-                                <button onClick={() => toggleModal('userDevices', false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                                <button onClick={() => toggleModal('userDevices', false)} className="p-2.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-all active:scale-90">
+                                    <X size={24} />
+                                </button>
                             </div>
                         </div>
-                        <div className="overflow-auto p-6">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                        <div className="overflow-auto p-8 custom-scrollbar">
+                            <table className="w-full text-left">
+                                <thead className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-100">
                                     <tr>
-                                        <th className="py-3 px-4">Device Name</th>
-                                        <th className="py-3 px-4">Type/Source</th>
-                                        <th className="py-3 px-4">Parameters</th>
-                                        <th className="py-3 px-4">Status</th>
-                                        <th className="py-3 px-4">Location</th>
-                                        <th className="py-3 px-4 text-center">Action</th>
+                                        <th className="pb-4 px-4 font-black">Device Name</th>
+                                        <th className="pb-4 px-4 font-black">Type/Source</th>
+                                        <th className="pb-4 px-4 font-black">Parameters</th>
+                                        <th className="pb-4 px-4 font-black">Status</th>
+                                        <th className="pb-4 px-4 font-black">Location</th>
+                                        <th className="pb-4 px-4 text-center font-black">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-sm">
+                                <tbody className="text-sm font-bold divide-y divide-gray-50">
                                     {userDataDetailed.devices
                                         .filter(d => userFilters.device === 'All' || d.status === userFilters.device)
                                         .map((device, i) => (
-                                            <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                                <td className="py-3 px-4 font-semibold text-gray-900">{device.name}</td>
-                                                <td className="py-3 px-4 text-gray-600">{device.source}</td>
-                                                <td className="py-3 px-4 text-gray-600">{device.params}</td>
-                                                <td className="py-3 px-4">
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${getStatusBgColor(device.status)}`}>
+                                            <tr key={i} className="group transition-all hover:bg-gray-50/80">
+                                                <td className="py-5 px-4 font-black text-gray-900">{device.name}</td>
+                                                <td className="py-5 px-4">
+                                                    <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-600">{device.source}</span>
+                                                </td>
+                                                <td className="py-5 px-4 text-gray-500 font-medium">{device.params}</td>
+                                                <td className="py-5 px-4">
+                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getStatusBgColor(device.status)}`}>
                                                         {device.status}
                                                     </span>
                                                 </td>
-                                                <td className="py-3 px-4 text-gray-500">{device.location}</td>
-                                                <td className="py-3 px-4 text-center">
-                                                    <button onClick={() => { setSelectedUserDevice(device); toggleModal('userDevices', false); toggleModal('deviceDetails', true); }} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
-                                                        <Eye size={18} />
+                                                <td className="py-5 px-4 font-medium text-gray-500">{device.location}</td>
+                                                <td className="py-5 px-4 text-center">
+                                                    <button
+                                                        onClick={() => { setSelectedUserDevice(device); toggleModal('userDevices', false); toggleModal('deviceDetails', true); }}
+                                                        className="p-2 text-blue-500 hover:bg-blue-100 hover:text-blue-700 rounded-xl transition-all active:scale-90"
+                                                        title="View Details"
+                                                    >
+                                                        <Activity size={20} />
                                                     </button>
                                                 </td>
                                             </tr>
@@ -233,58 +253,64 @@ export const DashboardModals = ({
             {/* -------------------- USER METERS MODAL -------------------- */}
             {userMeters && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                    <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-[40px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gray-50/50">
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">Assigned Meters</h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Detailed list of meters under your supervision</p>
+                                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Assigned Meters</h2>
+                                <p className="text-sm text-gray-500 font-bold mt-1">Detailed list of meters under your supervision</p>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
-                                    <Filter size={16} className="text-gray-400 ml-2" />
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 bg-white rounded-2xl px-4 py-2 border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                                    <Filter size={16} className="text-gray-400" />
                                     <select
                                         value={userFilters.meter}
                                         onChange={(e) => setUserFilters(prev => ({ ...prev, meter: e.target.value }))}
-                                        className="bg-transparent text-sm font-medium text-gray-700 border-none focus:ring-0 cursor-pointer py-1 pr-8 pl-1"
+                                        className="bg-transparent text-sm font-black text-gray-700 border-none focus:ring-0 cursor-pointer min-w-[120px]"
                                     >
                                         <option value="All">All Status</option>
                                         <option value="Active">Active</option>
                                         <option value="Inactive">Inactive</option>
-                                        <option value="Deactive">Deactive</option>
+                                        <option value="Deactivated">Deactivated</option>
                                     </select>
                                 </div>
-                                <button onClick={() => toggleModal('userMeters', false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                                <button onClick={() => toggleModal('userMeters', false)} className="p-2.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-all active:scale-90"><X size={24} /></button>
                             </div>
                         </div>
-                        <div className="overflow-auto p-6">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                        <div className="overflow-auto p-8 custom-scrollbar">
+                            <table className="w-full text-left">
+                                <thead className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-100">
                                     <tr>
-                                        <th className="py-3 px-4">Meter Name</th>
-                                        <th className="py-3 px-4">Type/Source</th>
-                                        <th className="py-3 px-4">Current Reading</th>
-                                        <th className="py-3 px-4">Status</th>
-                                        <th className="py-3 px-4">Location</th>
-                                        <th className="py-3 px-4 text-center">Action</th>
+                                        <th className="pb-4 px-4 font-black">Meter Name</th>
+                                        <th className="pb-4 px-4 font-black">Type/Source</th>
+                                        <th className="pb-4 px-4 font-black">Current Reading</th>
+                                        <th className="pb-4 px-4 font-black">Status</th>
+                                        <th className="pb-4 px-4 font-black">Location</th>
+                                        <th className="pb-4 px-4 text-center font-black">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-sm">
+                                <tbody className="text-sm font-bold divide-y divide-gray-50">
                                     {userDataDetailed.meters
                                         .filter(m => userFilters.meter === 'All' || m.status === userFilters.meter)
                                         .map((meter, i) => (
-                                            <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                                <td className="py-3 px-4 font-semibold text-gray-900">{meter.name}</td>
-                                                <td className="py-3 px-4 text-gray-600">{meter.source}</td>
-                                                <td className="py-3 px-4 text-gray-600 font-mono">{meter.reading}</td>
-                                                <td className="py-3 px-4">
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${getStatusBgColor(meter.status)}`}>
+                                            <tr key={i} className="group transition-all hover:bg-gray-50/80">
+                                                <td className="py-5 px-4 font-black text-gray-900">{meter.name}</td>
+                                                <td className="py-5 px-4">
+                                                    <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-600">{meter.source}</span>
+                                                </td>
+                                                <td className="py-5 px-4 text-gray-900 font-mono text-base">{meter.reading}</td>
+                                                <td className="py-5 px-4">
+                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getStatusBgColor(meter.status)}`}>
                                                         {meter.status}
                                                     </span>
                                                 </td>
-                                                <td className="py-3 px-4 text-gray-500">{meter.location}</td>
-                                                <td className="py-3 px-4 text-center">
-                                                    <button onClick={() => { setSelectedUserMeter(meter); toggleModal('userMeters', false); toggleModal('meterDetails', true); }} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
-                                                        <Eye size={18} />
+                                                <td className="py-5 px-4 font-medium text-gray-500">{meter.location}</td>
+                                                <td className="py-5 px-4 text-center">
+                                                    <button
+                                                        onClick={() => { setSelectedUserMeter(meter); toggleModal('userMeters', false); toggleModal('meterDetails', true); }}
+                                                        className="p-2 text-indigo-500 hover:bg-indigo-100 hover:text-indigo-700 rounded-xl transition-all active:scale-90"
+                                                        title="View Details"
+                                                    >
+                                                        <Gauge size={20} />
                                                     </button>
                                                 </td>
                                             </tr>
@@ -299,54 +325,83 @@ export const DashboardModals = ({
             {/* -------------------- USER LOCATIONS MODAL -------------------- */}
             {userLocations && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-5xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                    <div className="bg-white w-full max-w-6xl max-h-[85vh] rounded-[40px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gray-50/50">
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">Assigned Locations</h2>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Select a location to view assigned equipment</p>
+                                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Assigned Locations</h2>
+                                <p className="text-sm text-gray-500 font-bold mt-1">Select a location to view assigned equipment</p>
                             </div>
-                            <button onClick={() => { toggleModal('userLocations', false); setSelectedLocation(null); }} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+                            <button onClick={() => { toggleModal('userLocations', false); setSelectedLocation(null); }} className="p-2.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-all active:scale-90"><X size={24} /></button>
                         </div>
                         <div className="flex flex-1 overflow-hidden">
-                            <div className="w-1/3 border-r border-gray-100 overflow-y-auto bg-gray-50/50">
+                            <div className="w-1/3 border-r border-gray-100 overflow-y-auto bg-gray-50/30">
                                 {userDataDetailed.locations.map((loc) => (
                                     <button
                                         key={loc.id}
                                         onClick={() => setSelectedLocation(loc)}
-                                        className={`w-full text-left p-4 border-b border-gray-100 transition-colors hover:bg-white flex items-center justify-between group ${selectedLocation?.id === loc.id ? 'bg-white shadow-sm border-l-4 border-l-blue-500' : 'border-l-4 border-l-transparent'}`}
+                                        className={`w-full text-left p-6 border-b border-gray-100 transition-all hover:bg-white flex items-center justify-between group ${selectedLocation?.id === loc.id ? 'bg-white shadow-lg shadow-blue-500/5 z-10 border-l-8 border-l-blue-600' : 'border-l-8 border-l-transparent opacity-70 hover:opacity-100'}`}
                                     >
                                         <div>
-                                            <h3 className={`font-bold ${selectedLocation?.id === loc.id ? 'text-blue-600' : 'text-gray-800'}`}>{loc.name}</h3>
-                                            <p className="text-xs text-gray-500 mt-1">{loc.devices.length} Devices • {loc.meters.length} Meters</p>
+                                            <h3 className={`text-lg font-black ${selectedLocation?.id === loc.id ? 'text-blue-600' : 'text-gray-800'}`}>{loc.name}</h3>
+                                            <div className="flex items-center gap-3 mt-2">
+                                                <span className="flex items-center gap-1 text-[10px] font-black text-gray-400 uppercase tracking-widest"><Cpu size={12} /> {loc.devices.length}</span>
+                                                <span className="flex items-center gap-1 text-[10px] font-black text-gray-400 uppercase tracking-widest"><Gauge size={12} /> {loc.meters.length}</span>
+                                            </div>
                                         </div>
-                                        <MapPin size={18} className={`${selectedLocation?.id === loc.id ? 'text-blue-500' : 'text-gray-300 group-hover:text-gray-400'}`} />
+                                        <MapPin size={22} className={`${selectedLocation?.id === loc.id ? 'text-blue-500 animate-bounce' : 'text-gray-300 group-hover:text-gray-400'}`} />
                                     </button>
                                 ))}
                             </div>
-                            <div className="w-2/3 overflow-y-auto p-6 bg-white">
+                            <div className="w-2/3 overflow-y-auto p-8 bg-white custom-scrollbar">
                                 {selectedLocation ? (
-                                    <div className="space-y-8">
+                                    <div className="space-y-10 animate-in slide-in-from-right-4 duration-300">
                                         <div>
-                                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4"><Cpu className="text-blue-500" size={20} /> Devices at {selectedLocation.name}</h3>
-                                            <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden text-sm">
-                                                <table className="w-full text-left">
-                                                    <thead className="bg-gray-100/50 text-gray-500 font-bold uppercase text-xs"><tr><th className="py-2 px-4">Name</th><th className="py-2 px-4">Source</th><th className="py-2 px-4">Status</th></tr></thead>
-                                                    <tbody className="divide-y divide-gray-100">
+                                            <h3 className="text-xl font-black text-gray-900 flex items-center gap-3 mb-6">
+                                                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shadow-sm"><Cpu size={22} /></div>
+                                                Devices at {selectedLocation.name}
+                                            </h3>
+                                            <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden">
+                                                <table className="w-full text-left border-collapse">
+                                                    <thead className="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                        <tr><th className="py-4 px-6">Name</th><th className="py-4 px-6">Source</th><th className="py-4 px-6">Status</th></tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-50 font-bold text-sm">
                                                         {selectedLocation.devices.map((d, i) => (
-                                                            <tr key={i}><td className="py-2 px-4 font-medium text-gray-900">{d.name}</td><td className="py-2 px-4 text-gray-600">{d.source}</td><td className="py-2 px-4"><span className={`text-xs font-bold ${d.status === 'Active' ? 'text-emerald-600' : 'text-red-600'}`}>{d.status}</span></td></tr>
+                                                            <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                                                                <td className="py-4 px-6 text-gray-900">{d.name}</td>
+                                                                <td className="py-4 px-6 text-gray-600"><span className="px-2 py-0.5 bg-gray-100 rounded text-[10px]">{d.source}</span></td>
+                                                                <td className="py-4 px-6">
+                                                                    <span className={`text-[10px] font-black uppercase tracking-wider ${d.status === 'Active' ? 'text-emerald-600' : d.status === 'Inactive' ? 'text-amber-600' : 'text-red-600'}`}>
+                                                                        {d.status}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
                                                         ))}
                                                     </tbody>
                                                 </table>
                                             </div>
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4"><Gauge className="text-indigo-500" size={20} /> Meters at {selectedLocation.name}</h3>
-                                            <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden text-sm">
-                                                <table className="w-full text-left">
-                                                    <thead className="bg-gray-100/50 text-gray-500 font-bold uppercase text-xs"><tr><th className="py-2 px-4">Name</th><th className="py-2 px-4">Reading</th><th className="py-2 px-4">Status</th></tr></thead>
-                                                    <tbody className="divide-y divide-gray-100">
+                                            <h3 className="text-xl font-black text-gray-900 flex items-center gap-3 mb-6">
+                                                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm"><Gauge size={22} /></div>
+                                                Meters at {selectedLocation.name}
+                                            </h3>
+                                            <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden">
+                                                <table className="w-full text-left border-collapse">
+                                                    <thead className="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                        <tr><th className="py-4 px-6">Name</th><th className="py-4 px-6">Reading</th><th className="py-4 px-6">Status</th></tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-50 font-bold text-sm">
                                                         {selectedLocation.meters.map((m, i) => (
-                                                            <tr key={i}><td className="py-2 px-4 font-medium text-gray-900">{m.name}</td><td className="py-2 px-4 font-mono text-gray-600">{m.reading}</td><td className="py-2 px-4"><span className={`text-xs font-bold ${m.status === 'Active' ? 'text-emerald-600' : 'text-red-600'}`}>{m.status}</span></td></tr>
+                                                            <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                                                                <td className="py-4 px-6 text-gray-900">{m.name}</td>
+                                                                <td className="py-4 px-6 font-mono text-gray-600">{m.reading}</td>
+                                                                <td className="py-4 px-6">
+                                                                    <span className={`text-[10px] font-black uppercase tracking-wider ${m.status === 'Active' ? 'text-emerald-600' : m.status === 'Inactive' ? 'text-amber-600' : 'text-red-600'}`}>
+                                                                        {m.status}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
                                                         ))}
                                                     </tbody>
                                                 </table>
@@ -354,8 +409,11 @@ export const DashboardModals = ({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                                        <MapPin size={48} className="mb-4 opacity-20" /><p className="text-lg font-medium">Select a location to view details</p>
+                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 animate-in fade-in zoom-in-95 duration-500">
+                                        <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                                            <MapPin size={48} className="opacity-20" />
+                                        </div>
+                                        <p className="text-xl font-black tracking-tight text-gray-300">Select a location to view details</p>
                                     </div>
                                 )}
                             </div>

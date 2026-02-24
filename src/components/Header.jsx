@@ -54,9 +54,16 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
       }));
 
       if (userRole === 'Domestic') {
+        const currentUserName = sessionStorage.getItem('userName');
+        const currentUserEmail = sessionStorage.getItem('userEmail');
         const allowedPages = ['Dashboard', 'My Usage', 'Billing', 'Alerts', 'Settings'];
         pages = pages.filter(p => allowedPages.includes(p.label));
-        devices = devices.filter(d => d.assignedUser === 'John Doe' || d.userEmail === 'john@amr.com');
+
+        if (!currentUserName && !currentUserEmail) {
+          devices = devices.filter(d => d.assignedUser === 'John Doe' || d.userEmail === 'john@amr.com');
+        } else {
+          devices = devices.filter(d => (currentUserName && d.assignedUser === currentUserName) || (currentUserEmail && d.userEmail === currentUserEmail));
+        }
       }
 
       const users = initialUsers.map(u => ({
@@ -124,7 +131,13 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
     { id: 3, type: 'info', title: 'Usage Update', desc: 'Weekly usage report is available.', time: '1d ago' },
   ];
 
-  const notifications = userRole === 'Admin' || userRole === 'Super Admin' ? adminNotifications : userNotifications;
+  const initialNotifications = userRole === 'Admin' || userRole === 'Super Admin' ? adminNotifications : userNotifications;
+  const [notifications, setNotifications] = useState(initialNotifications);
+
+  const handleMarkAllRead = () => {
+    setNotifications([]);
+    setShowNotifications(false);
+  };
 
 
   return (
@@ -196,40 +209,42 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
       </div>
 
       {/* Center: Resource shortcuts (Desktop only) */}
-      <div className="hidden md:flex flex-wrap items-center gap-2 max-w-full">
-        <Resource
-          icon={Droplet}
-          label="Water"
-          activeColor="bg-blue-100 text-blue-700 shadow-sm shadow-blue-200"
-          inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-          active={activePage === 'Water'}
-          onClick={() => setActivePage('Water')}
-        />
-        <Resource
-          icon={Sun}
-          label="Solar"
-          activeColor="bg-amber-100 text-amber-700 shadow-sm shadow-amber-200"
-          inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-          active={activePage === 'Solar'}
-          onClick={() => setActivePage('Solar')}
-        />
-        <Resource
-          icon={Zap}
-          label="Energy"
-          activeColor="bg-yellow-100 text-yellow-700 shadow-sm shadow-yellow-200"
-          inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-          active={activePage === 'Energy'}
-          onClick={() => setActivePage('Energy')}
-        />
-        <Resource
-          icon={Flame}
-          label="Gas"
-          activeColor="bg-orange-100 text-orange-700 shadow-sm shadow-orange-200"
-          inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-          active={activePage === 'Gas'}
-          onClick={() => setActivePage('Gas')}
-        />
-      </div>
+      {userRole !== 'Domestic' && (
+        <div className="hidden md:flex flex-wrap items-center gap-2 max-w-full">
+          <Resource
+            icon={Droplet}
+            label="Water"
+            activeColor="bg-blue-100 text-blue-700 shadow-sm shadow-blue-200"
+            inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+            active={activePage === 'Water'}
+            onClick={() => setActivePage('Water')}
+          />
+          <Resource
+            icon={Sun}
+            label="Solar"
+            activeColor="bg-amber-100 text-amber-700 shadow-sm shadow-amber-200"
+            inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+            active={activePage === 'Solar'}
+            onClick={() => setActivePage('Solar')}
+          />
+          <Resource
+            icon={Zap}
+            label="Energy"
+            activeColor="bg-yellow-100 text-yellow-700 shadow-sm shadow-yellow-200"
+            inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+            active={activePage === 'Energy'}
+            onClick={() => setActivePage('Energy')}
+          />
+          <Resource
+            icon={Flame}
+            label="Gas"
+            activeColor="bg-orange-100 text-orange-700 shadow-sm shadow-orange-200"
+            inactiveColor="text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+            active={activePage === 'Gas'}
+            onClick={() => setActivePage('Gas')}
+          />
+        </div>
+      )}
 
       {/* Right Actions */}
       <div className="flex items-center gap-4 flex-shrink-0">
@@ -240,7 +255,7 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
               onClick={() => setShowNotifications(!showNotifications)}
             >
               <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
+              {notifications.length > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>}
             </button>
 
             {/* Notification Dropdown */}
@@ -253,12 +268,19 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
                     </div>
                     <h3 className="font-bold text-gray-900">Notifications</h3>
                   </div>
-                  <button className="text-xs text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1">
+                  <button onClick={handleMarkAllRead} className="text-xs text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1">
                     <Check size={14} /> Mark all read
                   </button>
                 </div>
                 <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
-                  {notifications.map((notif) => (
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Check size={20} className="text-gray-400" />
+                      </div>
+                      <p className="text-sm font-medium text-gray-500">You're all caught up!</p>
+                    </div>
+                  ) : notifications.map((notif) => (
                     <div key={notif.id} className="p-4 border-b border-gray-50 hover:bg-orange-50 transition-colors cursor-pointer group">
                       <div className="flex items-start gap-4">
                         <div className={`mt-1.5 w-2 flex-shrink-0 h-2 rounded-full ${notif.type === 'critical' ? 'bg-rose-500 shadow-rose-200 shadow-lg' :
@@ -274,7 +296,7 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
                   ))}
                 </div>
                 <div className="p-3 bg-gray-50/50 border-t border-gray-100 text-center">
-                  <button className="text-xs text-gray-600 hover:text-gray-900 font-semibold py-1">View All History</button>
+                  <button onClick={() => { setShowNotifications(false); setActivePage('Alerts'); }} className="text-xs text-gray-600 hover:text-gray-900 font-semibold py-1">View All History</button>
                 </div>
               </div>
             )}
@@ -324,13 +346,13 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
               </div>
               <div className="p-2">
                 <button
-                  onClick={() => { setShowProfileMenu(false); setActivePage('Settings'); }}
+                  onClick={() => { sessionStorage.setItem('settingsTab', 'profile'); setShowProfileMenu(false); setActivePage('Settings'); }}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 flex items-center gap-3 transition-colors font-medium"
                 >
                   <User size={18} className="text-slate-400" /> Account Settings
                 </button>
                 <button
-                  onClick={() => { setShowProfileMenu(false); setActivePage('Settings'); }}
+                  onClick={() => { sessionStorage.setItem('settingsTab', 'system'); setShowProfileMenu(false); setActivePage('Settings'); }}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 flex items-center gap-3 transition-colors font-medium"
                 >
                   <Settings size={18} className="text-slate-400" /> System Preferences

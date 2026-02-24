@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, User, Mail, Phone, CheckCircle } from 'lucide-react';
+import { useSupport } from '../../context/SupportContext';
 
 const ENGINEERS = [
     { id: '1', name: 'Rahul Patil', code: 'RP', specialty: 'Energy Devices', email: 'rahul.p@embel.com', phone: '+91 98765 43210' },
@@ -8,7 +9,8 @@ const ENGINEERS = [
     { id: '4', name: 'Vikram Rao', code: 'VR', specialty: 'Solar Panels', email: 'vikram.r@embel.com', phone: '+91 65432 10987' },
 ];
 
-export default function EngineerAssignmentModal({ onClose, alertName, onAssign }) {
+export default function EngineerAssignmentModal({ onClose, alertName, onAssign, ticketId }) {
+    const { assignEngineer } = useSupport();
     const [status, setStatus] = useState('idle'); // 'idle', 'assigning', 'success'
     const [selectedId, setSelectedId] = useState('');
 
@@ -21,6 +23,9 @@ export default function EngineerAssignmentModal({ onClose, alertName, onAssign }
         setStatus('assigning');
         // Mock assignment
         setTimeout(() => {
+            if (ticketId) {
+                assignEngineer(ticketId, selectedEngineer.name);
+            }
             if (onAssign) {
                 onAssign(selectedEngineer.name);
             }

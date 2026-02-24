@@ -2,6 +2,7 @@ import React from 'react';
 import { Cpu, Activity, AlertTriangle, AlertCircle, MapPin, Gauge, Users, CreditCard, FileText, Bell, HelpCircle, MessageSquare } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { RESOURCES } from '../../utils/resourceUtils';
+import { useSupport } from '../../context/SupportContext';
 
 export function DashboardStats({
     userRole,
@@ -20,8 +21,6 @@ export function DashboardStats({
     reportsStats,
     domesticAlerts,
     industrialAlerts,
-    domesticIssues,
-    industrialIssues,
     userAssignedDevices,
     userDeviceStats,
     userAssignedLocations,
@@ -29,12 +28,13 @@ export function DashboardStats({
     userAssignedMeters,
     userMeterStats,
     dashboardAlerts,
-    dashboardIssues,
     monthlyCostingData,
     toggleModal,
     setActivePage,
     setShowSupportModal
 }) {
+    const { getKPIs } = useSupport();
+    const stats = getKPIs(userRole);
     if (activeResource !== RESOURCES.ALL) {
         return (
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
@@ -152,40 +152,43 @@ export function DashboardStats({
                 />
                 <StatCard
                     title="Alert Overview"
-                    value={`${(domesticAlerts || []).length + (industrialAlerts || []).length}`}
+                    value={stats.alerts.total}
                     icon={<Bell />}
                     color="red"
                     description="Requires immediate action"
                     statusBreakdown={[
-                        { label: 'Critical', value: [...(domesticAlerts || []), ...(industrialAlerts || [])].filter(a => a.type === 'critical').length, color: 'text-red-600' },
-                        { label: 'Active', value: [...(domesticAlerts || []), ...(industrialAlerts || [])].filter(a => a.type === 'warning').length, color: 'text-orange-600' },
-                        { label: 'Info', value: [...(domesticAlerts || []), ...(industrialAlerts || [])].filter(a => a.type === 'info').length, color: 'text-blue-600' }
+                        { label: 'Total', value: stats.alerts.total, color: 'text-red-600' },
+                        { label: 'Open', value: stats.alerts.open, color: 'text-orange-600' },
+                        { label: 'Assigned', value: stats.alerts.assigned, color: 'text-blue-600' },
+                        { label: 'Closed', value: stats.alerts.closed, color: 'text-emerald-600' }
                     ]}
                     onClick={() => setActivePage('Alerts')}
                 />
                 <StatCard
                     title="Support Management"
-                    value="15"
+                    value={stats.overall.total}
                     icon={<HelpCircle />}
                     color="indigo"
                     description="User request status"
                     statusBreakdown={[
-                        { label: 'Total', value: 15, color: 'text-indigo-600' },
-                        { label: 'Active', value: 6, color: 'text-amber-600' },
-                        { label: 'Resolved', value: 9, color: 'text-emerald-600' }
+                        { label: 'Total', value: stats.overall.total, color: 'text-indigo-600' },
+                        { label: 'Open', value: stats.overall.pending, color: 'text-amber-600' },
+                        { label: 'Assigned', value: stats.overall.assigned, color: 'text-blue-600' },
+                        { label: 'Resolved', value: stats.overall.resolved, color: 'text-emerald-600' }
                     ]}
                     onClick={() => setActivePage('Support')}
                 />
                 <StatCard
                     title="Active Issues"
-                    value={`${(domesticIssues || []).length + (industrialIssues || []).length}`}
+                    value={stats.issues.total}
                     icon={<AlertCircle />}
                     color="orange"
                     description="User Reported Issues"
                     statusBreakdown={[
-                        { label: 'Pending', value: [...(domesticIssues || []), ...(industrialIssues || [])].filter(i => i.status === 'Pending').length, color: 'text-orange-600' },
-                        { label: 'Processing', value: [...(domesticIssues || []), ...(industrialIssues || [])].filter(i => i.status === 'Processing').length, color: 'text-blue-600' },
-                        { label: 'Resolved', value: [...(domesticIssues || []), ...(industrialIssues || [])].filter(i => i.status === 'Resolved').length, color: 'text-emerald-600' }
+                        { label: 'Total', value: stats.issues.total, color: 'text-gray-600' },
+                        { label: 'Open', value: stats.issues.open, color: 'text-orange-600' },
+                        { label: 'Assigned', value: stats.issues.assigned, color: 'text-blue-600' },
+                        { label: 'Closed', value: stats.issues.closed, color: 'text-emerald-600' }
                     ]}
                     onClick={() => setActivePage('Issues')}
                 />
@@ -202,83 +205,187 @@ export function DashboardStats({
         );
     }
 
+    // If user is Domestic, show the specific 4-card layout requested for User2
+    if (userRole === 'Domestic') {
+        const currentUserIdentifier = sessionStorage.getItem('userName') || userRole;
+        const userStats = getKPIs(currentUserIdentifier);
+
+        return (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <StatCard
+                    title="Total Issues"
+                    value={userStats.issues.total}
+                    icon={<AlertCircle />}
+                    color="orange"
+                    description="Issues raised by you"
+                    statusBreakdown={[
+                        { label: 'Open', value: userStats.issues.open, color: 'text-orange-600' },
+                        { label: 'Assigned', value: userStats.issues.assigned, color: 'text-blue-600' },
+                        { label: 'Solved', value: userStats.issues.closed, color: 'text-emerald-600' }
+                    ]}
+                    onClick={() => setActivePage('Issues')}
+                />
+                <StatCard
+                    title="Total Alerts"
+                    value={userStats.alerts.total}
+                    icon={<Bell />}
+                    color="red"
+                    description="System alerts for you"
+                    statusBreakdown={[
+                        { label: 'Open', value: userStats.alerts.open, color: 'text-red-600' },
+                        { label: 'Assigned', value: userStats.alerts.assigned, color: 'text-blue-600' },
+                        { label: 'Solved', value: userStats.alerts.closed, color: 'text-emerald-600' }
+                    ]}
+                    onClick={() => setActivePage('Alerts')}
+                />
+                <StatCard
+                    title="Assigned Tickets"
+                    value={userStats.overall.assigned}
+                    icon={<Users />}
+                    color="blue"
+                    description="Tickets with engineer"
+                    subValue="Being processed"
+                    onClick={() => setActivePage('Support')}
+                />
+                <StatCard
+                    title="Solved Tickets"
+                    value={userStats.overall.resolved}
+                    icon={<MessageSquare />}
+                    color="emerald"
+                    description="Completed requests"
+                    subValue="Successfully resolved"
+                    onClick={() => setActivePage('Support')}
+                />
+            </div>
+        );
+    }
+
+    // Industrial User Layout (New 8-card layout)
+    if (userRole === 'Industrial') {
+        const currentUserIdentifier = sessionStorage.getItem('userName') || userRole;
+        const userStats = getKPIs(currentUserIdentifier);
+
+        return (
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <StatCard
+                    title="Assigned Devices"
+                    value={userAssignedDevices}
+                    icon={<Cpu />}
+                    color="blue"
+                    description="Hardware assigned to you"
+                    statusBreakdown={userDeviceStats}
+                    onClick={() => toggleModal('userDevices', true)}
+                />
+                <StatCard
+                    title="Assigned Locations"
+                    value={userAssignedLocations}
+                    icon={<MapPin />}
+                    color="cyan"
+                    description="Operational sites"
+                    statusBreakdown={userLocationStats}
+                    onClick={() => toggleModal('userLocations', true)}
+                />
+                <StatCard
+                    title="Assigned Meters"
+                    value={userAssignedMeters}
+                    icon={<Gauge />}
+                    color="green"
+                    description="Meters under your supervision"
+                    statusBreakdown={userMeterStats}
+                    onClick={() => toggleModal('userMeters', true)}
+                />
+                <StatCard
+                    title="System Health"
+                    value="98.5%"
+                    icon={<Activity />}
+                    color="emerald"
+                    description="Operational Uptime"
+                    subValue="System status: Optimal"
+                />
+                <StatCard
+                    title="System Alerts"
+                    value={userStats.alerts.total}
+                    icon={<Bell />}
+                    color="red"
+                    description="Requires attention"
+                    statusBreakdown={[
+                        { label: 'Critical', value: userStats?.alerts?.open ? Math.max(1, Math.floor(userStats.alerts.open * 0.4)) : 0, color: 'text-red-600' },
+                        { label: 'Active', value: userStats?.alerts?.open ? userStats.alerts.open - Math.max(1, Math.floor(userStats.alerts.open * 0.4)) : 0, color: 'text-orange-600' }
+                    ]}
+                    onClick={() => setActivePage('Alerts')}
+                />
+                <StatCard
+                    title="Raise Ticket for Support"
+                    value={userStats.overall.total}
+                    icon={<HelpCircle />}
+                    color="indigo"
+                    description="Total Tickets Raised"
+                    onClick={() => setShowSupportModal(true)}
+                />
+                <StatCard
+                    title="System Issues"
+                    value={userStats.issues.total}
+                    icon={<AlertCircle />}
+                    color="orange"
+                    description="View Ticket Details"
+                    statusBreakdown={[
+                        { label: 'Resolved', value: userStats.issues.closed, color: 'text-emerald-600' },
+                        { label: 'Processing', value: userStats.issues.assigned, color: 'text-blue-600' },
+                        { label: 'Active', value: userStats.issues.open, color: 'text-orange-600' }
+                    ]}
+                    onClick={() => setActivePage('Issues')}
+                />
+                <StatCard
+                    title="Monthly Costing"
+                    value="₹5,250"
+                    icon={<CreditCard />}
+                    color="emerald"
+                    description="Monthly consumption cost"
+                    statusBreakdown={monthlyCostingData}
+                    onClick={() => setActivePage('Billing')}
+                />
+            </div>
+        );
+    }
+
+    // Default layout for other roles (preserving original KPIs)
     return (
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <StatCard
-                title="Assigned Devices"
-                value={userAssignedDevices}
-                icon={<Cpu />}
-                color="blue"
-                description="Hardware assigned to you"
-                statusBreakdown={userDeviceStats}
-                onClick={() => toggleModal('userDevices', true)}
-            />
-            <StatCard
-                title="Assigned Locations"
-                value={userAssignedLocations}
-                icon={<MapPin />}
-                color="cyan"
-                description="Operational sites"
-                statusBreakdown={userLocationStats}
-                onClick={() => toggleModal('userLocations', true)}
-            />
-            <StatCard
-                title="Assigned Meters"
-                value={userAssignedMeters}
+                title="Energy Summary"
+                value="1,240 kWh"
                 icon={<Gauge />}
-                color="green"
-                description="Meters under your supervision"
-                statusBreakdown={userMeterStats}
-                onClick={() => toggleModal('userMeters', true)}
+                color="blue"
+                description="Total consumption today"
+                subValue="Active Load: 45kW"
+                onClick={() => setActivePage('Energy')}
             />
             <StatCard
-                title="System Health"
-                value="98.5%"
+                title="Solar Generation"
+                value="450 kWh"
                 icon={<Activity />}
                 color="emerald"
-                description="Operational Uptime"
+                description="Generated power today"
+                subValue="Efficiency: 94%"
+                onClick={() => setActivePage('Solar')}
             />
             <StatCard
-                title="System Alerts"
-                value={`${dashboardAlerts.filter(a => (a.type === 'critical' || a.type === 'warning') && (!a.role || a.role === userRole)).length}`}
-                icon={<AlertTriangle />}
-                color="red"
-                description="Requires attention"
-                statusBreakdown={[
-                    { label: 'Critical', value: dashboardAlerts.filter(a => a.type === 'critical' && (!a.role || a.role === userRole)).length, color: 'text-red-600' },
-                    { label: 'Active', value: dashboardAlerts.filter(a => (a.type === 'warning' || a.type === 'info') && (!a.role || a.role === userRole)).length, color: 'text-orange-600' }
-                ]}
-                onClick={() => setActivePage('Alerts')}
-            />
-            <StatCard
-                title="Raise Ticket for Support"
-                value={dashboardIssues.length}
-                icon={<HelpCircle />}
-                color="indigo"
-                description="Total Tickets Raised"
-                onClick={() => setShowSupportModal(true)}
-            />
-            <StatCard
-                title="System Issues"
-                value={dashboardIssues.length}
-                icon={<MessageSquare />}
+                title="Water Usage"
+                value="4,500 L"
+                icon={<Gauge />}
                 color="blue"
-                description="View Ticket Details"
-                statusBreakdown={[
-                    { label: 'Resolved', value: dashboardIssues.filter(i => i.status === 'Resolved').length, color: 'text-emerald-600' },
-                    { label: 'Processing', value: dashboardIssues.filter(i => i.status === 'Processing').length, color: 'text-blue-600' },
-                    { label: 'Active', value: dashboardIssues.filter(i => i.status === 'Active').length, color: 'text-amber-600' }
-                ]}
-                onClick={() => setActivePage('Support')}
+                description="Daily consumption"
+                subValue="Avg Flow: 12L/m"
+                onClick={() => setActivePage('Water')}
             />
             <StatCard
-                title="Monthly Costing"
-                value="₹5,250"
-                icon={<CreditCard />}
-                color="emerald"
-                description="Monthly consumption cost"
-                statusBreakdown={monthlyCostingData}
-                onClick={() => setActivePage('Billing')}
+                title="Gas Usage"
+                value="12 m³"
+                icon={<Gauge />}
+                color="amber"
+                description="Daily consumption"
+                subValue="Avg Pressure: 2bar"
+                onClick={() => setActivePage('Gas')}
             />
         </div>
     );
