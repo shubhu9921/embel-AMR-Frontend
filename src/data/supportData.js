@@ -90,3 +90,10 @@ export const initialTickets = [
         priority: TICKET_PRIORITY.HIGH
     }
 ];
+
+export const SUPPORT_ENGINEERS = [
+    { id: 'eng1', name: 'Rahul Patil', email: 'rahul@support.com', phone: '9876543210', specialization: 'Energy Devices' },
+    { id: 'eng2', name: 'Sanjay Kumar', email: 'sanjay@support.com', phone: '9876543211', specialization: 'Water Infrastructure' },
+    { id: 'eng3', name: 'Anita Singh', email: 'anita@support.com', phone: '9876543212', specialization: 'Gas Supply' },
+    { id: 'eng4', name: 'Vikram Rao', email: 'vikram@support.com', phone: '9876543213', specialization: 'Solar Panels' },
+];

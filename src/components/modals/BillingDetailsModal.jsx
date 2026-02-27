@@ -41,8 +41,17 @@ export default function BillingDetailsModal({ isOpen, onClose, invoice }) {
     const statusConfig = getStatusConfig(invoice.status);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            role="presentation"
+            onClick={(e) => e.target === e.currentTarget && onClose()}
+        >
+            <div
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="billing-modal-title"
+            >
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
                     <div className="flex items-center gap-3">
@@ -50,13 +59,14 @@ export default function BillingDetailsModal({ isOpen, onClose, invoice }) {
                             <FileText className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-slate-800">{invoice.id}</h2>
-                            <p className="text-sm text-slate-500">{invoice.period || 'Dec 1 - Dec 31, 2024'}</p>
+                            <h2 id="billing-modal-title" className="text-lg font-semibold text-slate-800">{invoice.id} {invoice.customName && invoice.customName !== '-' ? `— ${invoice.customName}` : ''}</h2>
+                            <p className="text-sm text-slate-500">{invoice.period || 'Consumption Period Data'}</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
                         className="p-2 hover:bg-slate-200 rounded-lg transition"
+                        aria-label="Close"
                     >
                         <X className="w-5 h-5 text-slate-500" />
                     </button>
@@ -72,7 +82,7 @@ export default function BillingDetailsModal({ isOpen, onClose, invoice }) {
                                 {invoice.status}
                             </span>
                             <span className="text-sm text-slate-500">
-                                {invoice.status === 'Paid' ? `Paid on ${invoice.paidDate || '2025-01-10'} via UPI` : `Due by ${invoice.date}`}
+                                {invoice.status === 'Paid' ? `Paid on ${invoice.paidDate || 'Recently'}${invoice.paymentMethod ? ` via ${invoice.paymentMethod}` : ''}` : `Due by ${invoice.date || 'Scheduled Date'}`}
                             </span>
                         </div>
 
@@ -90,15 +100,15 @@ export default function BillingDetailsModal({ isOpen, onClose, invoice }) {
                                 </div>
                                 <div>
                                     <p className="text-slate-500">Phone</p>
-                                    <p className="font-medium text-slate-800">{invoice.phone || '+91 98765 43210'}</p>
+                                    <p className="font-medium text-slate-800">{invoice.phone || 'No Phone provided'}</p>
                                 </div>
                                 <div>
-                                    <p className="text-slate-500">Meter</p>
-                                    <p className="font-medium text-slate-800">{invoice.meter} ({invoice.type})</p>
+                                    <p className="text-slate-500">Resource / Device</p>
+                                    <p className="font-medium text-slate-800">{(invoice.resourceType || invoice.meterType || 'Utility')} ({invoice.deviceId || invoice.meter || '-'})</p>
                                 </div>
                                 <div className="col-span-2">
                                     <p className="text-slate-500">Address</p>
-                                    <p className="font-medium text-slate-800">{invoice.address || '123, Main Street, Mumbai, MH 400001'}</p>
+                                    <p className="font-medium text-slate-800">{invoice.address || 'Address information not available'}</p>
                                 </div>
                             </div>
                         </div>
@@ -109,19 +119,19 @@ export default function BillingDetailsModal({ isOpen, onClose, invoice }) {
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-500">Consumption</span>
-                                    <span className="font-medium text-slate-800">{invoice.consumption || '450 kWh'}</span>
+                                    <span className="font-medium text-slate-800">{invoice.consumption || 'Units Data N/A'}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-500">Rate</span>
-                                    <span className="font-medium text-slate-800">{invoice.rate || '₹10/kWh'}</span>
+                                    <span className="font-medium text-slate-800">{invoice.rate || 'Base Tariff'}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-500">Subtotal</span>
-                                    <span className="font-medium text-slate-800">{invoice.subtotal || '₹4,500'}</span>
+                                    <span className="font-medium text-slate-800">{invoice.subtotal || invoice.amount}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-slate-500">Tax (18% GST)</span>
-                                    <span className="font-medium text-slate-800">{invoice.tax || '₹810'}</span>
+                                    <span className="text-slate-500">Tax</span>
+                                    <span className="font-medium text-slate-800">{invoice.tax || '-'}</span>
                                 </div>
                                 <div className="flex justify-between text-sm pt-3 border-t border-slate-200">
                                     <span className="font-semibold text-slate-800">Total Amount</span>

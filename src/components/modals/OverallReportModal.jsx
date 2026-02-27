@@ -1,137 +1,352 @@
-import React, { useState } from 'react';
-import { X, Calendar, Download, Eye, FileText, CheckCircle, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Calendar, Download, Eye, FileText, CheckCircle, Loader2, Gauge, Activity, User, AlertCircle } from 'lucide-react';
+import { apiService } from '../../services/apiService';
+import { useData } from '../../context/DataContext';
 
-export default function OverallReportModal({ onClose }) {
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+export default function OverallReportModal({ onClose, defaultSource = 'All', onGenerate }) {
+    const { devices, meters, isLoading: isFetchingDevices } = useData();
+    const availableDevices = React.useMemo(() => [...devices, ...meters], [devices, meters]);
+
+    const [step, setStep] = useState(1); // 1: Select Period & Asset, 2: Preview
+    const [reportName, setReportName] = useState('');
+    const [selectedSource, setSelectedSource] = useState(defaultSource);
+    const [reportType, setReportType] = useState('Overall'); // 'Overall' or 'Specific'
+
+    const [startMonth, setStartMonth] = useState('January');
+    const [startYear, setStartYear] = useState(new Date().getFullYear().toString());
+    const [endMonth, setEndMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
+    const [endYear, setEndYear] = useState(new Date().getFullYear().toString());
+
+    const [selectedAssetId, setSelectedAssetId] = useState('');
+
     const [isGenerating, setIsGenerating] = useState(false);
-    const [isGenerated, setIsGenerated] = useState(false);
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const currentYearNum = new Date().getFullYear();
+    const currentMonthIndex = new Date().getMonth();
+    const years = Array.from({ length: currentYearNum - 2023 + 1 }, (_, i) => (2023 + i).toString());
+
+    const userName = sessionStorage.getItem('userName') || 'User';
+    const userRole = sessionStorage.getItem('userRole') || 'Industrial';
+
+    const filteredDevices = availableDevices.filter(d =>
+        selectedSource === 'All' ? true : d.meterType?.toLowerCase() === selectedSource.toLowerCase()
+    );
+
+    const getDateValue = (month, year) => {
+        return parseInt(year) * 12 + months.indexOf(month);
+    };
+
+    const isFutureDate = (month, year) => {
+        const monthIndex = months.indexOf(month);
+        const yearNum = parseInt(year);
+        if (yearNum > currentYearNum) return true;
+        if (yearNum === currentYearNum && monthIndex > currentMonthIndex) return true;
+        return false;
+    };
+
+    const isInvalidRange = () => {
+        const startVal = getDateValue(startMonth, startYear);
+        const endVal = getDateValue(endMonth, endYear);
+        return endVal < startVal || isFutureDate(endMonth, endYear);
+    };
 
     const handleGenerate = () => {
-        if (!startDate || !endDate) {
-            alert("Please select both start and end dates.");
-            return;
-        }
+        setStep(2);
+    };
+
+    const handleGenerateAction = () => {
         setIsGenerating(true);
+        const reportData = {
+            name: reportName || `${selectedSource} ${reportType} Report`,
+            source: selectedSource,
+            type: reportType,
+            startMonth,
+            startYear,
+            endMonth,
+            endYear,
+            asset: selectedAsset?.deviceName || selectedAssetId || 'All'
+        };
+
         setTimeout(() => {
+            if (onGenerate) onGenerate(reportData);
             setIsGenerating(false);
-            setIsGenerated(true);
+            alert("Report generated successfully!");
+            onClose();
         }, 1500);
     };
 
-    const handleDownload = () => {
-        // Mock download
-        alert("Downloading Overall Report.pdf...");
-    };
-
-    const handlePreview = () => {
-        // Mock preview
-        alert("Opening Report Preview...");
-    };
+    const selectedAsset = availableDevices.find(d => d.deviceId === selectedAssetId || d.id === selectedAssetId);
 
     return (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-md shadow-2xl overflow-hidden flex flex-col transform transition-all animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
 
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-br from-blue-50 to-indigo-50/50">
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-white shadow-sm rounded-xl text-blue-600">
-                            <FileText size={20} strokeWidth={2.5} />
+                        <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
+                            {step === 1 ? <FileText size={24} /> : <Eye size={24} />}
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900 tracking-tight">Generate Report</h2>
-                            <p className="text-xs text-gray-500 font-medium mt-0.5">Overall System Summary</p>
+                            <h2 className="text-xl font-bold text-gray-900">
+                                {step === 1 ? 'Generate Report' : 'Report Preview'}
+                            </h2>
+                            <p className="text-sm font-medium text-gray-500">
+                                {step === 1 ? 'Select period and parameters' : `${selectedSource} Usage Report`}
+                            </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-black/5 rounded-full transition-colors text-gray-400 hover:text-gray-700"
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                     >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
-                    <div className="space-y-5 mb-8">
-                        <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Start Date</label>
-                            <div className="relative group">
-                                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={16} />
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    max={endDate || todayStr}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all outline-none"
-                                />
+                <div className="p-6 flex-1 overflow-y-auto max-h-[75vh]">
+                    {step === 1 ? (
+                        <div className="space-y-6">
+                            {/* Report Name */}
+                            <div className="animate-in slide-in-from-top-1 duration-300">
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Report Name</label>
+                                <div className="relative group">
+                                    <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={16} />
+                                    <input
+                                        type="text"
+                                        value={reportName}
+                                        onChange={(e) => setReportName(e.target.value)}
+                                        placeholder="Enter report name (e.g. Q1 Efficiency Review)"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                    />
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">End Date</label>
-                            <div className="relative group">
-                                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={16} />
-                                <input
-                                    type="date"
-                                    value={endDate}
-                                    min={startDate || undefined}
-                                    max={todayStr}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all outline-none"
-                                />
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Action Area */}
-                    <div className="min-h-[60px] flex flex-col justify-end">
-                        {!isGenerated ? (
-                            <button
-                                onClick={handleGenerate}
-                                disabled={isGenerating || !startDate || !endDate}
-                                className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300
-                                    ${isGenerating || !startDate || !endDate
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg hover:-translate-y-0.5'
-                                    }`}
-                            >
-                                {isGenerating ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
-                                        <span className="text-gray-600 font-medium">Generating...</span>
-                                    </>
-                                ) : (
-                                    "Generate Report"
-                                )}
-                            </button>
-                        ) : (
-                            <div className="space-y-4 animate-in slide-in-from-bottom-2 duration-300">
-                                <div className="flex items-center justify-center gap-2 text-emerald-600 font-bold mb-4 bg-emerald-50/80 border border-emerald-100 py-2.5 rounded-xl">
-                                    <CheckCircle size={18} className="text-emerald-500" />
-                                    Report Generated Successfully!
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={handlePreview}
-                                        className="flex items-center justify-center gap-2 py-3 bg-white border-2 border-gray-100 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-95"
-                                    >
-                                        <Eye size={16} />
-                                        Preview
-                                    </button>
-                                    <button
-                                        onClick={handleDownload}
-                                        className="flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-md hover:bg-blue-700 hover:shadow-lg transition-all active:scale-95 group"
-                                    >
-                                        <Download size={16} className="group-hover:-translate-y-0.5 transition-transform" />
-                                        Download
-                                    </button>
+                            {/* Source Selection */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Select Resource</label>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    {['All', 'Energy', 'Water', 'Gas', 'Solar'].map(source => (
+                                        <button
+                                            key={source}
+                                            onClick={() => {
+                                                setSelectedSource(source);
+                                                setSelectedAssetId('');
+                                            }}
+                                            className={`py-2 px-1 flex flex-col items-center gap-1 rounded-xl border-2 transition-all duration-300 ${selectedSource === source
+                                                ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                                                : 'border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 text-gray-500'
+                                                }`}
+                                        >
+                                            <span className="text-[10px] font-black uppercase tracking-tighter">{source}</span>
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
-                        )}
-                    </div>
+
+                            {/* Report Type */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Report Scope</label>
+                                <div className="flex gap-2 p-1 bg-gray-50 border border-gray-200 rounded-2xl">
+                                    {['Overall', 'Specific'].map((type) => (
+                                        <button
+                                            key={type}
+                                            onClick={() => {
+                                                setReportType(type);
+                                                if (type === 'Overall') setSelectedAssetId('');
+                                            }}
+                                            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-300 ${reportType === type ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                                                }`}
+                                        >
+                                            {type === 'Overall' ? `${selectedSource} Overall` : 'Device/Meter Specific'}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Asset Selection */}
+                            {reportType === 'Specific' && (
+                                <div className="animate-in slide-in-from-top-2 duration-300">
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Select Asset</label>
+                                    <div className="relative group">
+                                        <Gauge className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={16} />
+                                        <select
+                                            value={selectedAssetId}
+                                            onChange={(e) => setSelectedAssetId(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                        >
+                                            <option value="">{isFetchingDevices ? 'Loading Assets...' : 'Choose Device/Meter...'}</option>
+                                            {filteredDevices.map(d => (
+                                                <option key={d.id} value={d.deviceId || d.id}>{d.deviceName || d.name} ({d.deviceId || d.id})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Date Selection */}
+                            <div className="space-y-4 pt-2">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest">Start Month</label>
+                                        <select
+                                            value={startMonth}
+                                            onChange={(e) => setStartMonth(e.target.value)}
+                                            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 outline-none"
+                                        >
+                                            {months.map(m => (
+                                                <option key={m} value={m}>{m}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest">Start Year</label>
+                                        <select
+                                            value={startYear}
+                                            onChange={(e) => setStartYear(e.target.value)}
+                                            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 outline-none"
+                                        >
+                                            {years.map(y => (
+                                                <option key={y} value={y}>{y}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest">End Month</label>
+                                        <select
+                                            value={endMonth}
+                                            onChange={(e) => setEndMonth(e.target.value)}
+                                            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 outline-none"
+                                        >
+                                            {months.map(m => (
+                                                <option key={m} value={m} disabled={isFutureDate(m, endYear)}>{m}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest">End Year</label>
+                                        <select
+                                            value={endYear}
+                                            onChange={(e) => setEndYear(e.target.value)}
+                                            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 outline-none"
+                                        >
+                                            {years.map(y => (
+                                                <option key={y} value={y} disabled={parseInt(y) > currentYearNum}>{y}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {isInvalidRange() && (
+                                <div className="bg-red-50 p-4 rounded-xl flex gap-3 text-red-700 border border-red-100 text-sm">
+                                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                    <p>
+                                        {getDateValue(endMonth, endYear) < getDateValue(startMonth, startYear)
+                                            ? "Ending date cannot be before starting date."
+                                            : "Reports cannot be generated for future dates."}
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="bg-blue-50 p-4 rounded-xl space-y-2 border border-blue-100">
+                                <div className="flex gap-3 text-blue-800 text-xs font-medium">
+                                    <User size={14} className="shrink-0" />
+                                    <span>Generating for: <strong>{userName} ({userRole})</strong></span>
+                                </div>
+                                <div className="flex gap-3 text-blue-800 text-xs font-medium">
+                                    <Calendar size={14} className="shrink-0" />
+                                    <span>Period: <strong>{startMonth} {startYear} - {endMonth} {endYear}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Report Name</p>
+                                        <p className="font-bold text-gray-900 text-sm">
+                                            {reportName || `${selectedSource} ${reportType} Report`}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Analysis Period</p>
+                                        <p className="font-bold text-blue-600 text-sm">{startMonth} {startYear} - {endMonth} {endYear}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600 font-medium">Total Usage (Est.)</span>
+                                        <span className="font-bold text-gray-900">
+                                            {selectedSource === 'Energy' || selectedSource === 'Solar' ? '1,245 kWh' :
+                                                selectedSource === 'Water' ? '4,500 L' :
+                                                    selectedSource === 'Gas' ? '45 m³' : 'Mixed Data'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600 font-medium">Peak Demand</span>
+                                        <span className="font-bold text-gray-900">12.5% above avg</span>
+                                    </div>
+                                    <div className="pt-4 border-t border-gray-200 flex justify-between text-sm">
+                                        <span className="text-gray-600 font-medium">Report Type</span>
+                                        <span className="font-bold text-gray-900">Analytical Summary</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-100 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                                        <CheckCircle size={20} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Status</p>
+                                        <p className="text-sm font-bold text-emerald-600">Report Ready for Generation</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer Controls */}
+                <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+                    <button
+                        onClick={step === 1 ? onClose : () => setStep(1)}
+                        className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 shadow-sm transition-all"
+                    >
+                        {step === 1 ? 'Cancel' : 'Back'}
+                    </button>
+
+                    {step === 1 ? (
+                        <button
+                            onClick={handleGenerate}
+                            disabled={isInvalidRange() || (reportType === 'Specific' && !selectedAssetId)}
+                            className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Preview Report
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleGenerateAction}
+                            disabled={isGenerating}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {isGenerating ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <CheckCircle size={16} />
+                            )}
+                            {isGenerating ? 'Generating...' : 'Generate Report'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

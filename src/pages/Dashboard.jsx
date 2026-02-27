@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { LayoutDashboard, Activity, AlertTriangle, AlertCircle, CreditCard, FileText, MapPin, Cpu, Gauge, Users, Droplet, Flame, Sun, HelpCircle, Bell, MessageSquare } from "lucide-react";
 
 import { TimeFilter, AlertsPanel, StatCard, PerformanceChart, DashboardStats, DashboardBottomInfo } from "../components/dashboard";
@@ -8,10 +8,8 @@ import { useDashboard } from "../hooks/useDashboard";
 import { DashboardModals } from "../components/dashboard/DashboardModals";
 import { RESOURCE_CONFIG, RESOURCES } from "../utils/resourceUtils";
 import SupportModal from "../components/modals/SupportModal";
-import {
-    domesticAlerts,
-    industrialAlerts
-} from "../data/mockData";
+import { useSupport } from '../context/SupportContext';
+import { apiService } from "../services/apiService";
 
 // Fix Leaflet icon issue
 import L from 'leaflet';
@@ -26,8 +24,19 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+import { useData } from "../context/DataContext";
+
 export default function Dashboard({ setActivePage = () => { }, userRole }) {
+    const { tickets } = useSupport();
     const isAdmin = userRole === 'Admin';
+    const {
+        devices: fetchedDevices,
+        meters: fetchedMeters,
+        users: fetchedUsers,
+        reports: fetchedReports,
+        isLoading
+    } = useData();
+
     const {
         consumptionTimeRange, setConsumptionTimeRange,
         activeResource, setActiveResource,
@@ -40,41 +49,86 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         multiResourceData,
         calculateBillingPercentage
     } = useDashboard();
-    const [showSupportModal, setShowSupportModal] = React.useState(false);
-    const [isAlertsExpanded, setIsAlertsExpanded] = React.useState(false);
+    const [showSupportModal, setShowSupportModal] = useState(false);
+    const [isAlertsExpanded, setIsAlertsExpanded] = useState(false);
 
-    if (userRole === 'Domestic') {
+    // Memoize stable navigation callbacks to prevent DashboardStats re-evaluations
+    const handleNavToDevices = useCallback(() => {
+        sessionStorage.setItem('devicesPageTab', 'devices');
+        setActivePage('Devices');
+    }, [setActivePage]);
+
+    useEffect(() => {
+        const handleOpenSupport = () => setShowSupportModal(true);
+        window.addEventListener('open-support-modal', handleOpenSupport);
+        return () => window.removeEventListener('open-support-modal', handleOpenSupport);
+    }, []);
+
+    const handleNavToMeters = useCallback(() => {
+        sessionStorage.setItem('devicesPageTab', 'meters');
+        setActivePage('Devices');
+    }, [setActivePage]);
+
+    const handleNavToUsers = useCallback(() => setActivePage('Users'), [setActivePage]);
+    const handleNavToBilling = useCallback(() => setActivePage('Billing'), [setActivePage]);
+    const handleNavToReports = useCallback(() => setActivePage('Reports'), [setActivePage]);
+    const handleNavToAlerts = useCallback(() => setActivePage('Alerts'), [setActivePage]);
+    const handleNavToSupport = useCallback(() => setActivePage('Support'), [setActivePage]);
+    const handleNavToIssues = useCallback(() => setActivePage('Issues'), [setActivePage]);
+    const handleNavToEnergy = useCallback(() => setActivePage('Energy'), [setActivePage]);
+    const handleNavToSolar = useCallback(() => setActivePage('Solar'), [setActivePage]);
+    const handleNavToWater = useCallback(() => setActivePage('Water'), [setActivePage]);
+    const handleNavToGas = useCallback(() => setActivePage('Gas'), [setActivePage]);
+    const handleNavToLocations = useCallback(() => setActivePage('Locations'), [setActivePage]);
+
+
+    if (userRole === 'Domestic User' && false) { // Disable the old DomesticDashboard for now to use the new unified one
         return <DomesticDashboard setActivePage={setActivePage} />;
     }
 
-    /* -------------------- ADMIN METRICS (MOCK) -------------------- */
-    const totalDevices = 12;
+    const userIdentifier = sessionStorage.getItem('userName') || userRole || 'User1';
+
+    /* -------------------- ADMIN METRICS (DYNAMIC) -------------------- */
+    const adminDevices = fetchedDevices; // Admin sees all registered devices
+    const adminMeters = fetchedMeters; // Admin sees all registered meters
+    const allAdminAssets = [...adminDevices, ...adminMeters];
+
+    const totalDevices = adminDevices.length;
     const deviceStats = [
-        { label: 'Active', value: 8, color: 'text-emerald-500' },
-        { label: 'Inactive', value: 3, color: 'text-amber-500' },
-        { label: 'Deactivated', value: 1, color: 'text-red-500' },
-    ];
-    const locationStats = [
-        { label: 'Mumbai', value: 5, color: 'text-blue-500' },
-        { label: 'Delhi', value: 4, color: 'text-indigo-500' },
-        { label: 'B\'lore', value: 3, color: 'text-purple-500' },
+        { label: 'Active', value: adminDevices.filter(d => d.status === 'Active').length, color: 'text-emerald-500' },
+        { label: 'Inactive', value: adminDevices.filter(d => d.status === 'Inactive').length, color: 'text-amber-500' },
+        { label: 'Deactivated', value: adminDevices.filter(d => ['Deactive', 'Deactivated'].includes(d.status)).length, color: 'text-red-500' },
     ];
 
-    const totalMeters = 120;
+    const totalMeters = adminMeters.length;
     const meterStats = [
-        { label: 'Active', value: 95, color: 'text-emerald-500' },
-        { label: 'Inactive', value: 15, color: 'text-amber-500' },
-        { label: 'Deactivated', value: 10, color: 'text-red-500' },
+        { label: 'Active', value: adminMeters.filter(m => m.status === 'Active').length, color: 'text-emerald-500' },
+        { label: 'Inactive', value: adminMeters.filter(m => m.status === 'Inactive').length, color: 'text-amber-500' },
+        { label: 'Deactivated', value: adminMeters.filter(m => ['Deactive', 'Deactivated'].includes(m.status)).length, color: 'text-red-500' },
     ];
 
-    const totalUsers = 5;
+    const citiesSet = new Set(allAdminAssets.map(d => d.city || d.location || d.meterLocation || 'Unknown'));
+    const totalLocations = citiesSet.size;
+
+    // Recalculate Top Location and Location-wise Breakdown
+    const cityCounts = Array.from(citiesSet).map(city => {
+        const count = allAdminAssets.filter(d => (d.city || d.location || d.meterLocation || 'Unknown') === city).length;
+        return { label: city, value: count, color: 'text-blue-500' };
+    }).sort((a, b) => b.value - a.value);
+
+    const topCity = cityCounts[0]?.label || 'Unknown';
+
+    // Show top 3 locations in the breakdown
+    const locationStats = cityCounts.slice(0, 3);
+
+    const totalUsers = fetchedUsers.length;
     const userStats = [
-        { label: 'Active', value: 4, color: 'text-emerald-500' },
-        { label: 'Inactive', value: 1, color: 'text-amber-500' },
-        { label: 'Deactivated', value: 0, color: 'text-red-500' },
+        { label: 'Active', value: fetchedUsers.filter(u => u.status === 'Active').length, color: 'text-green-500' },
+        { label: 'Inactive', value: fetchedUsers.filter(u => u.status === 'Inactive').length, color: 'text-red-500' },
+        { label: 'Deactivated', value: 0, color: 'text-gray-400' },
     ];
 
-    const billingStats = { total: "₹12,450", pending: "₹2,321", overdue: "₹5,100" };
+    const billingStats = { total: 29677, pending: 2537, overdue: 10502 };
     const revenueStats = [
         { label: 'Paid', value: 150, color: 'text-emerald-500' },
         { label: 'Unpaid', value: 45, color: 'text-red-500' },
@@ -82,34 +136,52 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         { label: 'Processing', value: 12, color: 'text-blue-500' },
     ];
 
-    /* -------------------- USER METRICS (MOCK) -------------------- */
-    const userAssignedDevices = 5;
+    /* -------------------- USER METRICS (DYNAMIC) -------------------- */
+    const userDevices = fetchedDevices.filter(d => d.user === userIdentifier || d.admin === userIdentifier);
+    const userMeters = fetchedMeters.filter(m => m.user === userIdentifier || m.admin === userIdentifier);
+    const allUserAssets = [...userDevices, ...userMeters];
+
+    const userAssignedDevices = userDevices.length;
     const userDeviceStats = [
-        { label: 'Active', value: 3, color: 'text-emerald-500' },
-        { label: 'Inactive', value: 1, color: 'text-amber-500' },
-        { label: 'Deactivated', value: 1, color: 'text-red-500' },
+        { label: 'Active', value: userDevices.filter(d => d.status === 'Active').length, color: 'text-emerald-500' },
+        { label: 'Inactive', value: userDevices.filter(d => d.status === 'Inactive').length, color: 'text-amber-500' },
+        { label: 'Deactivated', value: userDevices.filter(d => ['Deactive', 'Deactivated'].includes(d.status)).length, color: 'text-red-500' },
     ];
 
-    const userAssignedLocations = 2;
+    const userCitiesSet = new Set(allUserAssets.map(d => d.city || d.location || d.meterLocation || 'Unknown'));
+    const userAssignedLocations = userCitiesSet.size;
+
+    const sortedUserCities = Array.from(userCitiesSet).sort((a, b) =>
+        allUserAssets.filter(d => (d.city || d.location || d.meterLocation || 'Unknown') === b).length -
+        allUserAssets.filter(d => (d.city || d.location || d.meterLocation || 'Unknown') === a).length
+    );
+    const topUserCity = sortedUserCities[0] || 'Unknown';
+
     const userLocationStats = [
-        { label: 'Mumbai', value: 3, color: 'text-blue-500' },
-        { label: 'Delhi', value: 2, color: 'text-indigo-500' },
+        { label: 'Mapped Devices & Meters', value: allUserAssets.length, color: 'text-blue-500' },
+        { label: 'Top Location', value: topUserCity, color: 'text-purple-500' }
     ];
 
-    const userAssignedMeters = 8;
+    const userAssignedMeters = userMeters.length;
     const userMeterStats = [
-        { label: 'Active', value: 6, color: 'text-emerald-500' },
-        { label: 'Inactive', value: 1, color: 'text-amber-500' },
-        { label: 'Deactivated', value: 1, color: 'text-red-500' },
+        { label: 'Active', value: userMeters.filter(d => d.status === 'Active').length, color: 'text-emerald-500' },
+        { label: 'Inactive', value: userMeters.filter(d => d.status === 'Inactive').length, color: 'text-amber-500' },
+        { label: 'Deactivated', value: userMeters.filter(d => ['Deactive', 'Deactivated'].includes(d.status)).length, color: 'text-red-500' },
     ];
 
-    const reportsStats = { ready: 4, processing: 1, total: 6 };
+    const currentInactiveCounts = React.useMemo(() => ({
+        devices: (isAdmin ? fetchedDevices : userDevices).filter(d => d.status !== 'Active'),
+        meters: (isAdmin ? fetchedMeters : userMeters).filter(m => m.status !== 'Active'),
+        users: fetchedUsers.filter(u => u.status !== 'Active')
+    }), [isAdmin, fetchedDevices, fetchedMeters, userDevices, userMeters, fetchedUsers]);
+
+    const reportsStats = { ready: 5, processing: 1, total: 6 };
 
     const monthlyCostingData = [
-        { label: 'Solar', value: '₹1,200', color: 'text-amber-500' },
-        { label: 'Water', value: '₹850', color: 'text-blue-500' },
-        { label: 'Energy', value: '₹2,300', color: 'text-emerald-500' },
-        { label: 'Gas', value: '₹900', color: 'text-orange-500' },
+        { label: 'Solar', value: '₹1,200', numericValue: 1200, color: 'text-amber-500' },
+        { label: 'Water', value: '₹850', numericValue: 850, color: 'text-blue-500' },
+        { label: 'Energy', value: '₹2,300', numericValue: 2300, color: 'text-emerald-500' },
+        { label: 'Gas', value: '₹900', numericValue: 900, color: 'text-orange-500' },
     ];
 
     const colorConfig = {
@@ -161,138 +233,160 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const currentResStats = resourceStatsMap[activeResource];
 
     /* -------------------- ALERTS DATA -------------------- */
-    const dashboardAlerts = userRole === 'Admin' ? [...domesticAlerts, ...industrialAlerts] : industrialAlerts;
+    const dashboardAlerts = (userRole === 'Admin' || userRole === 'Super Admin'
+        ? tickets.filter(t => t.type === 'alert')
+        : tickets.filter(t => t.type === 'alert' && (t.username === userIdentifier || t.userName === userIdentifier))
+    ).sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date)).slice(0, 10);
 
     return (
-        <main className="w-full flex flex-col gap-6 min-h-screen mb-20">
-            {showSupportModal && (
-                <SupportModal
-                    onClose={() => setShowSupportModal(false)}
-                    setActivePage={setActivePage}
-                    userDetails={{ name: isAdmin ? 'System Admin' : 'Industrial User', id: isAdmin ? 'Admin' : 'User1' }}
-                />
-            )}
+        <div className="flex flex-col flex-1">
+            <main className="w-full min-h-screen p-4 md:p-6 font-sans pt-6 md:pt-8">
+                {showSupportModal && (
+                    <SupportModal
+                        onClose={() => setShowSupportModal(false)}
+                        setActivePage={setActivePage}
+                        userDetails={{
+                            name: sessionStorage.getItem('userName') || (isAdmin ? 'System Admin' : 'User'),
+                            id: sessionStorage.getItem('userId') || (isAdmin ? 'Admin' : 'User1')
+                        }}
+                    />
+                )}
 
-            {/* HEADER */}
-            <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mx-4 mt-4 mb-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
-                            <LayoutDashboard size={24} />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome, {sessionStorage.getItem('userName') || userRole || 'User'}! 👋</h1>
-                            <p className="text-sm font-medium text-gray-500">System-wide resource analytics & status</p>
+                {/* HEADER */}
+                <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
+                                <LayoutDashboard size={24} />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome, {sessionStorage.getItem('userName') || userRole || 'User'}! 👋</h1>
+                                <p className="text-sm font-medium text-gray-500">Real-time monitoring and analytics</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="px-4 md:px-6 flex flex-col gap-6">
+                <div className="flex flex-col gap-6 w-full mt-4">
 
-                {/* KPI CARDS */}
-                <DashboardStats
-                    userRole={userRole}
-                    isAdmin={isAdmin}
-                    activeResource={activeResource}
-                    currentResStats={currentResStats}
-                    totalDevices={totalDevices}
-                    deviceStats={deviceStats}
-                    locationStats={locationStats}
-                    totalMeters={totalMeters}
-                    meterStats={meterStats}
-                    totalUsers={totalUsers}
-                    userStats={userStats}
-                    billingStats={billingStats}
-                    revenueStats={revenueStats}
-                    reportsStats={reportsStats}
-                    domesticAlerts={domesticAlerts}
-                    industrialAlerts={industrialAlerts}
-                    userAssignedDevices={userAssignedDevices}
-                    userDeviceStats={userDeviceStats}
-                    userAssignedLocations={userAssignedLocations}
-                    userLocationStats={userLocationStats}
-                    userAssignedMeters={userAssignedMeters}
-                    userMeterStats={userMeterStats}
-                    dashboardAlerts={dashboardAlerts}
-                    monthlyCostingData={monthlyCostingData}
-                    toggleModal={toggleModal}
-                    setActivePage={setActivePage}
-                    setShowSupportModal={setShowSupportModal}
-                />
+                    {/* KPI CARDS */}
+                    <DashboardStats
+                        userRole={userRole}
+                        isAdmin={isAdmin}
+                        activeResource={activeResource}
+                        currentResStats={currentResStats}
+                        totalDevices={totalDevices}
+                        deviceStats={deviceStats}
+                        locationStats={locationStats}
+                        totalMeters={totalMeters}
+                        meterStats={meterStats}
+                        totalUsers={totalUsers}
+                        userStats={userStats}
+                        billingStats={billingStats}
+                        revenueStats={revenueStats}
+                        reportsStats={reportsStats}
+                        userAssignedDevices={userAssignedDevices}
+                        userDeviceStats={userDeviceStats}
+                        userAssignedLocations={userAssignedLocations}
+                        userLocationStats={userLocationStats}
+                        userAssignedMeters={userAssignedMeters}
+                        userMeterStats={userMeterStats}
+                        dashboardAlerts={dashboardAlerts}
+                        monthlyCostingData={monthlyCostingData}
+                        toggleModal={toggleModal}
+                        handleNavToDevices={handleNavToDevices}
+                        handleNavToMeters={handleNavToMeters}
+                        handleNavToUsers={handleNavToUsers}
+                        handleNavToBilling={handleNavToBilling}
+                        handleNavToReports={handleNavToReports}
+                        handleNavToAlerts={handleNavToAlerts}
+                        handleNavToSupport={handleNavToSupport}
+                        handleNavToIssues={handleNavToIssues}
+                        handleNavToLocations={handleNavToLocations}
+                        handleNavToEnergy={handleNavToEnergy}
+                        handleNavToSolar={handleNavToSolar}
+                        handleNavToWater={handleNavToWater}
+                        handleNavToGas={handleNavToGas}
+                        totalLocations={totalLocations}
+                        topCity={topCity}
+                    />
 
-                {/* GRAPHS & ALERTS */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {!isAlertsExpanded && (
-                        <div className="lg:col-span-2 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col min-h-[450px]">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900">Time vs Consumption</h3>
-                                    <p className="text-xs text-gray-500 font-medium mt-1">
-                                        {activeResource === RESOURCES.ALL ? 'Multi-resource usage breakdown' : `${activeResource} usage over time`}
-                                    </p>
-                                </div>
+                    {/* GRAPHS & ALERTS */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {!isAlertsExpanded && (
+                            <div className="lg:col-span-2 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col min-h-[450px]">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900">Time vs Consumption</h3>
+                                        <p className="text-xs text-gray-500 font-medium mt-1">
+                                            {activeResource === RESOURCES.ALL ? 'Multi-resource usage breakdown' : `${activeResource} usage over time`}
+                                        </p>
+                                    </div>
 
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <div className="flex bg-white p-1 rounded-xl border border-gray-100 shadow-sm shadow-orange-100">
-                                        {RESOURCE_CONFIG.map(res => (
-                                            <button
-                                                key={res.id}
-                                                onClick={() => setActiveResource(res.id)}
-                                                className={`
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <div className="flex bg-white p-1 rounded-xl border border-gray-100 shadow-sm shadow-orange-100">
+                                            {RESOURCE_CONFIG.map(res => (
+                                                <button
+                                                    key={res.id}
+                                                    onClick={() => setActiveResource(res.id)}
+                                                    className={`
                                                     flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all duration-300
                                                     ${activeResource === res.id ? res.activeBg : res.inactiveBg}
                                                 `}
-                                            >
-                                                {res.id !== RESOURCES.ALL && <res.icon size={14} strokeWidth={2.5} />}
-                                                {res.label}
-                                            </button>
-                                        ))}
+                                                >
+                                                    {res.id !== RESOURCES.ALL && <res.icon size={14} strokeWidth={2.5} />}
+                                                    {res.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <TimeFilter selected={consumptionTimeRange} onChange={setConsumptionTimeRange} />
                                     </div>
-                                    <TimeFilter selected={consumptionTimeRange} onChange={setConsumptionTimeRange} />
+                                </div>
+                                <div className="flex-1 w-full min-h-0">
+                                    <PerformanceChart data={multiResourceData} />
                                 </div>
                             </div>
-                            <div className="flex-1 w-full min-h-0">
-                                <PerformanceChart data={multiResourceData} />
-                            </div>
-                        </div>
-                    )}
+                        )}
 
-                    <div className={`${isAlertsExpanded ? 'lg:col-span-3' : 'lg:col-span-1'} h-full min-h-[450px]`}>
-                        <AlertsPanel
-                            alerts={dashboardAlerts}
-                            userRole={userRole}
-                            setActivePage={setActivePage}
-                            isExpanded={isAlertsExpanded}
-                            setIsExpanded={setIsAlertsExpanded}
-                        />
+                        <div className={`${isAlertsExpanded ? 'lg:col-span-3' : 'lg:col-span-1'} h-full min-h-[450px]`}>
+                            <AlertsPanel
+                                alerts={dashboardAlerts}
+                                userRole={userRole}
+                                setActivePage={setActivePage}
+                                isExpanded={isAlertsExpanded}
+                                setIsExpanded={setIsAlertsExpanded}
+                            />
+                        </div>
                     </div>
+
+                    {/* BILLING & REPORTS */}
+                    <DashboardBottomInfo
+                        isAdmin={isAdmin}
+                        billingStats={billingStats}
+                        colorConfig={colorConfig}
+                        reportsStats={reportsStats}
+                        reports={fetchedReports}
+                        setActivePage={setActivePage}
+                    />
                 </div>
 
-                {/* BILLING & REPORTS */}
-                <DashboardBottomInfo
-                    isAdmin={isAdmin}
-                    billingStats={billingStats}
-                    colorConfig={colorConfig}
-                    reportsStats={reportsStats}
+                <DashboardModals
+                    modalState={modalState}
+                    toggleModal={toggleModal}
+                    selectedLocation={selectedLocation}
+                    setSelectedLocation={setSelectedLocation}
+                    selectedUserDevice={selectedUserDevice}
+                    setSelectedUserDevice={setSelectedUserDevice}
+                    selectedUserMeter={selectedUserMeter}
+                    setSelectedUserMeter={setSelectedUserMeter}
+                    userFilters={userFilters}
+                    setUserFilters={setUserFilters}
+                    inactiveCounts={currentInactiveCounts}
                     setActivePage={setActivePage}
+                    userDevicesList={userDevices}
+                    userMetersList={userMeters}
                 />
-            </div>
-
-            <DashboardModals
-                modalState={modalState}
-                toggleModal={toggleModal}
-                selectedLocation={selectedLocation}
-                setSelectedLocation={setSelectedLocation}
-                selectedUserDevice={selectedUserDevice}
-                setSelectedUserDevice={setSelectedUserDevice}
-                selectedUserMeter={selectedUserMeter}
-                setSelectedUserMeter={setSelectedUserMeter}
-                userFilters={userFilters}
-                setUserFilters={setUserFilters}
-                inactiveCounts={inactiveCounts}
-                setActivePage={setActivePage}
-            />
-        </main>
+            </main>
+        </div>
     );
 }

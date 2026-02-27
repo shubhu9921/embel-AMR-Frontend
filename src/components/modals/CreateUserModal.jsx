@@ -1,18 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Save, AlertCircle } from 'lucide-react';
+import { useFormValidation } from '../../hooks/useFormValidation';
 
 export default function CreateUserModal({ isOpen, onClose, onSubmit, mode = 'create', initialData = null }) {
     const defaultFormData = {
         firstName: '',
         lastName: '',
         email: '',
-        role: 'USER',
+        password: '',
+        role: 'Domestic',
         mobile: '',
         address: '',
         status: 'Active'
     };
+    const [submitError, setSubmitError] = useState(null);
 
-    const [formData, setFormData] = useState(defaultFormData);
+    const {
+        values: formData,
+        handleChange,
+        setValues: setFormData,
+        handleSubmit,
+        isSubmitting
+    } = useFormValidation(defaultFormData);
 
     useEffect(() => {
         if (isOpen) {
@@ -21,8 +30,9 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, mode = 'cre
                     firstName: initialData.firstName || '',
                     lastName: initialData.lastName || '',
                     email: initialData.email || '',
-                    role: initialData.roleId || 'USER', // Map roleId to role
-                    mobile: initialData.phone || '', // Map phone to mobile
+                    password: initialData.password || '',
+                    role: initialData.role || 'Domestic',
+                    mobile: initialData.phone || '',
                     address: initialData.address || '',
                     status: initialData.status || 'Active'
                 });
@@ -34,18 +44,15 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, mode = 'cre
 
     if (!isOpen) return null;
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSubmit(formData);
-        onClose();
+    const onSubmitHandler = async (values) => {
+        setSubmitError(null);
+        try {
+            await Promise.resolve(onSubmit(values));
+            onClose();
+        } catch (err) {
+            console.error(err);
+            setSubmitError(err.message || 'An error occurred while saving user.');
+        }
     };
 
     return (
@@ -65,9 +72,20 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, mode = 'cre
                     </button>
                 </div>
 
+                {submitError && (
+                    <div role="alert" aria-live="assertive" className="mx-6 mt-4 p-3 bg-red-50/80 text-red-600 text-sm font-medium rounded-xl flex items-center justify-between gap-2 border border-red-100 transition-all duration-300">
+                        <div className="flex items-center gap-2">
+                            <AlertCircle size={16} /> {submitError}
+                        </div>
+                        <button type="button" onClick={() => setSubmitError(null)} aria-label="Dismiss error" className="p-1 hover:bg-red-100 rounded-lg text-red-400 hover:text-red-600 transition-colors">
+                            <X size={14} />
+                        </button>
+                    </div>
+                )}
+
                 {/* Form Content */}
                 <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
-                    <form id="user-form" onSubmit={handleSubmit} className="space-y-6">
+                    <form id="user-form" onSubmit={(e) => handleSubmit(e, onSubmitHandler)} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <label className="text-xs font-semibold text-gray-700">First Name <span className="text-red-500">*</span></label>
@@ -103,6 +121,18 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, mode = 'cre
                                     required
                                 />
                             </div>
+                            <div className="space-y-1 md:col-span-2">
+                                <label className="text-xs font-semibold text-gray-700">Password {mode === 'create' && <span className="text-red-500">*</span>}</label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder={mode === 'edit' ? "Leave blank to keep current password" : "Password"}
+                                    className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required={mode === 'create'}
+                                />
+                            </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-semibold text-gray-700">Role <span className="text-red-500">*</span></label>
                                 <select
@@ -112,10 +142,10 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, mode = 'cre
                                     className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                     required
                                 >
-                                    <option value="USER">User</option>
-                                    <option value="ADMIN">Admin</option>
-                                    <option value="SUPPORT_ENGINEER">Support Engineer</option>
-                                    <option value="SUPER_ADMIN">Super Admin</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Industrial">Industrial</option>
+                                    <option value="Domestic">Domestic</option>
+                                    <option value="Support Engineer">Support Engineer</option>
                                 </select>
                             </div>
                             <div className="space-y-1">
@@ -167,10 +197,15 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, mode = 'cre
                     <button
                         type="submit"
                         form="user-form"
-                        className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors flex items-center gap-2"
+                        disabled={isSubmitting}
+                        className={`px-4 py-2 text-white rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2 min-w-[120px]
+                            ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                     >
-                        <Save size={16} />
-                        {mode === 'edit' ? 'Update User' : 'Save User'}
+                        {isSubmitting ? (
+                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Saving...</>
+                        ) : (
+                            <><Save size={16} /> {mode === 'edit' ? 'Update User' : 'Save User'}</>
+                        )}
                     </button>
                 </div>
             </div>

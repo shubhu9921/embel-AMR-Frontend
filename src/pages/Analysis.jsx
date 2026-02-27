@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Label,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import { Zap, Flame, Droplet, Sun, Gauge, List, Filter, Activity, CheckCircle2, AlertCircle, XCircle, Thermometer } from 'lucide-react';
+import {
+  Zap, Flame, Droplet, Sun, Gauge, List, Filter, Activity,
+  CheckCircle2, AlertCircle, XCircle, Thermometer, Cpu,
+  Download, TrendingUp, ChevronRight
+} from 'lucide-react';
 import { MetersModal } from '../components/MetersModal';
 import { DeviceCard } from '../components/dashboard/DeviceCard';
 import { TimeFilter } from '../components/dashboard/TimeFilter';
 import { StatCard } from '../components/dashboard/StatCard';
-import { Cpu } from 'lucide-react';
+import { useFetchData } from '../hooks/useFetchData';
+import { apiService } from '../services/apiService';
+import OverallReportModal from '../components/modals/OverallReportModal';
+import ComparisonModal from '../components/modals/ComparisonModal';
 
 // Color system
 const COLORS = {
@@ -50,53 +57,93 @@ const mockDataYear = [
   { time: 'Oct', Energy: 9800, Gas: 5800, Water: 6800, Solar: 7800 },
 ];
 
-
-const mockDevices = [
-  { deviceId: 'D-001', deviceName: 'Main Pump', location: 'Basement', status: 'active', dailyConsumption: '120 kWh', currentFlow: '12.5', type: 'Water' },
-  { deviceId: 'D-002', deviceName: 'Solar Inverter', location: 'Roof', status: 'warning', dailyConsumption: '85 kWh', currentFlow: '8.2', type: 'Solar' },
-  { deviceId: 'D-003', deviceName: 'Meter A1', location: 'Floor 1', status: 'active', dailyConsumption: '45 kWh', currentFlow: '4.2', type: 'Energy' },
-  { deviceId: 'D-004', deviceName: 'Gas Sensor', location: 'Kitchen', status: 'inactive', dailyConsumption: '0 m³', currentFlow: '0.0', type: 'Gas' },
-];
-
-const systemParameters = [
-  { label: 'Grid Frequency', value: '50.02 Hz', status: 'normal', icon: Activity, color: 'emerald', theme: 'to-emerald-100/60' },
-  { label: 'Avg Power Factor', value: '0.96', status: 'normal', icon: Gauge, color: 'emerald', theme: 'to-emerald-100/60' },
-  { label: 'Water Pressure', value: '3.4 bar', status: 'normal', icon: Droplet, color: 'cyan', theme: 'to-cyan-100/60' },
-  { label: 'Gas Line PSI', value: '2.1 psi', status: 'normal', icon: Flame, color: 'orange', theme: 'to-orange-100/60' },
-];
-
-const analysisStatsMap = {
-  All: { total: 124, new: 12, active: 98, warnings: 21, offline: 5 },
-  Energy: { total: 45, new: 4, active: 38, warnings: 5, offline: 2 },
-  Gas: { total: 22, new: 2, active: 18, warnings: 4, offline: 0 },
-  Water: { total: 34, new: 3, active: 28, warnings: 5, offline: 1 },
-  Solar: { total: 23, new: 3, active: 14, warnings: 7, offline: 2 },
-};
+// Dynamic stats Map handled inside component
 
 export default function AnalysisPage() {
   const [activeTab, setActiveTab] = useState('All');
   const [timeRange, setTimeRange] = useState('week'); // 'day', 'week', 'month', 'year'
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+
+  const [devices, setDevices] = useState([]);
+  const [loadingDevices, setLoadingDevices] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const role = sessionStorage.getItem('userRole');
+        const name = sessionStorage.getItem('userName');
+        const isSystemAdmin = role === 'Super Admin' || role === 'Admin';
+        const userQuery = isSystemAdmin ? '' : `?user=${encodeURIComponent(name || '')}`;
+
+        const fetchedDevices = await apiService.getDevices(userQuery);
+
+        const mapped = fetchedDevices.map(d => {
+          const mType = d.meterType ? d.meterType.charAt(0).toUpperCase() + d.meterType.slice(1).toLowerCase() : 'Unknown';
+          const type = ['Water', 'Energy', 'Gas', 'Solar'].includes(mType) ? mType : 'Energy';
+          return {
+            deviceId: d.deviceId,
+            deviceName: d.deviceName || d.meterName || d.deviceId,
+            location: d.location || 'Unknown',
+            status: d.status || 'active',
+            dailyConsumption: d.dailyConsumption || `${d.reading || d.currentFlow || 0} ${type === 'Gas' ? 'm³' : type === 'Water' ? 'L' : 'kWh'}`,
+            currentFlow: d.currentFlow || d.reading || '0.0',
+            type: type,
+            rawConsumption: parseFloat(d.reading || d.currentFlow || 0)
+          };
+        });
+        setDevices(mapped);
+      } catch (err) {
+        console.error("Failed to load devices", err);
+      } finally {
+        setLoadingDevices(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const getStatsMap = (devicesList) => {
+    const baseObj = () => ({ total: 0, new: 0, active: 0, warnings: 0, offline: 0, consumption: 0 });
+    const stats = {
+      All: baseObj(),
+      Energy: baseObj(),
+      Gas: baseObj(),
+      Water: baseObj(),
+      Solar: baseObj(),
+    };
+
+    devicesList.forEach(d => {
+      if (!stats[d.type]) return;
+
+      stats.All.total++;
+      stats[d.type].total++;
+
+      const status = (d.status || 'active').toLowerCase();
+      if (status === 'active') { stats.All.active++; stats[d.type].active++; }
+      else if (status === 'warning') { stats.All.warnings++; stats[d.type].warnings++; }
+      else { stats.All.offline++; stats[d.type].offline++; }
+
+      stats.All.consumption += d.rawConsumption;
+      stats[d.type].consumption += d.rawConsumption;
+    });
+    return stats;
+  };
+
+  const dynamicStatsMap = getStatsMap(devices);
 
   // Filter data based on active tab
   const getFilteredData = () => {
-    return mockDevices.filter(d => activeTab === 'All' || d.type === activeTab);
+    return devices.filter(d => activeTab === 'All' || d.type === activeTab);
   };
   const filteredDevices = getFilteredData();
 
-  const getChartData = () => {
-    switch (timeRange) {
-      case 'day': return mockDataDay;
-      case 'week': return mockDataWeek;
-      case 'month': return mockDataMonth;
-      case 'year': return mockDataYear;
-      case 'all': return mockDataYear;
-      default: return mockDataWeek;
-    }
-  }
-  const chartData = getChartData();
+  const { data: fetchedChartData, isLoading } = useFetchData(
+    () => apiService.fetchChartData('bar', timeRange),
+    [timeRange] // Re-fetch when timeRange changes
+  );
 
-
+  const chartData = fetchedChartData || []; // Fallback to empty array while loading or if data is null
   const ThemeIcon = {
     All: Filter,
     Energy: Zap,
@@ -106,88 +153,129 @@ export default function AnalysisPage() {
   }[activeTab];
 
   return (
-    <div className="w-full flex flex-col gap-6 p-4 md:p-6 mb-20">
+    <main className="w-full min-h-screen p-4 md:p-6 font-sans pt-6 md:pt-8 flex flex-col gap-4">
 
       <MetersModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={`${activeTab} Devices Analysis`}
-        meters={mockDevices} // Passing all for demo, typically filtered
-        colorClass={`text-${COLORS[activeTab]?.text.split('-')[1]}-600`}
+        meters={filteredDevices}
+        hoverClass={{
+          All: 'group-hover:text-indigo-600',
+          Energy: 'group-hover:text-emerald-600',
+          Gas: 'group-hover:text-orange-600',
+          Water: 'group-hover:text-cyan-600',
+          Solar: 'group-hover:text-amber-600'
+        }[activeTab] || 'group-hover:text-gray-600'}
       />
 
-      {/* Header */}
-      <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-20 rounded-[20px] shadow-sm mb-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+      <div className="p-5 border-b border-gray-100 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mb-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${COLORS[activeTab].gradient} text-white shadow-lg transition-transform duration-300 group-hover:scale-105`}>
+            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${COLORS[activeTab]?.gradient || 'from-gray-100 to-gray-200'} text-white shadow-lg transition-transform duration-300 hover:scale-105`}>
               <ThemeIcon size={24} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                Resource Analysis
-              </h1>
-              <p className="text-sm font-medium text-gray-600">
-                Comparative insights & parameters
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Resource Analysis</h1>
+              <p className="text-sm font-medium text-gray-500">Real-time monitoring and analytics</p>
             </div>
           </div>
 
-          <div className="flex bg-gray-100/80 p-1.5 rounded-xl self-start md:self-auto overflow-x-auto max-w-full">
-            {['All', 'Energy', 'Gas', 'Water', 'Solar'].map(tab => (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            {/* Buttons Group */}
+            <div className="flex gap-2 shrink-0">
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`
-                  px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap
-                  ${activeTab === tab
-                    ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
-                    : `text-gray-600 hover:${COLORS[tab].text} hover:${COLORS[tab].light}`}
-                `}
+                onClick={() => setShowReportModal(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
               >
-                {tab}
+                <Download className="w-4 h-4" />
+                <span>Report</span>
               </button>
-            ))}
+
+              <button
+                onClick={() => setShowCompareModal(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all active:scale-95"
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Compare</span>
+              </button>
+            </div>
+
+            {/* Tabs Group */}
+            <div className="flex bg-gray-100 p-1 rounded-xl w-full sm:w-auto">
+              {['All', 'Energy', 'Gas', 'Water', 'Solar'].map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`
+                    flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap
+                    ${activeTab === tab
+                      ? 'bg-white text-indigo-600 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'}
+                  `}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      {showReportModal && (
+        <OverallReportModal
+          defaultSource={activeTab === 'All' ? 'Energy' : activeTab}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
+
+      {showCompareModal && (
+        <ComparisonModal
+          defaultSource={activeTab === 'All' ? 'Energy' : activeTab}
+          onClose={() => setShowCompareModal(false)}
+        />
+      )}
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard
           title="Total Devices"
-          value={analysisStatsMap[activeTab].total}
+          value={dynamicStatsMap[activeTab].total}
           icon={<Cpu className="w-4 h-4" />}
           color="indigo"
           description="Deployed meters & sensors"
-          subValue={`+${analysisStatsMap[activeTab].new} new installed`}
-          compact
+          subValue={`Assigned to you`}
+        />
+        <StatCard
+          title="Consumption"
+          value={`${dynamicStatsMap[activeTab].consumption.toFixed(1)}`}
+          icon={<Zap className="w-4 h-4" />}
+          color="blue"
+          description="Cumulative usage"
+          subValue={activeTab === 'All' ? 'Mixed units' : activeTab === 'Gas' ? 'm³' : activeTab === 'Water' ? 'L' : 'kWh'}
         />
         <StatCard
           title="Active"
-          value={analysisStatsMap[activeTab].active}
+          value={dynamicStatsMap[activeTab].active}
           icon={<Activity className="w-4 h-4" />}
           color="green"
           description="Running normally"
           subValue="Healthy connection"
-          compact
         />
         <StatCard
           title="Warnings"
-          value={analysisStatsMap[activeTab].warnings}
+          value={dynamicStatsMap[activeTab].warnings}
           icon={<AlertCircle className="w-4 h-4" />}
           color="amber"
           description="Requires attention"
           subValue="Potential Issues"
-          compact
         />
         <StatCard
           title="Offline"
-          value={analysisStatsMap[activeTab].offline}
+          value={dynamicStatsMap[activeTab].offline}
           icon={<XCircle className="w-4 h-4" />}
           color="red"
           description="Check connectivity"
           subValue="Unreachable units"
-          compact
         />
       </div>
 
@@ -201,7 +289,12 @@ export default function AnalysisPage() {
             <TimeFilter selected={timeRange} onChange={setTimeRange} showAll={false} />
           </div>
 
-          <div className="flex-1 min-h-[300px] w-full">
+          <div className="flex-1 min-h-[300px] w-full relative">
+            {isLoading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
+                <div className="w-8 h-8 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+              </div>
+            )}
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }} barSize={32}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -245,9 +338,9 @@ export default function AnalysisPage() {
               <PieChart>
                 <Pie
                   data={[
-                    { name: 'Active', value: 98, color: '#10b981' },
-                    { name: 'Warnings', value: 21, color: '#f59e0b' },
-                    { name: 'Offline', value: 5, color: '#ef4444' },
+                    { name: 'Active', value: dynamicStatsMap.All.active, color: '#10b981' },
+                    { name: 'Warnings', value: dynamicStatsMap.All.warnings, color: '#f59e0b' },
+                    { name: 'Offline', value: dynamicStatsMap.All.offline, color: '#ef4444' },
                   ]}
                   innerRadius={60}
                   outerRadius={80}
@@ -255,9 +348,9 @@ export default function AnalysisPage() {
                   dataKey="value"
                 >
                   {[
-                    { name: 'Active', value: 98, color: '#10b981' },
-                    { name: 'Warnings', value: 21, color: '#f59e0b' },
-                    { name: 'Offline', value: 5, color: '#ef4444' },
+                    { name: 'Active', value: dynamicStatsMap.All.active, color: '#10b981' },
+                    { name: 'Warnings', value: dynamicStatsMap.All.warnings, color: '#f59e0b' },
+                    { name: 'Offline', value: dynamicStatsMap.All.offline, color: '#ef4444' },
                   ].map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
                   ))}
@@ -269,7 +362,7 @@ export default function AnalysisPage() {
             {/* Center Text */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-8">
               <div className="text-center">
-                <span className="text-3xl font-bold text-gray-900 block">124</span>
+                <span className="text-3xl font-bold text-gray-900 block">{dynamicStatsMap.All.total}</span>
                 <span className="text-xs text-gray-600 font-medium uppercase">Total</span>
               </div>
             </div>
@@ -319,11 +412,16 @@ export default function AnalysisPage() {
             Live System Parameters
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {systemParameters.map((param, index) => (
-              <div key={index} className={`flex flex-col bg-gradient-to-br from-white ${param.theme} p-3 rounded-xl border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 hover:border-${param.color}-300 transition-all duration-300 cursor-pointer group`}>
+            {[
+              { label: 'Grid Frequency', value: '50.02 Hz', status: 'normal', icon: Activity, color: 'emerald', theme: 'to-emerald-100/60', hoverText: 'group-hover:text-emerald-600', hoverBorder: 'hover:border-emerald-300' },
+              { label: 'Avg Power Factor', value: '0.96', status: 'normal', icon: Gauge, color: 'emerald', theme: 'to-emerald-100/60', hoverText: 'group-hover:text-emerald-600', hoverBorder: 'hover:border-emerald-300' },
+              { label: 'Water Pressure', value: '3.4 bar', status: 'normal', icon: Droplet, color: 'cyan', theme: 'to-cyan-100/60', hoverText: 'group-hover:text-cyan-600', hoverBorder: 'hover:border-cyan-300' },
+              { label: 'Gas Line PSI', value: '2.1 psi', status: 'normal', icon: Flame, color: 'orange', theme: 'to-orange-100/60', hoverText: 'group-hover:text-orange-600', hoverBorder: 'hover:border-orange-300' },
+            ].map((param, index) => (
+              <div key={index} className={`flex flex-col bg-gradient-to-br from-white ${param.theme} p-3 rounded-xl border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 ${param.hoverBorder} transition-all duration-300 cursor-pointer group`}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`text-[10px] text-gray-600 font-bold uppercase tracking-wider group-hover:text-${param.color}-600 transition-colors`}>{param.label}</span>
-                  <param.icon className={`w-4 h-4 text-gray-400 group-hover:text-${param.color}-600 transition-colors`} />
+                  <span className={`text-[10px] text-gray-600 font-bold uppercase tracking-wider ${param.hoverText} transition-colors`}>{param.label}</span>
+                  <param.icon className={`w-4 h-4 text-gray-400 ${param.hoverText} transition-colors`} />
                 </div>
                 <span className="text-xl font-mono font-extrabold text-gray-900">{param.value}</span>
                 <div className="mt-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -336,7 +434,7 @@ export default function AnalysisPage() {
         </div>
       </div>
 
-    </div>
+    </main>
   );
 }
 

@@ -10,9 +10,9 @@ export default function Sidebar({
   onLogout
 }) {
   let menu;
-  if (userRole === "Admin" || userRole === "Super Admin") {
+  if (userRole === "Admin" || userRole === "Super Admin" || userRole === "Support Engineer") {
     menu = adminMenu;
-  } else if (userRole === "Domestic") {
+  } else if (userRole === "Domestic User") {
     menu = domesticMenu;
   } else {
     // Default to User/Industrial menu

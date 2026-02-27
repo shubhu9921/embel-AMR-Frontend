@@ -1,0 +1,393 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "firstName": "Super",
+      "lastName": "Admin",
+      "username": "superadmin",
+      "password": "superadmin",
+      "email": "[EMAIL_ADDRESS]",
+      "phone": "0000000000",
+      "role": "Super Admin",
+      "address": "AMR Headquarters, Pune",
+      "status": "Active",
+      "onlineStatus": "Online"
+    },
+    {
+      "id": 2,
+      "firstName": "Rajesh",
+      "lastName": "Kumar",
+      "username": "rajesh_ind",
+      "password": "password123",
+      "email": "[EMAIL_ADDRESS]",
+      "phone": "9876543210",
+      "role": "Industrial User",
+      "address": "Industrial Estate, Sector 12",
+      "status": "Active",
+      "onlineStatus": "Online"
+    },
+    {
+      "id": 3,
+      "firstName": "Sneha",
+      "lastName": "Patil",
+      "username": "sneha_dom",
+      "password": "password123",
+      "email": "[EMAIL_ADDRESS]",
+      "phone": "9988776655",
+      "role": "Domestic User",
+      "address": "Flat 402, Sunshine Apartments",
+      "status": "Active",
+      "onlineStatus": "Offline"
+    },
+    {
+      "id": 4,
+      "firstName": "System",
+      "lastName": "Manager",
+      "username": "admin1",
+      "password": "adminpassword",
+      "email": "[EMAIL_ADDRESS]",
+      "phone": "1234567890",
+      "role": "Admin",
+      "address": "Main Control Center",
+      "status": "Active",
+      "onlineStatus": "Online"
+    }
+  ],
+  "sites": [
+    {
+      "id": 1,
+      "name": "Main Plant",
+      "location": "Pune East",
+      "userId": 2
+    },
+    {
+      "id": 2,
+      "name": "Warehouse B",
+      "location": "Pune West",
+      "userId": 2
+    },
+    {
+      "id": 3,
+      "name": "Residential Block A",
+      "location": "Hadapsar",
+      "userId": 3
+    },
+    {
+      "id": 4,
+      "name": "Admin Building",
+      "location": "Pimpri",
+      "userId": 4
+    }
+  ],
+  "devices": [
+    {
+      "id": 1,
+      "name": "Primary Water Gateway",
+      "type": "Gateway",
+      "status": "Active",
+      "location": "Main Plant",
+      "userId": 2,
+      "lastActive": "2026-02-27T12:00:00"
+    },
+    {
+      "id": 2,
+      "name": "Solar Array Controller",
+      "type": "Inverter",
+      "status": "Active",
+      "location": "Roof Top - Plant",
+      "userId": 2,
+      "lastActive": "2026-02-27T11:45:00"
+    },
+    {
+      "id": 3,
+      "name": "Smart Home Hub",
+      "type": "Gateway",
+      "status": "Inactive",
+      "location": "Residential Block A",
+      "userId": 3,
+      "lastActive": "2026-02-26T09:00:00"
+    }
+  ],
+  "meters": [
+    {
+      "id": 1,
+      "meterId": "WM-IND-001",
+      "name": "Main Inlet Water",
+      "sourceType": "water",
+      "meterLocation": "Main Plant",
+      "application": "Industrial",
+      "meterEnable": true,
+      "status": "Active",
+      "reading": "45230 L",
+      "dailyConsumption": "1200 L",
+      "userId": 2,
+      "building": "Main Plant",
+      "area": "Production",
+      "zone": "Zone A"
+    },
+    {
+      "id": 2,
+      "meterId": "EM-IND-001",
+      "name": "Main Panel Energy",
+      "sourceType": "energy",
+      "meterLocation": "Main Plant",
+      "application": "Industrial",
+      "meterEnable": true,
+      "status": "Active",
+      "reading": "15670 kWh",
+      "dailyConsumption": "450 kWh",
+      "userId": 2,
+      "building": "Main Plant",
+      "area": "Electrical Room",
+      "zone": "Zone B"
+    },
+    {
+      "id": 3,
+      "meterId": "GM-IND-001",
+      "name": "Boiler Gas Meter",
+      "sourceType": "gas",
+      "meterLocation": "Warehouse B",
+      "application": "Industrial",
+      "meterEnable": true,
+      "status": "Active",
+      "reading": "8900 m³",
+      "dailyConsumption": "85 m³",
+      "userId": 2,
+      "building": "Warehouse B",
+      "area": "Boiler Room",
+      "zone": "Zone A"
+    },
+    {
+      "id": 4,
+      "meterId": "SM-IND-001",
+      "name": "Roof Solar Generation",
+      "sourceType": "solar",
+      "meterLocation": "Main Plant Roof",
+      "application": "Industrial",
+      "meterEnable": true,
+      "status": "Active",
+      "reading": "12450 kWh",
+      "dailyConsumption": "180 kWh",
+      "userId": 2,
+      "building": "Main Plant",
+      "area": "Solar Array",
+      "zone": "Top"
+    },
+    {
+      "id": 5,
+      "meterId": "WM-DOM-001",
+      "name": "Inlet Flat 402",
+      "sourceType": "water",
+      "meterLocation": "Sunshine Apartments",
+      "application": "Domestic",
+      "meterEnable": true,
+      "status": "Active",
+      "reading": "5200 L",
+      "dailyConsumption": "250 L",
+      "userId": 3,
+      "building": "Sunshine Apartments",
+      "area": "Flat 402",
+      "zone": "Floor 4"
+    },
+    {
+      "id": 6,
+      "meterId": "EM-DOM-001",
+      "name": "Energy Flat 402",
+      "sourceType": "energy",
+      "meterLocation": "Sunshine Apartments",
+      "application": "Domestic",
+      "meterEnable": true,
+      "status": "Active",
+      "reading": "890 kWh",
+      "dailyConsumption": "12 kWh",
+      "userId": 3,
+      "building": "Sunshine Apartments",
+      "area": "Flat 402",
+      "zone": "Floor 4"
+    }
+  ],
+  "consumption": [
+    {
+      "id": 1,
+      "meterId": 1,
+      "date": "2026-02-27",
+      "value": 1200,
+      "unit": "L"
+    },
+    {
+      "id": 2,
+      "meterId": 1,
+      "date": "2026-02-26",
+      "value": 1150,
+      "unit": "L"
+    },
+    {
+      "id": 3,
+      "meterId": 1,
+      "date": "2026-02-25",
+      "value": 1300,
+      "unit": "L"
+    },
+    {
+      "id": 4,
+      "meterId": 2,
+      "date": "2026-02-27",
+      "value": 450,
+      "unit": "kWh"
+    },
+    {
+      "id": 5,
+      "meterId": 2,
+      "date": "2026-02-26",
+      "value": 440,
+      "unit": "kWh"
+    },
+    {
+      "id": 6,
+      "meterId": 3,
+      "date": "2026-02-27",
+      "value": 85,
+      "unit": "m³"
+    },
+    {
+      "id": 7,
+      "meterId": 4,
+      "date": "2026-02-27",
+      "value": 180,
+      "unit": "kWh"
+    },
+    {
+      "id": 8,
+      "meterId": 5,
+      "date": "2026-02-27",
+      "value": 250,
+      "unit": "L"
+    },
+    {
+      "id": 9,
+      "meterId": 6,
+      "date": "2026-02-27",
+      "value": 12,
+      "unit": "kWh"
+    }
+  ],
+  "tickets": [
+    {
+      "id": "TCK-101",
+      "userName": "Rajesh Kumar",
+      "source": "Water",
+      "device": "WM-IND-001",
+      "description": "High pressure detected at main inlet valve.",
+      "status": "Processing",
+      "priority": "High",
+      "date": "2026-02-26",
+      "userId": 2
+    },
+    {
+      "id": "TCK-102",
+      "userName": "Sneha Patil",
+      "source": "Energy",
+      "device": "EM-DOM-001",
+      "description": "Smart meter display is flickering.",
+      "status": "Pending",
+      "priority": "Medium",
+      "date": "2026-02-27",
+      "userId": 3
+    }
+  ],
+  "alerts": [
+    {
+      "id": 1,
+      "source": "Energy",
+      "severity": "High",
+      "message": "Voltage fluctuation detected in Building A.",
+      "status": "Active",
+      "date": "2026-02-27",
+      "userId": 2
+    },
+    {
+      "id": 2,
+      "source": "Solar",
+      "severity": "Low",
+      "message": "Routine maintenance due for solar panels.",
+      "status": "Scheduled",
+      "date": "2026-03-01",
+      "userId": 2
+    }
+  ],
+  "reports": [
+    {
+      "id": 1,
+      "name": "Feb 2026 Water Analysis",
+      "type": "Monthly",
+      "source": "Water",
+      "generatedBy": "Rajesh Kumar",
+      "date": "2026-02-25",
+      "status": "Ready",
+      "size": "2.4 MB",
+      "userId": 2
+    },
+    {
+      "id": 2,
+      "name": "Sunshine Apts Utility Report",
+      "type": "Consolidated",
+      "source": "All",
+      "generatedBy": "Sneha Patil",
+      "date": "2026-02-27",
+      "status": "Processing",
+      "size": "-",
+      "userId": 3
+    }
+  ],
+  "invoices": [
+    {
+      "id": "INV-FEB-001",
+      "customer": "Rajesh Kumar",
+      "amount": "₹45,000",
+      "status": "Paid",
+      "paymentMethod": "Bank Transfer",
+      "paidDate": "2026-02-15",
+      "date": "2026-02-28",
+      "resourceType": "ENERGY",
+      "userId": 2
+    },
+    {
+      "id": "INV-FEB-002",
+      "customer": "Rajesh Kumar",
+      "amount": "₹12,400",
+      "status": "Pending",
+      "date": "2026-03-05",
+      "resourceType": "WATER",
+      "userId": 2
+    },
+    {
+      "id": "INV-FEB-003",
+      "customer": "Sneha Patil",
+      "amount": "₹1,200",
+      "status": "Paid",
+      "paymentMethod": "UPI",
+      "paidDate": "2026-02-20",
+      "date": "2026-02-25",
+      "resourceType": "WATER",
+      "userId": 3
+    }
+  ],
+  "notifications": [
+    {
+      "id": 1,
+      "type": "Alert",
+      "message": "Energy consumption exceeded peak threshold.",
+      "read": false,
+      "time": "2026-02-27T10:30:00",
+      "userId": 2
+    },
+    {
+      "id": 2,
+      "type": "Billing",
+      "message": "Your Water bill for Feb is now generated.",
+      "read": true,
+      "time": "2026-02-25T09:00:00",
+      "userId": 3
+    }
+  ]
+}

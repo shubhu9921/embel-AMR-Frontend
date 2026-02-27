@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, AlertCircle, CheckCircle, Info, Search, Bell, Eye, ChevronRight } from 'lucide-react';
+import { AlertTriangle, AlertCircle, CheckCircle, Info, Search, Bell, Eye, ChevronRight, User } from 'lucide-react';
 import AlertIssueDetailsModal from '../modals/AlertIssueDetailsModal';
 
 const alertConfig = {
@@ -98,24 +98,24 @@ export function AlertsPanel({ alerts = [], userRole = 'Admin', setActivePage, is
         </div>
 
         {/* Counts / Tabs */}
-        <div className={`grid ${isExpanded ? 'grid-cols-5' : 'grid-cols-3'} gap-1.5`}>
+        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           <button
-            onClick={() => { setActiveFilter('all'); setIsExpanded(true); }}
-            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center ${activeFilter === 'all' && isExpanded ? 'bg-slate-900 text-white border-slate-900 shadow-sm' : 'bg-gray-50 text-slate-600 border-gray-100 hover:bg-gray-100'
+            onClick={() => setActiveFilter('all')}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center min-w-[60px] flex-1 sm:flex-none ${activeFilter === 'all' ? 'bg-slate-900 text-white border-slate-900 shadow-sm' : 'bg-gray-50 text-slate-600 border-gray-200 hover:bg-gray-100'
               }`}
           >
             All ({counts.all})
           </button>
           <button
-            onClick={() => { setActiveFilter('critical'); setIsExpanded(true); }}
-            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center ${activeFilter === 'critical' && isExpanded ? 'bg-red-500 text-white border-red-500 shadow-sm' : 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
+            onClick={() => setActiveFilter('critical')}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center min-w-[70px] flex-1 sm:flex-none ${activeFilter === 'critical' ? 'bg-red-500 text-white border-red-500 shadow-sm' : 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
               }`}
           >
             Critical ({counts.critical})
           </button>
           <button
-            onClick={() => { setActiveFilter('warning'); setIsExpanded(true); }}
-            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center ${activeFilter === 'warning' && isExpanded ? 'bg-amber-500 text-white border-amber-500 shadow-sm' : 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100'
+            onClick={() => setActiveFilter('warning')}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center min-w-[75px] flex-1 sm:flex-none ${activeFilter === 'warning' ? 'bg-amber-500 text-white border-amber-500 shadow-sm' : 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100'
               }`}
           >
             Warning ({counts.warning})
@@ -123,15 +123,15 @@ export function AlertsPanel({ alerts = [], userRole = 'Admin', setActivePage, is
           {isExpanded && (
             <>
               <button
-                onClick={() => { setActiveFilter('info'); setIsExpanded(true); }}
-                className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center ${activeFilter === 'info' && isExpanded ? 'bg-blue-500 text-white border-blue-500 shadow-sm' : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100'
+                onClick={() => setActiveFilter('info')}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center min-w-[60px] flex-1 sm:flex-none ${activeFilter === 'info' ? 'bg-blue-500 text-white border-blue-500 shadow-sm' : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100'
                   }`}
               >
                 Info ({counts.info})
               </button>
               <button
-                onClick={() => { setActiveFilter('success'); setIsExpanded(true); }}
-                className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center ${activeFilter === 'success' && isExpanded ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm' : 'bg-green-50 text-emerald-600 border-green-100 hover:bg-green-100'
+                onClick={() => setActiveFilter('success')}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all text-center min-w-[75px] flex-1 sm:flex-none ${activeFilter === 'success' ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm' : 'bg-green-50 text-emerald-600 border-green-100 hover:bg-green-100'
                   }`}
               >
                 Success ({counts.success})
@@ -165,13 +165,25 @@ export function AlertsPanel({ alerts = [], userRole = 'Admin', setActivePage, is
                       <div className={`shrink-0 w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center`}>
                         <Icon size={16} className={config.color} />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-gray-900 text-xs truncate uppercase tracking-tight">
-                          {alert.name || alert.title}
-                        </h4>
-                        <p className="text-[10px] text-gray-500 font-medium truncate">
+                      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <h4 className="font-black text-gray-900 text-[11px] truncate uppercase tracking-tight">
+                            {alert.name || alert.title}
+                          </h4>
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-bold mb-1">
                           {alert.location || 'Site Hub'} • {alert.timestamp || alert.time || alert.date}
                         </p>
+
+                        {userRole === 'Admin' && alert.user && (
+                          <div className="flex items-center gap-1.5 mt-1 pt-1.5 border-t border-gray-50">
+                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">Raised By:</span>
+                            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-orange-50 text-orange-600 rounded-md border border-orange-100/50">
+                              <User size={8} className="shrink-0" />
+                              <span className="text-[9px] font-black truncate max-w-[100px]">{alert.user}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => setSelectedAlert(alert)}
@@ -204,6 +216,7 @@ export function AlertsPanel({ alerts = [], userRole = 'Admin', setActivePage, is
                   <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Source</th>
                   <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Device</th>
                   <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Location</th>
+                  <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Raised By</th>
                   <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Date/Time</th>
                   <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Severity</th>
                   <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Status</th>
@@ -231,6 +244,14 @@ export function AlertsPanel({ alerts = [], userRole = 'Admin', setActivePage, is
                         <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-[10px] font-black tracking-widest">{alert.device || 'DEV-001'}</span>
                       </td>
                       <td className="px-5 py-4 text-[10px] font-medium text-gray-600">{alert.location || 'Warehouse A'}</td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                            <User size={10} />
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-700">{alert.user || 'System'}</span>
+                        </div>
+                      </td>
                       <td className="px-5 py-4 text-[10px] font-medium text-gray-600 whitespace-nowrap">{alert.timestamp || alert.time || alert.date}</td>
                       <td className="px-5 py-4">
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${config.bg} ${config.color} border border-current/20`}>

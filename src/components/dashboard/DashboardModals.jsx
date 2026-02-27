@@ -2,7 +2,7 @@ import React from 'react';
 import { X, Cpu, Gauge, MapPin, Eye, AlertTriangle, Users, CheckCircle, Activity, Filter } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { LocationDetailsModal } from "../modals/LocationDetailsModal";
-import { sites, userDataDetailed } from "../../data/mockData";
+import { sites } from "../../data/mockData";
 import { getStatusBgColor } from "../../utils/resourceUtils";
 
 export const DashboardModals = ({
@@ -17,9 +17,42 @@ export const DashboardModals = ({
     userFilters,
     setUserFilters,
     inactiveCounts,
-    setActivePage
+    setActivePage,
+    userDevicesList = [],
+    userMetersList = []
 }) => {
     const { map, location, userDevices, userMeters, userLocations, deviceDetails, meterDetails, issues } = modalState;
+
+    // Derive locations from real assigned data
+    const derivedLocations = React.useMemo(() => {
+        const locMap = new Map();
+
+        userDevicesList.forEach(d => {
+            const locName = d.location || 'Unknown';
+            if (!locMap.has(locName)) {
+                locMap.set(locName, { id: locName, name: locName, devices: [], meters: [] });
+            }
+            locMap.get(locName).devices.push({
+                name: d.deviceName || d.name,
+                source: d.meterType || d.source,
+                status: d.status
+            });
+        });
+
+        userMetersList.forEach(m => {
+            const locName = m.location || 'Unknown';
+            if (!locMap.has(locName)) {
+                locMap.set(locName, { id: locName, name: locName, devices: [], meters: [] });
+            }
+            locMap.get(locName).meters.push({
+                name: m.deviceName || m.name,
+                reading: m.reading,
+                status: m.status
+            });
+        });
+
+        return Array.from(locMap.values());
+    }, [userDevicesList, userMetersList]);
 
     return (
         <>
@@ -217,15 +250,15 @@ export const DashboardModals = ({
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm font-bold divide-y divide-gray-50">
-                                    {userDataDetailed.devices
+                                    {userDevicesList
                                         .filter(d => userFilters.device === 'All' || d.status === userFilters.device)
                                         .map((device, i) => (
                                             <tr key={i} className="group transition-all hover:bg-gray-50/80">
-                                                <td className="py-5 px-4 font-black text-gray-900">{device.name}</td>
+                                                <td className="py-5 px-4 font-black text-gray-900">{device.deviceName || device.name}</td>
                                                 <td className="py-5 px-4">
-                                                    <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-600">{device.source}</span>
+                                                    <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-600">{device.meterType || device.source}</span>
                                                 </td>
-                                                <td className="py-5 px-4 text-gray-500 font-medium">{device.params}</td>
+                                                <td className="py-5 px-4 text-gray-500 font-medium">{device.parameters || device.params}</td>
                                                 <td className="py-5 px-4">
                                                     <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getStatusBgColor(device.status)}`}>
                                                         {device.status}
@@ -289,13 +322,13 @@ export const DashboardModals = ({
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm font-bold divide-y divide-gray-50">
-                                    {userDataDetailed.meters
+                                    {userMetersList
                                         .filter(m => userFilters.meter === 'All' || m.status === userFilters.meter)
                                         .map((meter, i) => (
                                             <tr key={i} className="group transition-all hover:bg-gray-50/80">
-                                                <td className="py-5 px-4 font-black text-gray-900">{meter.name}</td>
+                                                <td className="py-5 px-4 font-black text-gray-900">{meter.deviceName || meter.name}</td>
                                                 <td className="py-5 px-4">
-                                                    <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-600">{meter.source}</span>
+                                                    <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-600">{meter.meterType || meter.source}</span>
                                                 </td>
                                                 <td className="py-5 px-4 text-gray-900 font-mono text-base">{meter.reading}</td>
                                                 <td className="py-5 px-4">
@@ -335,7 +368,7 @@ export const DashboardModals = ({
                         </div>
                         <div className="flex flex-1 overflow-hidden">
                             <div className="w-1/3 border-r border-gray-100 overflow-y-auto bg-gray-50/30">
-                                {userDataDetailed.locations.map((loc) => (
+                                {derivedLocations.map((loc) => (
                                     <button
                                         key={loc.id}
                                         onClick={() => setSelectedLocation(loc)}

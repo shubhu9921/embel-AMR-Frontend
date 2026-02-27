@@ -1,38 +1,42 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { initialTickets, TICKET_STATUS, TICKET_PRIORITY } from '../data/supportData';
-import { industrialIssues, domesticIssues, industrialAlerts, domesticAlerts } from '../data/mockData';
+import { TICKET_STATUS, TICKET_PRIORITY } from '../data/supportData';
+import { useFetchData } from '../hooks/useFetchData';
+import { apiService } from '../services/apiService';
 
 const SupportContext = createContext();
 
 export function SupportProvider({ children }) {
-    // Initialize state combining all sources
-    const [tickets, setTickets] = useState(() => {
-        const combinedInitial = (initialTickets || []).map(t => ({
-            ...t,
-            id: t.id || t.ticketId || `TKT-${Math.random().toString(36).substring(7)}`,
-            username: t.username || t.userName || 'admin1',
-            type: (t.type || t.category || 'issue').toLowerCase()
-        }));
+    const [tickets, setTickets] = useState([]);
 
-        const indIssues = (industrialIssues || []).map(t => ({
-            ...t,
-            id: t.id || t.ticketId || `TKT-${Math.random().toString(36).substring(7)}`,
-            username: t.username || 'industrial1',
-            type: 'issue',
-            role: 'Industrial'
-        }));
+    const { data: fetchedTickets, isLoading } = useFetchData(apiService.fetchTickets, []);
 
-        const domIssues = (domesticIssues || []).map(t => ({
-            ...t,
-            id: t.id || t.ticketId || `TKT-${Math.random().toString(36).substring(7)}`,
-            username: t.username || 'domestic1',
-            type: 'issue',
-            role: 'Domestic'
-        }));
+    // Effect to process and set tickets initially when fetch completes
+    useEffect(() => {
+        if (fetchedTickets) {
+            const processedTickets = fetchedTickets.map((t, index) => {
+                // Ensure ID and basic structure
+                const uniqueKey = t.id || t.ticketId || `${t.name}-${t.date}-${index}`;
+                const id = t.id || t.ticketId || `TKT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+                const type = (t.type || t.category || 'issue').toLowerCase();
+                let username = t.username || t.userName;
+                let role = t.role || 'Industrial';
 
-        const all = [...combinedInitial, ...indIssues, ...domIssues];
-        return Array.from(new Map(all.map(item => [item.id || item.ticketId, item])).values());
-    });
+                // Fallback username logic matching old context
+                if (!username) {
+                    if (t.location && t.location.includes('Wing A')) username = 'industrial1';
+                    else if (t.location && t.location.includes('Building')) username = 'domestic1';
+                    else username = 'admin1';
+                }
+
+                return { ...t, id, type, username, role, _dedupKey: uniqueKey };
+            });
+
+            // Deduplicate based on uniqueKey
+            const uniqueTickets = Array.from(new Map(processedTickets.map(item => [item._dedupKey, item])).values());
+            uniqueTickets.forEach(t => delete t._dedupKey);
+            setTickets(uniqueTickets);
+        }
+    }, [fetchedTickets]);
 
     // Mirror tickets in a ref for the debug bridge. Updated synchronously for correct useEffect timing.
     const ticketsRef = useRef(tickets);
@@ -50,28 +54,52 @@ export function SupportProvider({ children }) {
         const issues = userTickets.filter(t => t.type === 'issue');
         const alerts = userTickets.filter(t => t.type === 'alert');
 
+        const getSourceBreakdown = (list) => {
+            const sources = ['Water', 'Energy', 'Gas', 'Solar'];
+            return sources.reduce((acc, source) => {
+                acc[source.toLowerCase()] = list.filter(t => (t.source || t.issueType || '').toLowerCase() === source.toLowerCase()).length;
+                return acc;
+            }, {});
+        };
+
+        const getStatusBreakdown = (list) => {
+            const sources = ['Water', 'Energy', 'Gas', 'Solar'];
+            return sources.map(source => ({
+                label: source,
+                value: list.filter(t => (t.source || t.issueType || '').toLowerCase() === source.toLowerCase()).length,
+                color: source === 'Water' ? 'text-blue-600' : source === 'Energy' ? 'text-amber-600' : source === 'Gas' ? 'text-purple-600' : 'text-orange-600'
+            }));
+        };
+
         return {
             overall: {
                 total: userTickets.length,
                 pending: userTickets.filter(t => t.status === TICKET_STATUS.PENDING).length,
                 assigned: userTickets.filter(t => t.status === TICKET_STATUS.ASSIGNED || t.status === TICKET_STATUS.IN_PROGRESS).length,
                 resolved: userTickets.filter(t => t.status === TICKET_STATUS.RESOLVED).length,
+                sourceCounts: getSourceBreakdown(userTickets),
+                statusBreakdown: getStatusBreakdown(userTickets)
             },
             issues: {
                 total: issues.length,
                 open: issues.filter(t => t.status === TICKET_STATUS.PENDING).length,
                 assigned: issues.filter(t => t.status === TICKET_STATUS.ASSIGNED || t.status === TICKET_STATUS.IN_PROGRESS).length,
                 closed: issues.filter(t => t.status === TICKET_STATUS.RESOLVED).length,
+                sourceCounts: getSourceBreakdown(issues),
+                statusBreakdown: getStatusBreakdown(issues)
             },
             alerts: {
                 total: alerts.length,
                 open: alerts.filter(t => t.status === TICKET_STATUS.PENDING).length,
                 assigned: alerts.filter(t => t.status === TICKET_STATUS.ASSIGNED || t.status === TICKET_STATUS.IN_PROGRESS).length,
                 closed: alerts.filter(t => t.status === TICKET_STATUS.RESOLVED).length,
+                sourceCounts: getSourceBreakdown(alerts),
+                statusBreakdown: getStatusBreakdown(alerts)
             },
             // Legacy/Compatibility
             totalAlerts: alerts.length,
-            totalIssues: issues.length
+            totalIssues: issues.length,
+            tickets: userTickets
         };
     }, [tickets]);
 
@@ -83,39 +111,44 @@ export function SupportProvider({ children }) {
     };
 
     // Robust Ticket Operations
-    const assignEngineer = (ticketId, engineerName) => {
-        setTickets(prev => prev.map(t =>
-            (t.id === ticketId || t.ticketId === ticketId)
-                ? {
-                    ...t,
-                    engineer: engineerName,
-                    assignedEngineer: engineerName,
-                    status: (t.status === TICKET_STATUS.RESOLVED ? t.status : TICKET_STATUS.ASSIGNED),
-                    assignedDate: new Date().toISOString().split('T')[0]
-                }
-                : t
-        ));
+    const assignEngineer = async (ticketId, engineerName) => {
+        try {
+            const updated = await apiService.updateTicket(ticketId, {
+                engineer: engineerName,
+                assignedEngineer: engineerName,
+                status: TICKET_STATUS.ASSIGNED, // Always set to assigned when choosing engineer
+                assignedDate: new Date().toISOString().split('T')[0]
+            });
+            setTickets(prev => prev.map(t => (t.id === ticketId || t.ticketId === ticketId) ? { ...t, ...updated } : t));
+        } catch (err) {
+            console.error("Failed to assign engineer persistence:", err);
+        }
     };
 
-    const updateTicket = (ticketId, updatedData) => {
-        setTickets(prev => prev.map(t =>
-            (t.id === ticketId || t.ticketId === ticketId)
-                ? { ...t, ...updatedData, type: (updatedData.type || t.type).toLowerCase(), updatedAt: new Date().toISOString() }
-                : t
-        ));
+    const updateTicket = async (ticketId, updatedData) => {
+        try {
+            const updated = await apiService.updateTicket(ticketId, {
+                ...updatedData,
+                type: (updatedData.type || 'issue').toLowerCase(),
+                updatedAt: new Date().toISOString()
+            });
+            setTickets(prev => prev.map(t => (t.id === ticketId || t.ticketId === ticketId) ? { ...t, ...updated } : t));
+        } catch (err) {
+            console.error("Failed to update ticket persistence:", err);
+        }
     };
 
-    const addTicket = (newTicket) => {
+    const addTicket = async (newTicket) => {
         const validation = validateTicket(newTicket);
         if (!validation.valid) {
             console.error('Ticket Validation Failed:', validation.error);
-            return null; // Reject invalid tickets gracefully
+            return null;
         }
 
-        const ticket = {
+        const payload = {
             ...newTicket,
             id: newTicket.id || `TKT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-            username: newTicket.username || 'domestic1',
+            username: newTicket.username || sessionStorage.getItem('userName') || 'domestic1',
             type: (newTicket.type || 'issue').toLowerCase(),
             createdAt: new Date().toISOString(),
             date: new Date().toISOString().split('T')[0],
@@ -123,20 +156,36 @@ export function SupportProvider({ children }) {
             priority: newTicket.priority || TICKET_PRIORITY.MEDIUM,
             engineer: null
         };
-        setTickets(prev => [ticket, ...prev]);
-        return ticket;
+
+        try {
+            const savedTicket = await apiService.createTicket(payload);
+            setTickets(prev => [savedTicket, ...prev]);
+            return savedTicket;
+        } catch (err) {
+            console.error("Failed to persist new ticket:", err);
+            return null;
+        }
     };
 
-    const deleteTicket = (ticketId) => {
-        setTickets(prev => prev.filter(t => t.id !== ticketId && t.ticketId !== ticketId));
+    const deleteTicket = async (ticketId) => {
+        try {
+            await apiService.deleteTicket(ticketId);
+            setTickets(prev => prev.filter(t => t.id !== ticketId && t.ticketId !== ticketId));
+        } catch (err) {
+            console.error("Failed to delete ticket persistence:", err);
+        }
     };
 
-    const resolveTicket = (ticketId) => {
-        setTickets(prev => prev.map(t =>
-            (t.id === ticketId || t.ticketId === ticketId)
-                ? { ...t, status: TICKET_STATUS.RESOLVED, resolvedAt: new Date().toISOString() }
-                : t
-        ));
+    const resolveTicket = async (ticketId) => {
+        try {
+            const updated = await apiService.updateTicket(ticketId, {
+                status: TICKET_STATUS.RESOLVED,
+                resolvedAt: new Date().toISOString()
+            });
+            setTickets(prev => prev.map(t => (t.id === ticketId || t.ticketId === ticketId) ? { ...t, ...updated } : t));
+        } catch (err) {
+            console.error("Failed to resolve ticket persistence:", err);
+        }
     };
 
     // Debug Bridge & Mock Fetch (QA Enhancement)
@@ -206,6 +255,7 @@ export function SupportProvider({ children }) {
     return (
         <SupportContext.Provider value={{
             tickets,
+            isLoading,
             addTicket,
             updateTicket,
             deleteTicket,

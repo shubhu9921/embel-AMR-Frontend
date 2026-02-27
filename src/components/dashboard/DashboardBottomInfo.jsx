@@ -6,9 +6,15 @@ export function DashboardBottomInfo({
     billingStats,
     colorConfig,
     reportsStats,
+    reports,
     setActivePage
 }) {
     if (!isAdmin) return null;
+
+    // Use top 3 actual reports or back up
+    const recentReports = reports && reports.length > 0
+        ? reports.slice(0, 3)
+        : [];
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -44,22 +50,28 @@ export function DashboardBottomInfo({
                     <button onClick={() => setActivePage('Reports')} className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">View All</button>
                 </div>
                 <div className="grid gap-3">
-                    {[
-                        { title: 'Monthly Data', meta: 'Dec 2024 • 2.4 MB', status: 'Ready' },
-                        { title: 'Solar Analysis', meta: 'Annual 2024 • 5.2 MB', status: 'Ready' },
-                        { title: 'Device Health', meta: 'Jan 2025 • Calculating...', status: 'Processing' },
-                    ].map((rep, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 cursor-pointer" onClick={() => setActivePage('Reports')}>
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg"><FileText size={18} /></div>
-                                <div>
-                                    <p className="text-sm font-bold text-gray-800">{rep.title}</p>
-                                    <p className="text-[10px] text-gray-500 font-medium">{rep.meta}</p>
+                    {recentReports.length > 0 ? (
+                        recentReports.map((rep, i) => (
+                            <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 cursor-pointer" onClick={() => setActivePage('Reports')}>
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 text-blue-600 rounded-lg"><FileText size={18} /></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-800">{rep.reportName}</p>
+                                        <p className="text-[10px] text-gray-500 font-medium">
+                                            {typeof rep.reportDate === "string" ? rep.reportDate : "Recent"} &bull; {rep.size || "1.2 MB"}
+                                        </p>
+                                    </div>
                                 </div>
+                                <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${rep.status === 'Ready' || rep.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                    {rep.status || 'Ready'}
+                                </span>
                             </div>
-                            <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${rep.status === 'Ready' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{rep.status}</span>
+                        ))
+                    ) : (
+                        <div className="text-center p-6 text-gray-400 font-medium text-sm border border-dashed rounded-xl">
+                            No recent reports generated.
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
 

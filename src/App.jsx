@@ -2,6 +2,8 @@ import React, { useState, Suspense, lazy } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
+import { apiService } from "./services/apiService";
+
 // Lazy Load Pages
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Users = lazy(() => import("./pages/Users"));
@@ -9,6 +11,7 @@ const GasPage = lazy(() => import("./pages/Gas"));
 const WaterPage = lazy(() => import("./pages/Water"));
 const EnergyPage = lazy(() => import("./pages/Energy"));
 const SolarPage = lazy(() => import('./pages/Solar'));
+const LocationsPage = lazy(() => import("./pages/Locations"));
 const AnalysisPage = lazy(() => import("./pages/Analysis"));
 const AlertsPage = lazy(() => import("./pages/Alerts"));
 const DevicesPage = lazy(() => import("./pages/Devices"));
@@ -67,10 +70,27 @@ export default function App() {
     sessionStorage.setItem('activePage', "Dashboard");
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const userId = sessionStorage.getItem('userId');
+    if (userId) {
+      try {
+        const currentUser = await apiService.getUserById(userId);
+        if (currentUser) {
+          await apiService.updateUser(userId, { ...currentUser, onlineStatus: 'Offline' });
+        }
+      } catch (err) {
+        console.error("Failed to set user offline during logout", err);
+      }
+    }
+
     sessionStorage.removeItem('isAuthenticated');
     sessionStorage.removeItem('userRole');
     sessionStorage.removeItem('activePage');
+    sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('userName');
+    sessionStorage.removeItem('loginName');
+    sessionStorage.removeItem('userEmail');
+
     setIsAuthenticated(false);
     setUserRole('Admin'); // Reset to default
     setActivePage("Dashboard");
@@ -115,6 +135,7 @@ export default function App() {
             {activePage === 'Water' && <WaterPage setActivePage={setActivePage} />}
             {activePage === 'Energy' && <EnergyPage setActivePage={setActivePage} />}
             {activePage === 'Solar' && <SolarPage setActivePage={setActivePage} />}
+            {activePage === 'Locations' && <LocationsPage />}
             {activePage === 'Devices' && <DevicesPage />}
             {activePage === "Alerts" && <AlertsPage setActivePage={setActivePage} />}
             {activePage === "Analysis" && <AnalysisPage />}
@@ -124,7 +145,7 @@ export default function App() {
             {activePage === "My Usage" && <MyUsagePage />}
             {activePage === "Payloads" && <PayloadsPage />}
             {activePage === "Issues" && <IssuesPage setActivePage={setActivePage} />}
-            {activePage === "Support" && (userRole === 'Admin' ? <SupportManagementPage /> : <SupportTicketsPage setActivePage={setActivePage} />)}
+            {activePage === "Support" && (userRole === 'Admin' || userRole === 'Support Engineer' ? <SupportManagementPage /> : <SupportTicketsPage setActivePage={setActivePage} />)}
           </Suspense>
         </main>
       </div>

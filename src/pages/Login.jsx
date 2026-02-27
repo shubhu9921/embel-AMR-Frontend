@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
+import { apiService } from '../services/apiService';
 
 export default function LoginPage({ onLogin }) {
     const [email, setEmail] = useState('');
@@ -8,31 +9,36 @@ export default function LoginPage({ onLogin }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
-        // Mock authentication
-        setTimeout(() => {
-            // Demo Credentials Logic
-            if (email === 'superadmin' && password === 'superadmin') {
+        try {
+            const users = await apiService.getUsers();
+            const user = users.find(u => (u.email === email || u.username === email) && u.password === password);
+
+            if (user) {
+                // Update online status in db.json
+                await apiService.updateUser(user.id, { ...user, onlineStatus: 'Online' });
+
                 sessionStorage.setItem('isAuthenticated', 'true');
-                sessionStorage.setItem('userRole', 'Admin');
-                onLogin('Admin');
-            } else if (email === 'user1' && password === 'user1') {
-                sessionStorage.setItem('isAuthenticated', 'true');
-                sessionStorage.setItem('userRole', 'Industrial');
-                onLogin('Industrial');
-            } else if (email === 'user2' && password === 'user2') {
-                sessionStorage.setItem('isAuthenticated', 'true');
-                sessionStorage.setItem('userRole', 'Domestic');
-                onLogin('Domestic');
+                sessionStorage.setItem('userRole', user.role);
+                sessionStorage.setItem('userId', user.id);
+                sessionStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
+                sessionStorage.setItem('loginName', user.username);
+                sessionStorage.setItem('userEmail', user.email);
+
+                onLogin(user.role);
             } else {
-                setError('Invalid credentials. Try superadmin/superadmin, user1/user1 (Industrial), or user2/user2 (Domestic)');
-                setLoading(false);
+                setError('Invalid Credentials');
             }
-        }, 800);
+        } catch (err) {
+            console.error("Login Error:", err);
+            setError('Server Not Running');
+        } finally {
+            setLoading(false);
+        }
     };
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#002D5E] to-[#112240] p-4">

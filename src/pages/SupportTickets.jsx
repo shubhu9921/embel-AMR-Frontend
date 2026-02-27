@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { MessageSquare, Plus, Search, Filter, AlertCircle, Clock, CheckCircle } from 'lucide-react';
+import { MessageSquare, Plus, Search, Filter, AlertCircle, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import { useSupport } from '../context/SupportContext';
 import SupportModal from '../components/modals/SupportModal';
+import { SupportTicketsBreakdownCard } from '../components/dashboard/SupportTicketsBreakdownCard';
 
 export default function SupportTickets({ setActivePage = () => { } }) {
-    const { tickets, deleteTicket, TICKET_STATUS } = useSupport();
+    const { tickets, isLoading, deleteTicket, TICKET_STATUS } = useSupport();
     const userRole = sessionStorage.getItem('userRole') || 'Industrial';
 
     const currentUser = sessionStorage.getItem('userName') || userRole;
@@ -45,10 +46,16 @@ export default function SupportTickets({ setActivePage = () => { } }) {
             (ticket.date || '').toLowerCase().includes(searchLower);
 
         return matchesStatus && matchesSearch;
-    });
+    }).sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+
+    // Calculate KPIs
+    const totalTickets = allTickets.length;
+    const pendingTickets = allTickets.filter(t => t.status === 'Pending').length;
+    const resolvedTickets = allTickets.filter(t => t.status === 'Resolved').length;
+    const processingTickets = allTickets.filter(t => t.status === 'Processing' || t.status === 'Assigned').length;
 
     return (
-        <main className="w-full h-full flex flex-col gap-6 px-4 md:px-6 py-6 font-sans overflow-y-auto">
+        <main className="w-full min-h-screen p-4 md:p-6 font-sans flex flex-col gap-6 lg:overflow-visible pt-6 md:pt-8">
             {showSupportModal && (
                 <SupportModal
                     onClose={() => {
@@ -65,7 +72,7 @@ export default function SupportTickets({ setActivePage = () => { } }) {
             )}
 
             {/* Header */}
-            <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mb-2">
+            <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mb-4">
                 <div className="flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg">
                         <MessageSquare size={24} />
@@ -121,6 +128,11 @@ export default function SupportTickets({ setActivePage = () => { } }) {
                 </div>
             </div>
 
+            {/* KPI Cards Section */}
+            <div className="mb-6 w-full">
+                <SupportTicketsBreakdownCard tickets={filteredTickets} />
+            </div>
+
             {/* Single Table Section */}
             <div className="bg-white rounded-[32px] shadow-xl border border-gray-100 overflow-hidden min-h-[400px]">
                 <div className="overflow-x-auto">
@@ -140,7 +152,19 @@ export default function SupportTickets({ setActivePage = () => { } }) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {filteredTickets.length > 0 ? filteredTickets.map(ticket => (
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan="10" className="p-0">
+                                        <div className="px-6 py-20 text-center flex flex-col items-center">
+                                            <div className="w-16 h-16 bg-gray-50 text-indigo-500 rounded-full flex items-center justify-center mb-4">
+                                                <Loader2 size={32} className="animate-spin" />
+                                            </div>
+                                            <h4 className="text-lg font-bold text-gray-900">Loading Tickets...</h4>
+                                            <p className="text-sm text-gray-500">Please wait while we fetch your support requests.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : filteredTickets.length > 0 ? filteredTickets.map(ticket => (
                                 <tr key={ticket.id} className="hover:bg-indigo-50/20 transition-colors group">
                                     <td className="px-6 py-4 font-black text-xs text-gray-500 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{ticket.id}</td>
                                     <td className="px-6 py-4">

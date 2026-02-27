@@ -195,17 +195,17 @@ export default function MyUsage() {
     };
 
     return (
-        <main className="w-full flex flex-col gap-6 min-h-screen mb-20 px-4 md:px-6 py-6 font-sans">
+        <main className="w-full flex flex-col gap-6 min-h-screen mb-20 px-4 md:px-6 py-6 font-sans pt-6 md:pt-8">
             <div className="max-w-[1500px] xl:mx-auto w-full flex flex-col gap-6 lg:gap-8">
                 {/* Header */}
-                <header className="p-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white/70 backdrop-blur-xl sticky top-0 lg:top-6 z-30 rounded-3xl shadow-sm lg:shadow-xl shadow-gray-200/50 border border-white/50">
+                <header className="p-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white/70 backdrop-blur-xl sticky top-0 z-30 rounded-3xl shadow-sm lg:shadow-xl shadow-gray-200/50 border border-white/50 mb-4">
                     <div className="flex items-center gap-4 flex-shrink-0">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
                             <Activity size={24} />
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Usage</h1>
-                            <p className="text-sm font-medium text-gray-500">Track and compare your consumption patterns</p>
+                            <p className="text-sm font-medium text-gray-500">Real-time monitoring and analytics</p>
                         </div>
                     </div>
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Search, Filter } from 'lucide-react';
 
-export function MetersModal({ isOpen, onClose, title, meters, colorClass = "text-blue-600" }) {
+export function MetersModal({ isOpen, onClose, title, meters, hoverClass = "group-hover:text-blue-600" }) {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
 
@@ -28,6 +28,7 @@ export function MetersModal({ isOpen, onClose, title, meters, colorClass = "text
                     <button
                         onClick={onClose}
                         className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                        aria-label="Close Modal"
                     >
                         <X size={24} />
                     </button>
@@ -77,9 +78,9 @@ export function MetersModal({ isOpen, onClose, title, meters, colorClass = "text
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredMeters.length > 0 ? (
-                                    filteredMeters.map((meter, idx) => (
-                                        <tr key={idx} className="hover:bg-slate-50/80 transition-colors group cursor-default">
-                                            <td className={`px-6 py-4 text-sm font-medium text-gray-900 group-hover:${colorClass.replace("text-", "text-")} transition-colors`}>
+                                    filteredMeters.map((meter) => (
+                                        <tr key={meter.id || meter.deviceId} className="hover:bg-slate-50/80 transition-colors group cursor-default">
+                                            <td className={`px-6 py-4 text-sm font-medium text-gray-900 ${hoverClass} transition-colors`}>
                                                 {meter.deviceId || meter.id}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">{meter.deviceName || meter.name}</td>

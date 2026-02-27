@@ -33,12 +33,14 @@ export function DeviceCard({
   dailyConsumption,
   compact = false,
   color = 'white',
+  onClick,
 }) {
   const isOnline = status === 'active';
   const normStatus = status?.toLowerCase() || 'inactive';
 
   return (
     <div
+      onClick={onClick}
       className={`
         group relative rounded-2xl border
         ${bgGradients[color] || 'bg-white border-gray-100'}

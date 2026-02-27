@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Flame, IndianRupee, Gauge, Wind, Thermometer, Activity, Filter, Settings, ShieldCheck, Battery, TestTube } from 'lucide-react';
 import ResourceDashboard from './ResourceDashboard';
+import OverallReportModal from '../components/modals/OverallReportModal';
+import { formatCurrency } from '../utils/formatters';
+import { apiService } from '../services/apiService';
 
 /* -------------------- MOCK DATA -------------------- */
 const gasDataWeek = [
@@ -21,12 +24,7 @@ const gasDataYear = [
   { time: 'Oct', usage: 600 }, { time: 'Nov', usage: 950 }, { time: 'Dec', usage: 1150 },
 ];
 
-const breakdownData = [
-  { name: 'Kitchen', value: 45, color: '#f97316' },
-  { name: 'Heating', value: 30, color: '#fb923c' },
-  { name: 'Boiler', value: 15, color: '#fdba74' },
-  { name: 'Other', value: 10, color: '#fed7aa' },
-];
+// Dynamic breakdown handles this now
 
 const commonParameters = [
   { label: 'Gas Pressure', value: '2.8 bar', icon: Gauge },
@@ -49,51 +47,156 @@ const alerts = [
   { id: 3, type: 'warning', title: 'Minor Leak Check', message: 'Scheduled for Zone B tomorrow.', timestamp: '5h ago' },
 ];
 
-const allGasMeters = [
-  { deviceId: 'GAS-001', deviceName: 'Main Meter', location: 'Basement', status: 'active', dailyConsumption: '45 m³', currentFlow: '2.1' },
-  { deviceId: 'GAS-002', deviceName: 'Kitchen Meter', location: 'Kitchen', status: 'active', dailyConsumption: '12 m³', currentFlow: '0.5' },
-  { deviceId: 'GAS-003', deviceName: 'Boiler Room', location: 'Boiler', status: 'active', dailyConsumption: '22 m³', currentFlow: '1.2' },
-  { deviceId: 'GAS-004', deviceName: 'Backup Line', location: 'Exterior', status: 'warning', dailyConsumption: '0 m³', currentFlow: '0.0' },
-  { deviceId: 'GAS-005', deviceName: 'Annex A', location: 'Wing A', status: 'active', dailyConsumption: '15 m³', currentFlow: '0.8' },
-  { deviceId: 'GAS-006', deviceName: 'Annex B', location: 'Wing B', status: 'inactive', dailyConsumption: '0 m³', currentFlow: '0.0' },
-  { deviceId: 'GAS-007', deviceName: 'Lab 1', location: 'Wing C', status: 'active', dailyConsumption: '8 m³', currentFlow: '0.4' },
-  { deviceId: 'GAS-008', deviceName: 'Lab 2', location: 'Wing C', status: 'active', dailyConsumption: '9 m³', currentFlow: '0.4' },
-];
+// Redundant mock data removed
+
+
+import { useData } from '../context/DataContext';
 
 export default function GasPage({ setActivePage }) {
-  const chartData = {
-    day: gasDataDay,
-    week: gasDataWeek,
-    month: gasDataMonth,
-    year: gasDataYear
+  const { devices, meters, users, isLoading } = useData();
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  const userRole = sessionStorage.getItem('userRole');
+  const isAdmin = userRole === 'Admin' || userRole === 'Super Admin' || userRole === 'Support Engineer';
+
+  const gasMeters = React.useMemo(() => {
+    const combined = [...devices, ...meters];
+    return combined.filter(d => d.meterType?.toLowerCase() === 'gas');
+  }, [devices, meters]);
+
+  const getAggregationByRole = (resourceMeters) => {
+    const aggregation = {
+      Industrial: { total: 0, count: 0 },
+      Domestic: { total: 0, count: 0 },
+      Others: { total: 0, count: 0 }
+    };
+
+    resourceMeters.forEach(m => {
+      const app = m.application?.toLowerCase();
+      const role = app === 'industrial' ? 'Industrial' : (app === 'domestic' ? 'Domestic' : 'Others');
+      const readingValue = parseFloat(m.reading || m.currentFlow || 0);
+      aggregation[role].total += isNaN(readingValue) ? 0 : readingValue;
+      aggregation[role].count += 1;
+    });
+
+    return [
+      { label: 'Industrial', value: aggregation.Industrial.total.toFixed(1) + ' m³', color: 'text-orange-500' },
+      { label: 'Domestic', value: aggregation.Domestic.total.toFixed(1) + ' m³', color: 'text-amber-500' },
+      { label: 'Others', value: aggregation.Others.total.toFixed(1) + ' m³', color: 'text-slate-400' }
+    ];
   };
 
+  const roleBreakdown = getAggregationByRole(gasMeters);
+  const totalConsumption = gasMeters.reduce((acc, m) => {
+    const val = parseFloat(m.reading || m.currentFlow || 0);
+    return acc + (isNaN(val) ? 0 : val);
+  }, 0);
+
+  const breakdownColors = ['#f97316', '#fb923c', '#fdba74', '#fed7aa', '#ea580c', '#c2410c'];
+  const dynamicBreakdownData = gasMeters.map((m, idx) => {
+    const val = parseFloat(m.reading || m.currentFlow || 0);
+    return {
+      name: m.deviceName || m.deviceId,
+      value: isNaN(val) ? 0 : val,
+      color: breakdownColors[idx % breakdownColors.length]
+    };
+  }).filter(d => d.value > 0);
+
+  const scaleData = (mockArray, total) => {
+    const mockTotal = mockArray.reduce((acc, curr) => acc + curr.usage, 0) || 1;
+    const factor = total / mockTotal;
+    return mockArray.map(d => ({ ...d, usage: parseFloat((d.usage * factor).toFixed(1)) }));
+  };
+
+  const chartData = {
+    day: scaleData(gasDataDay, totalConsumption / 30),
+    week: scaleData(gasDataWeek, totalConsumption / 4),
+    month: scaleData(gasDataMonth, totalConsumption),
+    year: scaleData(gasDataYear, totalConsumption * 12)
+  };
+
+  const activeGas = gasMeters.filter(m => m.status === 'Active').length;
+  const inactiveGas = gasMeters.length - activeGas;
+
   const kpiData = [
-    { title: "Total Consumption", value: "450 m³", icon: <Flame className="w-4 h-4" />, trend: 5.4, color: "orange", description: "Monthly cumulative usage" },
-    { title: "Est. Cost", value: "₹ 2,450", icon: <IndianRupee className="w-4 h-4" />, trend: 2.1, color: "blue", description: "Projected billing cycle cost" },
-    { title: "Avg Daily", value: "15 m³", icon: <Activity className="w-4 h-4" />, color: "emerald", description: "Daily average consumption" },
-    { title: "Peak Demand", value: "2.5 m³/h", icon: <Gauge className="w-4 h-4" />, subValue: "18:45", color: "red", description: "Highest recorded flow rate" },
-    { title: "Pressure", value: "Normal", icon: <Wind className="w-4 h-4" />, subValue: "2.1 psi", color: "purple", description: "System pressure status" },
+    {
+      title: "Total Consumption",
+      value: `${totalConsumption.toFixed(1)} m³`,
+      icon: <Flame className="w-4 h-4" />,
+      trend: 5.4,
+      color: "orange",
+      description: "Monthly cumulative usage",
+      statusBreakdown: isAdmin ? roleBreakdown : null
+    },
+    {
+      title: "Est. Cost",
+      value: formatCurrency(totalConsumption * 32.50),
+      icon: <IndianRupee className="w-4 h-4" />,
+      trend: 2.1,
+      color: "blue",
+      description: "Projected billing cycle cost",
+      statusBreakdown: isAdmin ? roleBreakdown.map(r => ({ ...r, value: formatCurrency(parseFloat(r.value.split(' ')[0]) * 32.50) })) : null
+    },
+    {
+      title: "Avg Daily",
+      value: `${(totalConsumption / 30).toFixed(1)} m³`,
+      icon: <Activity className="w-4 h-4" />,
+      color: "emerald",
+      description: "Daily average consumption",
+      statusBreakdown: isAdmin ? roleBreakdown.map(r => ({ ...r, value: (parseFloat(r.value.split(' ')[0]) / 30).toFixed(1) + ' m³' })) : null
+    },
+    {
+      title: "Device Count",
+      value: gasMeters.length.toString(),
+      icon: <Gauge className="w-4 h-4" />,
+      color: "red",
+      description: "Assigned devices",
+      statusBreakdown: [
+        { label: 'Active', value: activeGas, color: 'text-green-500' },
+        { label: 'Inactive', value: inactiveGas, color: 'text-red-500' }
+      ]
+    },
   ];
 
+  const enrichedAlerts = alerts.map(alert => {
+    const device = gasMeters.find(m => m.deviceId === alert.device) || gasMeters[0];
+    return {
+      ...alert,
+      user: device?.user || device?.customerName || 'Ops Manager',
+      source: 'Gas'
+    };
+  });
+
   return (
-    <ResourceDashboard
-      title="Gas Dashboard"
-      icon={<Flame size={24} />}
-      colorTheme="orange"
-      kpiData={kpiData}
-      chartData={chartData}
-      breakdownData={breakdownData}
-      alerts={alerts}
-      meters={allGasMeters}
-      systemParams={commonParameters}
-      meterModalTitle="Gas Meters List"
-      flowUnit="m³/h"
-      withGreeting={true}
-      greetingTitle="Gas Usage"
-      greetingSubtitle="Real-time monitoring and analytics"
-      onDownloadReport={() => alert("Report download started...")}
-      onPayBill={() => setActivePage && setActivePage('Billing')}
-    />
+    <>
+      <ResourceDashboard
+        title="Gas Dashboard"
+        icon={<Flame size={24} />}
+        colorTheme="orange"
+        kpiData={kpiData}
+        chartData={chartData}
+        breakdownData={dynamicBreakdownData.length > 0 ? dynamicBreakdownData : [{ name: 'No Data', value: 1, color: '#e2e8f0' }]}
+        alerts={enrichedAlerts}
+        meters={gasMeters}
+        systemParams={commonParameters}
+        meterModalTitle="Gas Meters List"
+        flowUnit="m³/h"
+        withGreeting={true}
+        greetingTitle="Gas Usage"
+        greetingSubtitle="Real-time monitoring and analytics"
+        onDownloadReport={() => setShowReportModal(true)}
+        onPayBill={() => setActivePage && setActivePage('Billing')}
+        isAdmin={isAdmin}
+        users={users}
+        resourceType="Gas"
+      />
+
+      {showReportModal && (
+        <OverallReportModal
+          defaultSource="Gas"
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
+    </>
   );
 }

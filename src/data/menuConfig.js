@@ -13,7 +13,8 @@ import {
     HelpCircle,
     Settings,
     Flame,
-    TrendingUp
+    TrendingUp,
+    MapPin
 } from "lucide-react";
 
 export const adminMenu = [
@@ -22,6 +23,7 @@ export const adminMenu = [
     { name: "Energy", icon: Zap },
     { name: "Solar", icon: Sun },
     { name: "Gas", icon: Flame },
+    { name: "Locations", icon: MapPin },
     { name: "Devices", icon: Cpu },
     { name: "Users", icon: Users },
     { name: "Reports", icon: FileText },
@@ -39,6 +41,8 @@ export const userMenu = [
     { name: "Water", icon: Droplet },
     { name: "Energy", icon: Zap },
     { name: "Solar", icon: Sun },
+    { name: "Locations", icon: MapPin },
+    { name: "Billing", icon: CreditCard },
     { name: "Analysis", icon: TrendingUp },
     { name: "Alerts", icon: Bell },
     { name: "Issues", icon: AlertCircle },

@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, Bell, Settings, Sun, Droplet, Flame, Zap, X, Check, LogOut, User } from "lucide-react";
-import { initialDevicesData, initialUsers, sites, PAGES_DATA, PARAMS_DATA } from "../data/mockData";
+import { Search, Bell, Settings, Sun, Droplet, Flame, Zap, X, Check, LogOut, User, FileText, ClipboardList } from "lucide-react";
+import { PAGES_DATA, PARAMS_DATA } from "../data/mockData";
+import { useData } from "../context/DataContext";
 
 export default function Header({ activePage, setActivePage, onLogout, userRole }) {
+  const { devices, meters, reports, users: allUsers, tickets } = useData();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -41,32 +43,43 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
 
     if (query.trim().length > 0) {
       const lowerQuery = query.toLowerCase();
-      // Since allSearchData was removed from state in the previous revert, we need to declare the dataset
-      let pages = PAGES_DATA.map(p => ({ ...p, category: 'Pages' }));
-      let devices = initialDevicesData.map(d => ({
-        id: `dev-${d.id}`,
-        type: 'Device',
-        category: 'Devices',
-        label: d.name,
-        value: d.deviceId,
-        status: d.status,
-        target: 'Devices'
-      }));
+      const currentUserId = sessionStorage.getItem('userId');
+      const isAdmin = userRole === 'Admin' || userRole === 'Super Admin' || userRole === 'Support Engineer';
 
-      if (userRole === 'Domestic') {
-        const currentUserName = sessionStorage.getItem('userName');
-        const currentUserEmail = sessionStorage.getItem('userEmail');
-        const allowedPages = ['Dashboard', 'My Usage', 'Billing', 'Alerts', 'Settings'];
-        pages = pages.filter(p => allowedPages.includes(p.label));
-
-        if (!currentUserName && !currentUserEmail) {
-          devices = devices.filter(d => d.assignedUser === 'John Doe' || d.userEmail === 'john@amr.com');
-        } else {
-          devices = devices.filter(d => (currentUserName && d.assignedUser === currentUserName) || (currentUserEmail && d.userEmail === currentUserEmail));
-        }
+      // 1. Pages Filtering (Standard role-based)
+      let filteredPages = PAGES_DATA.map(p => ({ ...p, category: 'Pages' }));
+      if (userRole === 'Domestic User') {
+        const allowedPages = ['Dashboard', 'My Usage', 'Billing', 'Alerts', 'Settings', 'Issues'];
+        filteredPages = filteredPages.filter(p => allowedPages.includes(p.target));
+      } else if (userRole === 'Industrial User') {
+        const allowedPages = ['Dashboard', 'Water', 'Energy', 'Gas', 'Solar', 'Analysis', 'Alerts', 'Reports', 'Settings', 'Issues'];
+        filteredPages = filteredPages.filter(p => allowedPages.includes(p.target));
       }
 
-      const users = initialUsers.map(u => ({
+      // 2. Assets (Devices & Meters) - Automatically filtered by DataContext for non-admins
+      const allAssets = [...devices, ...meters].map(a => ({
+        id: `asset-${a.id}-${a.recordType}`,
+        type: a.recordType === 'meter' ? 'Meter' : 'Device',
+        category: 'Assets',
+        label: a.name || a.deviceName || a.meterName,
+        value: a.deviceId || a.meterId,
+        status: a.status,
+        target: a.recordType === 'meter' ? (a.meterType || 'Water') : 'Devices'
+      }));
+
+      // 3. Reports - Automatically filtered by DataContext
+      const filteredReports = reports.map(r => ({
+        id: `rep-${r.id}`,
+        type: 'Report',
+        category: 'Reports',
+        label: r.reportName || r.name,
+        value: r.date || r.createdAt,
+        status: 'Generated',
+        target: 'Reports'
+      }));
+
+      // 4. Users (Admin only)
+      const filteredUsers = (isAdmin ? allUsers : []).map(u => ({
         id: `usr-${u.id}`,
         type: 'User',
         category: 'Users',
@@ -76,30 +89,29 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
         target: 'Users'
       }));
 
-      const locations = sites.map(s => ({
-        id: `loc-${s.id}`,
-        type: 'Location',
-        category: 'Locations',
-        label: s.name,
-        value: 'Site',
-        status: s.status,
-        target: 'Dashboard'
+      // 5. Tickets (Admin or associated ones)
+      const filteredTickets = tickets.map(t => ({
+        id: `tkt-${t.id}`,
+        type: 'Ticket',
+        category: 'Tickets',
+        label: t.title || t.name || t.subject,
+        value: t.status,
+        status: t.priority || 'Normal',
+        target: isAdmin ? 'Support' : 'Issues'
       }));
 
-      const params = PARAMS_DATA.map(p => ({ ...p, category: 'Parameters' }));
-
       const allData = [
-        ...pages,
-        ...devices,
-        ...(userRole === 'Admin' || userRole === 'Super Admin' ? users : []),
-        ...(userRole === 'Admin' || userRole === 'Super Admin' ? locations : []),
-        ...(userRole === 'Admin' || userRole === 'Super Admin' ? params : [])
+        ...filteredPages,
+        ...allAssets,
+        ...filteredReports,
+        ...filteredUsers,
+        ...filteredTickets
       ];
 
       const filtered = allData.filter(item =>
-        item.label.toLowerCase().includes(lowerQuery) ||
-        (item.value && item.value.toLowerCase().includes(lowerQuery)) ||
-        item.type.toLowerCase().includes(lowerQuery)
+        (item.label && item.label.toLowerCase().includes(lowerQuery)) ||
+        (item.value && item.value.toString().toLowerCase().includes(lowerQuery)) ||
+        (item.type && item.type.toLowerCase().includes(lowerQuery))
       );
       setSearchResults(filtered);
       setShowSearchDropdown(filtered.length > 0);
@@ -139,6 +151,9 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
     setShowNotifications(false);
   };
 
+  const loginName = sessionStorage.getItem('loginName') || sessionStorage.getItem('userName') || 'User';
+  const userEmail = sessionStorage.getItem('userEmail') || 'user@example.com';
+  const userInitials = loginName.substring(0, 2).toUpperCase();
 
   return (
     <header className="h-16 bg-white/50 backdrop-blur-xl flex items-center px-4 sm:px-6 sticky top-0 z-50 justify-between transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
@@ -152,7 +167,7 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
           <input
             value={searchQuery}
             onChange={handleSearch}
-            placeholder="Search (Pages, Devices, Users)..."
+            placeholder="Search (Pages, Assets, Users)..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-300 placeholder:text-slate-400 shadow-md shadow-orange-100 hover:shadow-orange-200 hover:border-orange-300 hover:bg-white"
             onFocus={() => { if (searchResults.length > 0) setShowSearchDropdown(true); }}
           />
@@ -164,12 +179,20 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
                 {searchResults.length === 0 ? (
                   <div className="p-4 text-center text-sm font-medium text-gray-500">No results found</div>
                 ) : (
-                  ['Pages', 'Devices', 'Users', 'Locations', 'Parameters'].map(category => {
+                  ['Pages', 'Assets', 'Reports', 'Users', 'Tickets'].map(category => {
                     const items = searchResults.filter(r => r.category === category);
                     if (items.length === 0) return null;
+                    const CategoryIcon = category === 'Pages' ? ClipboardList :
+                      category === 'Assets' ? Zap :
+                        category === 'Reports' ? FileText :
+                          category === 'Users' ? User :
+                            category === 'Tickets' ? Bell : ClipboardList;
                     return (
                       <div key={category} className="mb-2 last:mb-0">
-                        <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1">{category}</div>
+                        <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1 flex items-center gap-2">
+                          <CategoryIcon size={12} />
+                          {category}
+                        </div>
                         {items.map(item => (
                           <button
                             key={item.id}
@@ -209,7 +232,7 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
       </div>
 
       {/* Center: Resource shortcuts (Desktop only) */}
-      {userRole !== 'Domestic' && (
+      {userRole !== 'Domestic User' && (
         <div className="hidden md:flex flex-wrap items-center gap-2 max-w-full">
           <Resource
             icon={Droplet}
@@ -320,12 +343,12 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
           >
             <div className="hidden lg:block text-right">
               <p className="text-sm font-semibold text-slate-700 leading-none group-hover:text-orange-600 transition">
-                {userRole === 'Domestic' ? 'Home Owner' : 'Admin User'}
+                {loginName}
               </p>
               <p className="text-[11px] text-slate-500 mt-0.5 group-hover:text-slate-700">{userRole}</p>
             </div>
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-blue-500/20 group-hover:shadow-lg group-hover:scale-105 transition-all duration-300">
-              {userRole === 'Domestic' ? 'HO' : 'AU'}
+              {userInitials}
             </div>
           </button>
 
@@ -336,11 +359,11 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                 <div className="relative z-10 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-lg font-bold border-2 border-white/20">
-                    {userRole === 'Domestic' ? 'HO' : 'AU'}
+                    {userInitials}
                   </div>
                   <div>
-                    <p className="font-bold text-lg">{userRole === 'Domestic' ? 'Home Owner' : 'Admin User'}</p>
-                    <p className="text-xs text-slate-300">{userRole === 'Domestic' ? 'user@home.com' : 'admin@embel.io'}</p>
+                    <p className="font-bold text-lg">{loginName}</p>
+                    <p className="text-xs text-slate-300">{userEmail}</p>
                   </div>
                 </div>
               </div>
@@ -392,12 +415,20 @@ export default function Header({ activePage, setActivePage, onLogout, userRole }
             {showSearchDropdown && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-[300px] overflow-y-auto custom-scrollbar z-50">
                 <div className="p-2">
-                  {['Pages', 'Devices', 'Users', 'Locations', 'Parameters'].map(category => {
+                  {['Pages', 'Assets', 'Reports', 'Users', 'Tickets'].map(category => {
                     const items = searchResults.filter(r => r.category === category);
                     if (items.length === 0) return null;
+                    const CategoryIcon = category === 'Pages' ? ClipboardList :
+                      category === 'Assets' ? Zap :
+                        category === 'Reports' ? FileText :
+                          category === 'Users' ? User :
+                            category === 'Tickets' ? Bell : ClipboardList;
                     return (
                       <div key={category} className="mb-2 last:mb-0">
-                        <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1">{category}</div>
+                        <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50 rounded-lg mb-1 flex items-center gap-2">
+                          <CategoryIcon size={12} />
+                          {category}
+                        </div>
                         {items.map(item => (
                           <button
                             key={item.id}
