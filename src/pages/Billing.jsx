@@ -40,7 +40,14 @@ export default function BillingPage({ userRole = 'Admin' }) {
                 const queryStr = isSystemAdmin ? '' : `?customer=${encodeURIComponent(name || '')}`;
 
                 const data = await apiService.getInvoices(queryStr);
-                setInvoicesData(data);
+
+                // Add category if missing for mockup consistency
+                const enrichedData = data.map(inv => ({
+                    ...inv,
+                    category: inv.category || (inv.customer?.toLowerCase().includes('industrial') ? 'Industrial' : 'Domestic')
+                }));
+
+                setInvoicesData(enrichedData);
             } catch (error) {
                 console.error("Failed to fetch invoices:", error);
             } finally {
@@ -53,6 +60,9 @@ export default function BillingPage({ userRole = 'Admin' }) {
     // Filter invoices based on role
     const displayInvoices = React.useMemo(() => invoicesData, [invoicesData]);
 
+    const currentUserRole = sessionStorage.getItem('userRole') || '';
+    const isSpecializedUser = currentUserRole === 'Industrial' || currentUserRole === 'Domestic';
+
     const {
         searchTerm, setSearchTerm,
         filters, setFilters,
@@ -62,7 +72,12 @@ export default function BillingPage({ userRole = 'Admin' }) {
         handlePrevPage, handleNextPage,
     } = useTable(displayInvoices, {
         searchFields: ['customer', 'id'],
-        initialFilters: { status: 'All', type: 'All', resourceType: 'All' },
+        initialFilters: {
+            status: 'All',
+            type: 'All',
+            resourceType: 'All',
+            category: isSpecializedUser ? currentUserRole : 'All'
+        },
         pageSize: 5
     });
 
@@ -92,7 +107,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
         return `${config.bg} ${config.text} border ${config.border}`;
     };
 
-    // Calculate totals based on displayed invoices
+    // Calculate totals based on FULL invoices (respecting category filter)
     const sumAmounts = (list) => list?.reduce((acc, curr) => acc + (parseFloat(curr?.amount?.replace(/[^0-9.-]+/g, '')) || 0), 0) || 0;
     const totalBilling = formatCurrency(sumAmounts(displayInvoices));
     const totalPaid = formatCurrency(sumAmounts(displayInvoices.filter(i => i.status === 'Paid')));
@@ -105,7 +120,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
         const colors = { ELECTRIC: 'text-amber-600', WATER: 'text-blue-600', GAS: 'text-purple-600', SOLAR: 'text-orange-600' };
 
         return resources.map(res => {
-            const val = sumAmounts(list.filter(i => i.resourceType === res));
+            const val = sumAmounts(list.filter(i => i.resourceType?.toUpperCase() === res.toUpperCase()));
             const label = res === 'ELECTRIC' ? 'Energy' : res.charAt(0) + res.slice(1).toLowerCase();
             return { label, value: formatCurrency(val), color: colors[res] };
         });
@@ -139,6 +154,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
                         color="orange"
                         description="Cumulative invoiced amount"
                         statusBreakdown={totalBreakdown}
+                        onClick={() => setFilters(prev => ({ ...prev, status: 'All', type: 'All', resourceType: 'All' }))}
                     />
                     <StatCard
                         title="Paid Amount"
@@ -147,6 +163,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
                         color="green"
                         description="Total collected revenue"
                         statusBreakdown={paidBreakdown}
+                        onClick={() => setFilters('status', 'Paid')}
                     />
                     <StatCard
                         title="Pending"
@@ -155,6 +172,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
                         color="amber"
                         description="Awaiting payment"
                         statusBreakdown={pendingBreakdown}
+                        onClick={() => setFilters('status', 'Pending')}
                     />
                     <StatCard
                         title="Overdue"
@@ -163,6 +181,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
                         color="red"
                         description="Payment deadline crossed"
                         statusBreakdown={overdueBreakdown}
+                        onClick={() => setFilters('status', 'Overdue')}
                     />
                 </div>
 
@@ -170,7 +189,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
                     <div className="p-5 border-b border-gray-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-[84px] z-20 rounded-t-2xl shadow-md">
                         <div className="relative w-full md:w-80 group">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
-                            <input type="text" placeholder="Search invoices..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none shadow-md shadow-orange-100 transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                            <input type="text" placeholder="Search invoices..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none shadow-md shadow-orange-100" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3" ref={dropdownRef}>
@@ -199,6 +218,24 @@ export default function BillingPage({ userRole = 'Admin' }) {
                                     <div className="absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm">
                                         {['All', 'SOLAR', 'WATER', 'ELECTRIC', 'GAS'].map(opt => (
                                             <button key={opt} onClick={() => { setFilters('resourceType', opt); setOpenDropdown(null); }} className={`w-full text-left px-4 py-2.5 font-medium hover:bg-orange-50 ${filters.resourceType === opt ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'}`}>{opt === 'All' ? 'All Meters' : opt}</button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Category Filter */}
+                            <div className="relative min-w-[140px]">
+                                <button onClick={() => setOpenDropdown(openDropdown === 'category' ? null : 'category')} className={`w-full flex items-center justify-between pl-4 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-bold text-gray-700 transition-all ${openDropdown === 'category' ? 'border-[#ff6e00] ring-2 ring-[#ff6e00]/20' : 'border-gray-200'}`}>
+                                    <span className="truncate">{filters.category === 'All' ? 'All Categories' : filters.category}</span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${openDropdown === 'category' ? 'rotate-180' : ''}`} />
+                                </button>
+                                {openDropdown === 'category' && (
+                                    <div className="absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm">
+                                        {['All', 'Industrial', 'Domestic'].filter(opt => {
+                                            if (!isSpecializedUser) return true;
+                                            return opt === currentUserRole;
+                                        }).map(opt => (
+                                            <button key={opt} onClick={() => { setFilters('category', opt); setOpenDropdown(null); }} className={`w-full text-left px-4 py-2.5 font-medium hover:bg-orange-50 ${filters.category === opt ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'}`}>{opt === 'All' ? 'All Categories' : opt}</button>
                                         ))}
                                     </div>
                                 )}

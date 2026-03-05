@@ -4,25 +4,8 @@ import ResourceDashboard from './ResourceDashboard';
 import OverallReportModal from '../components/modals/OverallReportModal';
 import { formatCurrency } from '../utils/formatters';
 import { apiService } from '../services/apiService';
+import { gasDataDay, gasDataWeek, gasDataMonth, gasDataYear } from '../data/mockData';
 
-/* -------------------- MOCK DATA -------------------- */
-const gasDataWeek = [
-  { time: 'Mon', usage: 45 }, { time: 'Tue', usage: 52 }, { time: 'Wed', usage: 38 },
-  { time: 'Thu', usage: 65 }, { time: 'Fri', usage: 48 }, { time: 'Sat', usage: 55 }, { time: 'Sun', usage: 38 },
-];
-const gasDataDay = [
-  { time: '00:00', usage: 2 }, { time: '04:00', usage: 3 }, { time: '08:00', usage: 15 },
-  { time: '12:00', usage: 25 }, { time: '16:00', usage: 18 }, { time: '20:00', usage: 10 },
-];
-const gasDataMonth = [
-  { time: 'Week 1', usage: 200 }, { time: 'Week 2', usage: 250 }, { time: 'Week 3', usage: 180 }, { time: 'Week 4', usage: 300 },
-];
-const gasDataYear = [
-  { time: 'Jan', usage: 1200 }, { time: 'Feb', usage: 1100 }, { time: 'Mar', usage: 900 },
-  { time: 'Apr', usage: 800 }, { time: 'May', usage: 500 }, { time: 'Jun', usage: 300 },
-  { time: 'Jul', usage: 250 }, { time: 'Aug', usage: 280 }, { time: 'Sep', usage: 350 },
-  { time: 'Oct', usage: 600 }, { time: 'Nov', usage: 950 }, { time: 'Dec', usage: 1150 },
-];
 
 // Dynamic breakdown handles this now
 
@@ -123,18 +106,18 @@ export default function GasPage({ setActivePage }) {
       title: "Total Consumption",
       value: `${totalConsumption.toFixed(1)} m³`,
       icon: <Flame className="w-4 h-4" />,
-      trend: 5.4,
       color: "orange",
       description: "Monthly cumulative usage",
+      type: "consumption",
       statusBreakdown: isAdmin ? roleBreakdown : null
     },
     {
       title: "Est. Cost",
       value: formatCurrency(totalConsumption * 32.50),
       icon: <IndianRupee className="w-4 h-4" />,
-      trend: 2.1,
       color: "blue",
       description: "Projected billing cycle cost",
+      type: "cost",
       statusBreakdown: isAdmin ? roleBreakdown.map(r => ({ ...r, value: formatCurrency(parseFloat(r.value.split(' ')[0]) * 32.50) })) : null
     },
     {
@@ -147,10 +130,11 @@ export default function GasPage({ setActivePage }) {
     },
     {
       title: "Device Count",
-      value: gasMeters.length.toString(),
+      value: `${gasMeters.length} Meters`,
       icon: <Gauge className="w-4 h-4" />,
       color: "red",
       description: "Assigned devices",
+      type: "asset_count",
       statusBreakdown: [
         { label: 'Active', value: activeGas, color: 'text-green-500' },
         { label: 'Inactive', value: inactiveGas, color: 'text-red-500' }

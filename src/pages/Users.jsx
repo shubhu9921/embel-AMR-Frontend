@@ -50,18 +50,27 @@ export default function UsersPage() {
     };
   }, []);
 
+  const [roleFilter, setRoleFilter] = useState("All");
+
   // Filter Data
-  const filteredUsers = users.filter((user) =>
-    ((user.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+  const filteredUsers = users.filter((user) => {
+    const searchMatch = ((user.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (user.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())) &&
-    (viewStatus === "All" || user.status === viewStatus)
-  );
+      (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()));
+
+    const statusMatch = (viewStatus === "All" || user.status === viewStatus);
+
+    const roleMatch = (roleFilter === "All" ||
+      (user.role || '').toLowerCase() === roleFilter.toLowerCase() ||
+      (user.role || '').toLowerCase().startsWith(roleFilter.toLowerCase()));
+
+    return searchMatch && statusMatch && roleMatch;
+  });
 
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, viewStatus]);
+  }, [searchTerm, viewStatus, roleFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
@@ -196,34 +205,38 @@ export default function UsersPage() {
             <StatCard
               title="Total Users"
               value={totalStats.total}
-              icon={<Users className="w-4 h-4" />}
+              icon={<div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><Users size={20} /></div>}
               color="orange"
               description="Overall registered accounts"
               statusBreakdown={totalStats.breakdown}
+              onClick={() => { setViewStatus("All"); setRoleFilter("All"); setSearchTerm(""); }}
             />
             <StatCard
               title="System Admins"
               value={adminStats.total}
-              icon={<UserCheck className="w-4 h-4" />}
+              icon={<div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><UserCheck size={20} /></div>}
               color="purple"
               description="Total account managers"
               statusBreakdown={adminStats.breakdown}
+              onClick={() => { setRoleFilter("Admin"); setViewStatus("All"); setSearchTerm(""); }}
             />
             <StatCard
               title="Industrial Users"
               value={industrialStats.total}
-              icon={<UserPlus className="w-4 h-4" />}
+              icon={<div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><UserPlus size={20} /></div>}
               color="blue"
               description="Enterprise level accounts"
               statusBreakdown={industrialStats.breakdown}
+              onClick={() => { setRoleFilter("Industrial"); setViewStatus("All"); setSearchTerm(""); }}
             />
             <StatCard
               title="Domestic Users"
               value={domesticStats.total}
-              icon={<UserPlus className="w-4 h-4" />}
+              icon={<div className="p-2 bg-cyan-50 text-cyan-600 rounded-lg"><UserPlus size={20} /></div>}
               color="cyan"
               description="Residential account holders"
               statusBreakdown={domesticStats.breakdown}
+              onClick={() => { setRoleFilter("Domestic"); setViewStatus("All"); setSearchTerm(""); }}
             />
           </div>
 
@@ -258,24 +271,29 @@ export default function UsersPage() {
                       }`}
                   >
                     <span className="truncate">
-                      {viewStatus === 'All' ? 'All Users' : viewStatus === 'Active' ? 'Active Only' : 'Inactive Only'}
+                      {roleFilter !== 'All' ? roleFilter : viewStatus === 'All' ? 'All Users' : viewStatus === 'Active' ? 'Active Only' : 'Inactive Only'}
                     </span>
                     <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                     }`}>
-                    {['All', 'Active', 'Inactive'].map((option) => (
+                    {['All', 'Active', 'Inactive', 'Admin', 'Industrial', 'Domestic'].map((option) => (
                       <button
                         key={option}
                         onClick={() => {
-                          setViewStatus(option);
+                          if (['Admin', 'Industrial', 'Domestic'].includes(option)) {
+                            setRoleFilter(option);
+                          } else {
+                            setViewStatus(option);
+                            setRoleFilter("All");
+                          }
                           setIsFilterOpen(false);
                         }}
-                        className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${viewStatus === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
+                        className={`w-full text-left px-4 py-2.5 font-medium transition-colors hover:bg-orange-50 hover:text-[#ff6e00] ${viewStatus === option || roleFilter === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'
                           }`}
                       >
-                        {option === 'All' ? 'All Users' : option === 'Active' ? 'Active Only' : 'Inactive Only'}
+                        {option === 'All' ? 'All Users' : option === 'Active' ? 'Active Only' : option === 'Inactive' ? 'Inactive Only' : option}
                       </button>
                     ))}
                   </div>

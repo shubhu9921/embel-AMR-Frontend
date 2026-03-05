@@ -39,6 +39,7 @@ export default function SupportManagement() {
         [TICKET_STATUS.ASSIGNED]: 'bg-blue-50 text-blue-700 border-blue-200',
         [TICKET_STATUS.IN_PROGRESS]: 'bg-indigo-50 text-indigo-700 border-indigo-200',
         [TICKET_STATUS.RESOLVED]: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        'Processing': 'bg-blue-50 text-blue-700 border-blue-200',
     };
 
     const priorityColors = {
@@ -105,14 +106,14 @@ export default function SupportManagement() {
                                     placeholder="Search tickets..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none w-64 shadow-md shadow-orange-100 transition-all"
+                                    className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none w-64 shadow-md shadow-orange-100 "
                                 />
                             </div>
                         </div>
                     </div>
                 </div>
                 <div className="mb-4 mt-2">
-                    <SupportTicketsBreakdownCard tickets={filteredTickets} />
+                    <SupportTicketsBreakdownCard tickets={filteredTickets} onClick={setFilter} />
                 </div>
 
                 {/* Tickets Table */}
@@ -215,11 +216,11 @@ export default function SupportManagement() {
                                         </td>
                                         <td className="px-6 py-5 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                {ticket.status !== TICKET_STATUS.RESOLVED && (
+                                                {(ticket.status === TICKET_STATUS.ASSIGNED || ticket.status === TICKET_STATUS.IN_PROGRESS || ticket.status === 'Processing') && (
                                                     <button
                                                         onClick={() => handleStatusChange(ticket.id, TICKET_STATUS.RESOLVED)}
                                                         className="p-2 hover:bg-emerald-50 text-emerald-600 rounded-xl transition-all border border-transparent hover:border-emerald-100"
-                                                        title="Mark Resolved"
+                                                        title="Mark Completed"
                                                         aria-label="Mark Ticket as Resolved"
                                                     >
                                                         <CheckCircle size={16} />

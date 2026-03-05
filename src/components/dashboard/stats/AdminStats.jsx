@@ -79,21 +79,11 @@ export const AdminStats = React.memo(({
                 onClick={handleNavToUsers}
             />
             <StatCard
-                title="Billing Overview"
-                value={formatCurrency(safeBilling.total)}
-                icon={<CreditCard />}
-                color="purple"
-                description="Billed this month"
-                subValue={`Pending: ${formatCurrency(safeBilling.pending)}`}
-                statusBreakdown={revenueStats}
-                onClick={handleNavToBilling}
-            />
-            <StatCard
-                title="Recent Reports"
+                title="Total Reports"
                 value={safeReports.total}
                 icon={<FileText />}
                 color="blue"
-                description="Generated reports"
+                description="Available reports"
                 statusBreakdown={[
                     { label: 'Ready', value: safeReports.ready, color: 'text-green-600' },
                     { label: 'Processing', value: safeReports.processing, color: 'text-amber-600' }
@@ -155,7 +145,7 @@ export const AdminStats = React.memo(({
 
             <StatCard
                 title="Monthly Costing"
-                value={formatCurrency(monthlyCostingData ? monthlyCostingData.reduce((acc, curr) => acc + (curr.numericValue || parseFloat(String(curr.value).replace(/[^0-9.-]+/g, "")) || 0), 0) * 12 : 5250)}
+                value={formatCurrency(monthlyCostingData ? monthlyCostingData.reduce((acc, curr) => acc + (curr.numericValue || parseFloat(String(curr.value).replace(/[^0-9.-]+/g, "")) || 0), 0) : 0)}
                 icon={<CreditCard />}
                 color="emerald"
                 description="Monthly consumption cost"

@@ -140,34 +140,38 @@ export default function AlertsPage({ setActivePage = () => { } }) {
             <StatCard
               title="Total Alerts"
               value={alertStats.total}
-              icon={<Bell className="w-4 h-4" />}
+              icon={<div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><Bell size={20} /></div>}
               color="orange"
               description="All active notifications"
               statusBreakdown={alertStats.totalBreakdown}
+              onClick={() => { setTypeFilter('all'); setSourceFilter('all'); setSearch(''); }}
             />
             <StatCard
               title="Critical"
               value={alertStats.critical}
-              icon={<AlertTriangle className="w-4 h-4" />}
+              icon={<div className="p-2 bg-red-50 text-red-600 rounded-lg"><AlertTriangle size={20} /></div>}
               color="red"
               description="Immediate action required"
               statusBreakdown={alertStats.criticalBreakdown}
+              onClick={() => { setTypeFilter('critical'); setSourceFilter('all'); setSearch(''); }}
             />
             <StatCard
               title="Warning"
               value={alertStats.warning}
-              icon={<AlertCircle className="w-4 h-4" />}
+              icon={<div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><AlertCircle size={20} /></div>}
               color="amber"
               description="Potential issues detected"
               statusBreakdown={alertStats.warningBreakdown}
+              onClick={() => { setTypeFilter('warning'); setSourceFilter('all'); setSearch(''); }}
             />
             <StatCard
               title="System Info"
               value={alertStats.info}
-              icon={<Info className="w-4 h-4" />}
+              icon={<div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Info size={20} /></div>}
               color="blue"
               description="General system updates"
               statusBreakdown={alertStats.infoBreakdown}
+              onClick={() => { setTypeFilter('info'); setSourceFilter('all'); setSearch(''); }}
             />
           </div>
 

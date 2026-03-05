@@ -89,10 +89,12 @@ export default function RaiseSupportModal({ item, onClose }) {
                                     {item.name}
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                        <Cpu size={12} />
-                                        {item.deviceName}
-                                    </div>
+                                    {!(item.role || sessionStorage.getItem('userRole'))?.toLowerCase()?.includes('domestic') && (
+                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                            <Cpu size={12} />
+                                            {item.deviceName}
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-2 text-xs text-gray-500">
                                         <MapPin size={12} />
                                         {item.location}

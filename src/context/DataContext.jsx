@@ -9,6 +9,7 @@ export function DataProvider({ children }) {
     const [users, setUsers] = useState([]);
     const [reports, setReports] = useState([]);
     const [tickets, setTickets] = useState([]);
+    const [invoices, setInvoices] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const safeParseInt = (val, fallback = 0) => {
@@ -46,16 +47,18 @@ export function DataProvider({ children }) {
                 apiService.getInitialMeters(filterQuery),
                 apiService.getUsers(),
                 apiService.getReports(filterQuery),
-                apiService.fetchTickets(filterQuery)
+                apiService.fetchTickets(filterQuery),
+                apiService.getInvoices(filterQuery)
             ]);
 
-            const [devicesRes, metersRes, usersRes, reportsRes, ticketsRes] = results.map(r => r.status === 'fulfilled' ? r.value : []);
+            const [devicesRes, metersRes, usersRes, reportsRes, ticketsRes, invoicesRes] = results.map(r => r.status === 'fulfilled' ? r.value : []);
 
             setDevices((devicesRes || []).map(normalizeDevice));
             setMeters((metersRes || []).map(normalizeMeter));
             setUsers(usersRes || []);
             setReports(reportsRes || []);
             setTickets(ticketsRes || []);
+            setInvoices(invoicesRes || []);
         } catch (err) {
             console.error("DataContext failed to fetch data", err);
         } finally {
@@ -149,6 +152,7 @@ export function DataProvider({ children }) {
             users,
             reports,
             tickets,
+            invoices,
             isLoading,
             refreshData,
             addDevice,

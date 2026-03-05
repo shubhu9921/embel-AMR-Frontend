@@ -28,7 +28,9 @@ export default function OverallReportModal({ onClose, defaultSource = 'All', onG
 
     const userName = sessionStorage.getItem('userName') || 'User';
     const userRole = sessionStorage.getItem('userRole') || 'Industrial';
+    const isSpecializedUser = userRole === 'Industrial' || userRole === 'Domestic' || userRole === 'Commercial';
 
+    const [userCategory, setUserCategory] = useState(isSpecializedUser ? userRole : 'All');
     const filteredDevices = availableDevices.filter(d =>
         selectedSource === 'All' ? true : d.meterType?.toLowerCase() === selectedSource.toLowerCase()
     );
@@ -61,6 +63,7 @@ export default function OverallReportModal({ onClose, defaultSource = 'All', onG
             name: reportName || `${selectedSource} ${reportType} Report`,
             source: selectedSource,
             type: reportType,
+            userCategory,
             startMonth,
             startYear,
             endMonth,
@@ -127,8 +130,12 @@ export default function OverallReportModal({ onClose, defaultSource = 'All', onG
                             {/* Source Selection */}
                             <div>
                                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Select Resource</label>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    {['All', 'Energy', 'Water', 'Gas', 'Solar'].map(source => (
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                                    {['All', 'Energy', 'Water', 'Gas', 'Solar'].filter(s => {
+                                        if (userRole === 'Super Admin' || userRole === 'Admin') return true;
+                                        if (defaultSource === 'All') return true;
+                                        return s === defaultSource;
+                                    }).map(source => (
                                         <button
                                             key={source}
                                             onClick={() => {
@@ -141,6 +148,28 @@ export default function OverallReportModal({ onClose, defaultSource = 'All', onG
                                                 }`}
                                         >
                                             <span className="text-[10px] font-black uppercase tracking-tighter">{source}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* User Category Selection */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">User Category</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {['All', 'Industrial', 'Domestic'].filter(cat => {
+                                        if (userRole === 'Super Admin' || userRole === 'Admin') return true;
+                                        return cat === userRole;
+                                    }).map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setUserCategory(cat)}
+                                            className={`py-2 px-4 text-xs font-bold rounded-xl border-2 transition-all duration-300 ${userCategory === cat
+                                                ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
+                                                : 'border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/30 text-gray-500'
+                                                }`}
+                                        >
+                                            {cat}
                                         </button>
                                     ))}
                                 </div>
@@ -257,7 +286,7 @@ export default function OverallReportModal({ onClose, defaultSource = 'All', onG
                             <div className="bg-blue-50 p-4 rounded-xl space-y-2 border border-blue-100">
                                 <div className="flex gap-3 text-blue-800 text-xs font-medium">
                                     <User size={14} className="shrink-0" />
-                                    <span>Generating for: <strong>{userName} ({userRole})</strong></span>
+                                    <span>Generating for: <strong>{userName} ({userRole})</strong> | Category: <strong>{userCategory}</strong></span>
                                 </div>
                                 <div className="flex gap-3 text-blue-800 text-xs font-medium">
                                     <Calendar size={14} className="shrink-0" />

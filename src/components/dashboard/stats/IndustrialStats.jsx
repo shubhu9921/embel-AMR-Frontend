@@ -53,17 +53,6 @@ export const IndustrialStats = React.memo(({
                 onClick={() => toggleModal('userMeters', true)}
             />
             <StatCard
-                title="Billing Overview"
-                value="View History"
-                icon={<FileText />}
-                color="purple"
-                description="Check invoices & payments"
-                statusBreakdown={[
-                    { label: 'Last Bill', value: 'Generated', color: 'text-purple-600' }
-                ]}
-                onClick={handleNavToBilling}
-            />
-            <StatCard
                 title="Raise Ticket"
                 value="Support"
                 icon={<Plus />}
@@ -105,7 +94,7 @@ export const IndustrialStats = React.memo(({
 
             <StatCard
                 title="Monthly Costing"
-                value={formatCurrency(monthlyCostingData ? monthlyCostingData.reduce((acc, curr) => acc + (curr.numericValue || parseFloat(String(curr.value).replace(/[^0-9.-]+/g, "")) || 0), 0) * 12 : 5250)}
+                value={formatCurrency(monthlyCostingData ? monthlyCostingData.reduce((acc, curr) => acc + (curr.numericValue || parseFloat(String(curr.value).replace(/[^0-9.-]+/g, "")) || 0), 0) : 0)}
                 icon={<CreditCard />}
                 color="emerald"
                 description="Monthly consumption cost"

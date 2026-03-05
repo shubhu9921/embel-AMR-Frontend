@@ -79,9 +79,9 @@ export default function DeviceModal({ isOpen, onClose, onSubmit, mode = 'create'
             if (selectedUser) {
                 let appVal = "";
                 const roleLower = selectedUser.role?.toLowerCase() || "";
-                if (roleLower === 'domestic') appVal = 'Residential';
-                else if (roleLower === 'industrial') appVal = 'Industrial';
-                else if (roleLower === 'commercial') appVal = 'Commercial';
+                if (roleLower.includes('domestic')) appVal = 'Domestic';
+                else if (roleLower.includes('industrial')) appVal = 'Industrial';
+                else if (roleLower.includes('commercial')) appVal = 'Commercial';
 
                 if (appVal && formData.application !== appVal) {
                     setFormData(prev => ({ ...prev, application: appVal }));
@@ -172,7 +172,7 @@ export default function DeviceModal({ isOpen, onClose, onSubmit, mode = 'create'
                                         <option value="">Select User...</option>
                                         {userList.map(user => (
                                             <option key={user.id} value={`${user.firstName} ${user.lastName}`.trim()}>
-                                                {user.firstName} {user.lastName}
+                                                {user.firstName} {user.lastName} ({user.role})
                                             </option>
                                         ))}
                                     </select>
@@ -199,6 +199,22 @@ export default function DeviceModal({ isOpen, onClose, onSubmit, mode = 'create'
                                         <option value="WIFI">WiFi</option>
                                         <option value="ETHERNET">Ethernet</option>
                                         <option value="LORA">LORA</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-gray-700">Source Type <span className="text-red-500">*</span></label>
+                                    <select
+                                        name="meterType"
+                                        value={formData.meterType}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                        required
+                                    >
+                                        <option value="">Select Source Type...</option>
+                                        <option value="Water">Water</option>
+                                        <option value="Gas">Gas</option>
+                                        <option value="Energy">Energy</option>
+                                        <option value="Solar">Solar</option>
                                     </select>
                                 </div>
 
@@ -323,7 +339,17 @@ export default function DeviceModal({ isOpen, onClose, onSubmit, mode = 'create'
                                     </select>
                                     <p className="text-xs text-gray-500 mt-1">{new Date().toLocaleString()}</p>
                                 </div>
-
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-gray-700">Liter Per Pulse</label>
+                                    <input
+                                        type="number"
+                                        name="literPerPulse"
+                                        value={formData.literPerPulse}
+                                        onChange={handleChange}
+                                        placeholder="e.g., 10"
+                                        className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                    />
+                                </div>
                             </div>
                         </section>
 
@@ -340,7 +366,7 @@ export default function DeviceModal({ isOpen, onClose, onSubmit, mode = 'create'
                                         className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                     >
                                         <option value="">Select option</option>
-                                        <option value="Residential">Residential</option>
+                                        <option value="Domestic">Domestic</option>
                                         <option value="Commercial">Commercial</option>
                                         <option value="Industrial">Industrial</option>
                                     </select>
@@ -438,7 +464,18 @@ export default function DeviceModal({ isOpen, onClose, onSubmit, mode = 'create'
                                         ))}
                                     </datalist>
                                 </div>
-
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-gray-700">Meter Start Reading <span className="text-red-500">*</span></label>
+                                    <input
+                                        type="number"
+                                        name="startReading"
+                                        value={formData.startReading}
+                                        onChange={handleChange}
+                                        placeholder="Meter Start Reading"
+                                        className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                        required
+                                    />
+                                </div>
                             </div>
                         </section>
                     </form>

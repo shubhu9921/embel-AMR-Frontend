@@ -33,7 +33,7 @@ export default function ReportsPage() {
         filteredData: filteredReports,
     } = useTable(reports, {
         searchFields: ['name', 'type'],
-        initialFilters: { type: 'All', meter: 'All' },
+        initialFilters: { type: 'All', meter: 'All', status: 'All' },
         pageSize: 100 // Unpaginated for now as per original UI
     });
 
@@ -135,6 +135,7 @@ export default function ReportsPage() {
                             color="orange"
                             description="Available reports"
                             statusBreakdown={totalStatusBreakdown}
+                            onClick={() => { setFilters('status', 'All'); setFilters('type', 'All'); setFilters('meter', 'All'); }}
                         />
                         <StatCard
                             title="Ready"
@@ -143,6 +144,7 @@ export default function ReportsPage() {
                             color="green"
                             description="Completed"
                             statusBreakdown={readyBreakdown}
+                            onClick={() => setFilters('status', 'Ready')}
                         />
                         <StatCard
                             title="Processing"
@@ -151,6 +153,7 @@ export default function ReportsPage() {
                             color="amber"
                             description="Generating"
                             statusBreakdown={processingBreakdown}
+                            onClick={() => setFilters('status', 'Processing')}
                         />
                         <StatCard
                             title="Downloads"
@@ -165,7 +168,7 @@ export default function ReportsPage() {
                         <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-[84px] z-20 rounded-t-2xl shadow-md shadow-orange-100" ref={dropdownRef}>
                             <div className="relative w-full md:w-80 group">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#ff6e00] transition-colors" />
-                                <input type="text" placeholder="Search reports..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none shadow-md shadow-orange-100 transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                <input type="text" placeholder="Search reports..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none shadow-md shadow-orange-100 " value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                             </div>
 
                             <div className="flex flex-wrap items-center gap-3">

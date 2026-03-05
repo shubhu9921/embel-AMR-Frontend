@@ -6,10 +6,14 @@ import { useData } from '../../context/DataContext';
 
 export default function GenerateBillModal({ onClose, userEmail = 'user@example.com' }) {
     const { users, devices, meters, isLoading: loadingUsers } = useData();
+    const userRole = sessionStorage.getItem('userRole') || 'Industrial';
+    const isAdmin = userRole === 'Admin' || userRole === 'Super Admin';
+    const isIndustrial = userRole === 'Industrial';
+
     const [step, setStep] = useState(1); // 1: Select Source, 2: Preview
     const [customBillName, setCustomBillName] = useState('');
     const [selectedSource, setSelectedSource] = useState('ELECTRIC');
-    const [userCategory, setUserCategory] = useState('All Categories');
+    const [userCategory, setUserCategory] = useState(isAdmin ? 'All Categories' : (isIndustrial ? 'Industrial' : 'Domestic'));
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedDevice, setSelectedDevice] = useState('');
     const [startMonth, setStartMonth] = useState('January');
@@ -66,11 +70,18 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
 
     // Filter devices based on resource and user
     const filteredDevices = [...(devices || []), ...(meters || [])].filter(asset => {
-        const typeMatch = asset.meterType === selectedSource || asset.type === selectedSource || (selectedSource === 'ELECTRIC' && asset.application === 'Energy');
+        const assetType = (asset.meterType || asset.type || asset.sourceType || '').toUpperCase();
+        const typeMatch = assetType === selectedSource.toUpperCase() || (selectedSource === 'ELECTRIC' && asset.application === 'Energy');
 
         let userMatch = true;
-        if (selectedUser) {
-            userMatch = asset.user === selectedUser.name || asset.industryUser === selectedUser.name;
+        if (isAdmin) {
+            if (selectedUser) {
+                userMatch = asset.user === selectedUser.name || asset.industryUser === selectedUser.name || asset.customerName === selectedUser.name;
+            }
+        } else {
+            // Already filtered by userId at Context level for non-admins, but we can double check name if needed
+            // However, it's safer to trust the Context filter which uses numeric IDs.
+            userMatch = true;
         }
 
         return typeMatch && userMatch;
@@ -186,26 +197,28 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">User Category</label>
-                                <div className="flex gap-2 p-1 bg-gray-50 border border-gray-200 rounded-2xl">
-                                    {['All Categories', 'Industrial', 'Domestic'].map((cat) => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => {
-                                                setUserCategory(cat);
-                                                setSelectedUser(null);
-                                            }}
-                                            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${userCategory === cat ? 'bg-white text-orange-600 shadow-sm ring-1 ring-orange-100' : 'text-gray-400 hover:text-gray-600'
-                                                }`}
-                                        >
-                                            {cat}
-                                        </button>
-                                    ))}
+                            {isAdmin && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">User Category</label>
+                                    <div className="flex gap-2 p-1 bg-gray-50 border border-gray-200 rounded-2xl">
+                                        {['All Categories', 'Industrial', 'Domestic'].map((cat) => (
+                                            <button
+                                                key={cat}
+                                                onClick={() => {
+                                                    setUserCategory(cat);
+                                                    setSelectedUser(null);
+                                                }}
+                                                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${userCategory === cat ? 'bg-white text-orange-600 shadow-sm ring-1 ring-orange-100' : 'text-gray-400 hover:text-gray-600'
+                                                    }`}
+                                            >
+                                                {cat}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {userCategory !== 'All Categories' && (
+                            {isAdmin && userCategory !== 'All Categories' && (
                                 <div className="animate-in slide-in-from-top-2 duration-300">
                                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Select Customer</label>
                                     <div className="relative group">
@@ -224,23 +237,25 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
                                 </div>
                             )}
 
-                            <div className="animate-in slide-in-from-top-2 duration-300">
-                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Select Device / Meter</label>
-                                <div className="relative group">
-                                    <select
-                                        value={selectedDevice}
-                                        onChange={(e) => setSelectedDevice(e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
-                                    >
-                                        <option value="">{filteredDevices.length ? 'Combined Asset Report' : 'No related assets found'}</option>
-                                        {filteredDevices.map(asset => (
-                                            <option key={asset.id} value={asset.deviceId || asset.id}>
-                                                {asset.deviceName || asset.meterName || asset.name} ({asset.deviceId || asset.id})
-                                            </option>
-                                        ))}
-                                    </select>
+                            {(isAdmin || isIndustrial) && (
+                                <div className="animate-in slide-in-from-top-2 duration-300">
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Select Device / Meter</label>
+                                    <div className="relative group">
+                                        <select
+                                            value={selectedDevice}
+                                            onChange={(e) => setSelectedDevice(e.target.value)}
+                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
+                                        >
+                                            <option value="">{filteredDevices.length ? (isAdmin ? 'Combined Asset Report' : 'Select a Device (Optional)') : 'No related assets found'}</option>
+                                            {filteredDevices.map(asset => (
+                                                <option key={asset.id} value={asset.deviceId || asset.id}>
+                                                    {asset.deviceName || asset.meterName || asset.name} ({asset.deviceId || asset.id})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <div className="space-y-4 pt-2">
                                 <div className="grid grid-cols-2 gap-4">

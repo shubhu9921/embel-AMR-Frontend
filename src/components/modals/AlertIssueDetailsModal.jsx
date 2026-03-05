@@ -11,7 +11,8 @@ export default function AlertIssueDetailsModal({ item, onClose, setActivePage })
     const [description, setDescription] = useState(item.message || item.description || "");
     const [currentStatus, setCurrentStatus] = useState(item.status || "Active");
 
-    const userRole = sessionStorage.getItem('userRole') || 'Admin';
+    const currentUserRole = sessionStorage.getItem('userRole') || 'Admin';
+    const ticketUserRole = item.role || item.userRole || 'User';
 
     if (!item) return null;
 
@@ -68,7 +69,7 @@ export default function AlertIssueDetailsModal({ item, onClose, setActivePage })
                             <DetailItem label="Mobile Number" icon={<Phone size={14} />} value={item.mobile || "9876543210"} />
                             <DetailItem label="Email Address" icon={<Mail size={14} />} value={item.email || "raj@email.com"} />
                             <DetailItem label="Location" icon={<MapPin size={14} />} value={item.location || "Kitchen"} />
-                            <DetailItem label="User Type" icon={<Tag size={14} />} value={userRole === 'Admin' ? 'Domestic User' : userRole} />
+                            <DetailItem label="User Type" icon={<Tag size={14} />} value={ticketUserRole} />
                         </div>
                     </section>
 
@@ -90,7 +91,9 @@ export default function AlertIssueDetailsModal({ item, onClose, setActivePage })
                             <DetailItem label="Request Type" value="System Alert" />
                             <DetailItem label="Status" value={currentStatus} isStatus />
                             <DetailItem label="Source" icon={<Droplet size={14} />} value={item.source || item.category || "Water"} />
-                            <DetailItem label="Device/Meter" icon={<Cpu size={14} />} value={item.device || item.deviceName || "WM-Res-01"} />
+                            {!(item.role || item.userRole)?.toLowerCase()?.includes('domestic') && (
+                                <DetailItem label="Device/Meter" icon={<Cpu size={14} />} value={item.device || item.deviceName || "WM-Res-01"} />
+                            )}
                         </div>
 
                         {/* Issue Name & Description */}
@@ -122,7 +125,7 @@ export default function AlertIssueDetailsModal({ item, onClose, setActivePage })
                 {/* Footer with Role Based Actions */}
                 <div className="p-6 bg-white border-t border-gray-100 flex flex-wrap gap-4 justify-between items-center sticky bottom-0 z-10">
                     <div className="flex gap-3">
-                        {userRole === 'Admin' ? (
+                        {currentUserRole === 'Admin' || currentUserRole === 'Super Admin' ? (
                             <button
                                 onClick={() => setShowAssignModal(true)}
                                 className="px-8 py-3.5 bg-indigo-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98] flex items-center gap-3 transform"

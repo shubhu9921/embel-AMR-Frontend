@@ -13,9 +13,15 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
 
     // Auto-detect User Type
     const getUserTypeDisplay = (item) => {
-        if (!item) return userRole === 'Domestic' ? 'Domestic User' : userRole === 'Industrial' ? 'Industrial User' : 'Admin';
-        if (item.role === 'Domestic') return 'Domestic User';
-        if (item.role === 'Industrial') return 'Industrial User';
+        if (!item) {
+            const role = String(userRole || '').toLowerCase();
+            if (role.includes('domestic')) return 'Domestic User';
+            if (role.includes('industrial')) return 'Industrial User';
+            return 'Admin';
+        }
+        const itemRole = String(item.role || '').toLowerCase();
+        if (itemRole.includes('domestic')) return 'Domestic User';
+        if (itemRole.includes('industrial')) return 'Industrial User';
         return 'Admin';
     };
 
@@ -92,6 +98,8 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
         type: isSuperAdmin && selectedUser ? (selectedUser.role + ' User') : getUserTypeDisplay(isEdit ? editItem : null)
     };
 
+    const isDomestic = userData.type?.toLowerCase().includes('domestic');
+
     useEffect(() => {
         const timers = timersRef.current;
         return () => timers.forEach(clearTimeout);
@@ -101,7 +109,7 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
         const errs = {};
         if (!isSuperAdmin && !vals.description.trim()) {
             errs.form = 'Please enter description';
-        } else if (!isEdit && (!vals.title.trim() || !vals.deviceId.trim())) {
+        } else if (!isEdit && (!vals.title.trim() || (!isDomestic && !vals.deviceId.trim()))) {
             errs.form = 'Please fill all required fields';
         }
         return errs;
@@ -130,7 +138,7 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                     const ticketData = {
                         ...values,
                         name: values.title,
-                        deviceName: values.deviceId,
+                        deviceName: isDomestic ? 'N/A' : values.deviceId,
                         username: isSuperAdmin && selectedUser ? selectedUser.id : (sessionStorage.getItem('userId') || userData.name),
                         userName: userData.name,
                         email: userData.email,
@@ -395,28 +403,30 @@ export default function SupportModal({ onClose, userDetails = { name: 'User', id
                                                 </select>
                                             )}
                                         </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Device/Meter</label>
-                                            {isEdit ? (
-                                                <div className="px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 text-xs font-bold text-gray-500 shadow-sm opacity-70 truncate">
-                                                    {formData.deviceId}
-                                                </div>
-                                            ) : (
-                                                <select
-                                                    value={formData.deviceId}
-                                                    onChange={(e) => setFieldValue('deviceId', e.target.value)}
-                                                    className="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
-                                                >
-                                                    <option value="">Select Device/Meter</option>
-                                                    {availableDevices
-                                                        .filter(d => formData.source === 'Other' || d.meterType?.toLowerCase() === formData.source?.toLowerCase())
-                                                        .map(d => (
-                                                            <option key={d.id} value={d.deviceId}>{d.deviceName} ({d.deviceId})</option>
-                                                        ))
-                                                    }
-                                                </select>
-                                            )}
-                                        </div>
+                                        {!isDomestic && (
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Device/Meter</label>
+                                                {isEdit ? (
+                                                    <div className="px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 text-xs font-bold text-gray-500 shadow-sm opacity-70 truncate">
+                                                        {formData.deviceId}
+                                                    </div>
+                                                ) : (
+                                                    <select
+                                                        value={formData.deviceId}
+                                                        onChange={(e) => setFieldValue('deviceId', e.target.value)}
+                                                        className="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                                    >
+                                                        <option value="">Select Device/Meter</option>
+                                                        {availableDevices
+                                                            .filter(d => formData.source === 'Other' || d.meterType?.toLowerCase() === formData.source?.toLowerCase())
+                                                            .map(d => (
+                                                                <option key={d.id} value={d.deviceId}>{d.deviceName} ({d.deviceId})</option>
+                                                            ))
+                                                        }
+                                                    </select>
+                                                )}
+                                            </div>
+                                        )}
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Issue Name</label>
                                             <input

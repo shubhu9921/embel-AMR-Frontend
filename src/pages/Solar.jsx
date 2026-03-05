@@ -4,25 +4,8 @@ import ResourceDashboard from './ResourceDashboard';
 import OverallReportModal from '../components/modals/OverallReportModal';
 import { formatCurrency } from '../utils/formatters';
 import { apiService } from '../services/apiService';
+import { solarDataDay, solarDataWeek, solarDataMonth, solarDataYear } from '../data/mockData';
 
-/* -------------------- MOCK DATA -------------------- */
-const solarDataWeek = [
-    { time: 'Mon', generation: 145 }, { time: 'Tue', generation: 162 }, { time: 'Wed', generation: 138 },
-    { time: 'Thu', generation: 45 }, { time: 'Fri', generation: 158 }, { time: 'Sat', generation: 175 }, { time: 'Sun', generation: 180 },
-];
-const solarDataDay = [
-    { time: '06:00', generation: 5 }, { time: '09:00', generation: 45 }, { time: '12:00', generation: 125 },
-    { time: '15:00', generation: 95 }, { time: '18:00', generation: 25 }, { time: '21:00', generation: 0 },
-];
-const solarDataMonth = [
-    { time: 'Week 1', generation: 900 }, { time: 'Week 2', generation: 1100 }, { time: 'Week 3', generation: 850 }, { time: 'Week 4', generation: 1200 },
-];
-const solarDataYear = [
-    { time: 'Jan', generation: 3800 }, { time: 'Feb', generation: 4200 }, { time: 'Mar', generation: 4800 },
-    { time: 'Apr', generation: 5200 }, { time: 'May', generation: 5800 }, { time: 'Jun', generation: 6000 },
-    { time: 'Jul', generation: 5900 }, { time: 'Aug', generation: 5500 }, { time: 'Sep', generation: 5100 },
-    { time: 'Oct', generation: 4600 }, { time: 'Nov', generation: 4000 }, { time: 'Dec', generation: 3600 },
-];
 
 // Dynamic breakdown handles this now
 
@@ -122,18 +105,18 @@ export default function SolarPage({ setActivePage }) {
             title: "Total Generation",
             value: `${totalGeneration.toLocaleString()} kWh`,
             icon: <Sun className="w-4 h-4" />,
-            trend: 5.4,
             color: "emerald",
             description: "Monthly cumulative energy",
+            type: "consumption",
             statusBreakdown: isAdmin ? roleBreakdown : null
         },
         {
             title: "Cost Savings",
             value: formatCurrency(totalGeneration * 12.25),
             icon: <IndianRupee className="w-4 h-4" />,
-            trend: 2.1,
             color: "green",
             description: "Projected billing cycle savings",
+            type: "cost",
             statusBreakdown: isAdmin ? roleBreakdown.map(r => ({ ...r, value: formatCurrency(parseFloat(r.value) * 12.25) })) : null
         },
         {
@@ -146,10 +129,11 @@ export default function SolarPage({ setActivePage }) {
         },
         {
             title: "Device Count",
-            value: solarInverters.length.toString(),
+            value: `${solarInverters.length} Inverters`,
             icon: <Gauge className="w-4 h-4" />,
             color: "orange",
             description: "Assigned devices",
+            type: "asset_count",
             statusBreakdown: [
                 { label: 'Active', value: activeSolar, color: 'text-green-500' },
                 { label: 'Inactive', value: inactiveSolar, color: 'text-red-500' }

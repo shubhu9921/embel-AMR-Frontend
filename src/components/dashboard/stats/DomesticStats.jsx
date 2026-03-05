@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { FileText, Activity, Droplet, Zap, Flame, Sun, AlertTriangle, Bell, Plus, LayoutDashboard } from 'lucide-react';
+import { FileText, Activity, Droplet, Zap, Flame, Sun, AlertTriangle, Bell, Plus, LayoutDashboard, CreditCard } from 'lucide-react';
 import { StatCard } from '../StatCard';
 import DomesticConsumptionModal from '../../modals/DomesticConsumptionModal';
 import { useData } from '../../../context/DataContext';
+import { formatCurrency } from '../../../utils/formatters';
 
-export const DomesticStats = React.memo(({ tickets, toggleModal, handleNavToAlerts, handleNavToIssues, handleNavToBilling, handleNavToSupport }) => {
+export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingData, handleNavToAlerts, handleNavToIssues, handleNavToBilling, handleNavToSupport }) => {
     const { meters } = useData();
     const [isConsumptionModalOpen, setIsConsumptionModalOpen] = useState(false);
     const [modalDefaultView, setModalDefaultView] = useState('Total');
@@ -150,6 +151,15 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, handleNavToAler
                         { label: 'Resolved', value: domesticAlerts.filter(a => a.status === 'Resolved').length, color: 'text-emerald-500' }
                     ]}
                     onClick={() => handleNavToAlerts()}
+                />
+                <StatCard
+                    title="Monthly Costing"
+                    value={formatCurrency(monthlyCostingData ? monthlyCostingData.reduce((acc, curr) => acc + (curr.numericValue || parseFloat(String(curr.value).replace(/[^0-9.-]+/g, "")) || 0), 0) : 0)}
+                    icon={<CreditCard className="w-4 h-4" />}
+                    color="emerald"
+                    description="Monthly consumption cost"
+                    statusBreakdown={monthlyCostingData}
+                    onClick={handleNavToBilling}
                 />
             </div>
 

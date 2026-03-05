@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { LayoutDashboard, Activity, AlertTriangle, AlertCircle, CreditCard, FileText, MapPin, Cpu, Gauge, Users, Droplet, Flame, Sun, HelpCircle, Bell, MessageSquare } from "lucide-react";
 
 import { TimeFilter, AlertsPanel, StatCard, PerformanceChart, DashboardStats, DashboardBottomInfo } from "../components/dashboard";
@@ -10,6 +10,7 @@ import { RESOURCE_CONFIG, RESOURCES } from "../utils/resourceUtils";
 import SupportModal from "../components/modals/SupportModal";
 import { useSupport } from '../context/SupportContext';
 import { apiService } from "../services/apiService";
+import { formatCurrency } from "../utils/formatters";
 
 // Fix Leaflet icon issue
 import L from 'leaflet';
@@ -28,12 +29,13 @@ import { useData } from "../context/DataContext";
 
 export default function Dashboard({ setActivePage = () => { }, userRole }) {
     const { tickets } = useSupport();
-    const isAdmin = userRole === 'Admin';
+    const isAdmin = userRole === 'Admin' || userRole === 'Super Admin';
     const {
         devices: fetchedDevices,
         meters: fetchedMeters,
         users: fetchedUsers,
         reports: fetchedReports,
+        invoices: fetchedInvoices,
         isLoading
     } = useData();
 
@@ -86,25 +88,46 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         return <DomesticDashboard setActivePage={setActivePage} />;
     }
 
+    const [selectedUserId, setSelectedUserId] = useState('All');
     const userIdentifier = sessionStorage.getItem('userName') || userRole || 'User1';
 
+    const filteredInvoices = useMemo(() => {
+        if (!isAdmin || selectedUserId === 'All') return fetchedInvoices;
+        return fetchedInvoices.filter(i => i.userId === parseInt(selectedUserId));
+    }, [fetchedInvoices, isAdmin, selectedUserId]);
+
+    const filteredReports = useMemo(() => {
+        if (!isAdmin || selectedUserId === 'All') return fetchedReports;
+        return fetchedReports.filter(r => r.userId === parseInt(selectedUserId));
+    }, [fetchedReports, isAdmin, selectedUserId]);
+
+    const filteredDevices = useMemo(() => {
+        if (!isAdmin || selectedUserId === 'All') return fetchedDevices;
+        return fetchedDevices.filter(d => d.userId === parseInt(selectedUserId));
+    }, [fetchedDevices, isAdmin, selectedUserId]);
+
+    const filteredMeters = useMemo(() => {
+        if (!isAdmin || selectedUserId === 'All') return fetchedMeters;
+        return fetchedMeters.filter(m => m.userId === parseInt(selectedUserId));
+    }, [fetchedMeters, isAdmin, selectedUserId]);
+
     /* -------------------- ADMIN METRICS (DYNAMIC) -------------------- */
-    const adminDevices = fetchedDevices; // Admin sees all registered devices
-    const adminMeters = fetchedMeters; // Admin sees all registered meters
+    const adminDevices = filteredDevices;
+    const adminMeters = filteredMeters;
     const allAdminAssets = [...adminDevices, ...adminMeters];
 
     const totalDevices = adminDevices.length;
     const deviceStats = [
         { label: 'Active', value: adminDevices.filter(d => d.status === 'Active').length, color: 'text-emerald-500' },
-        { label: 'Inactive', value: adminDevices.filter(d => d.status === 'Inactive').length, color: 'text-amber-500' },
-        { label: 'Deactivated', value: adminDevices.filter(d => ['Deactive', 'Deactivated'].includes(d.status)).length, color: 'text-red-500' },
+        { label: 'Warnings', value: adminDevices.filter(d => d.status === 'Warning').length, color: 'text-amber-500' },
+        { label: 'Offline', value: adminDevices.filter(d => d.status === 'Offline').length, color: 'text-red-500' },
     ];
 
     const totalMeters = adminMeters.length;
     const meterStats = [
         { label: 'Active', value: adminMeters.filter(m => m.status === 'Active').length, color: 'text-emerald-500' },
-        { label: 'Inactive', value: adminMeters.filter(m => m.status === 'Inactive').length, color: 'text-amber-500' },
-        { label: 'Deactivated', value: adminMeters.filter(m => ['Deactive', 'Deactivated'].includes(m.status)).length, color: 'text-red-500' },
+        { label: 'Warnings', value: adminMeters.filter(m => m.status === 'Warning').length, color: 'text-amber-500' },
+        { label: 'Offline', value: adminMeters.filter(m => m.status === 'Offline').length, color: 'text-red-500' },
     ];
 
     const citiesSet = new Set(allAdminAssets.map(d => d.city || d.location || d.meterLocation || 'Unknown'));
@@ -128,12 +151,20 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
         { label: 'Deactivated', value: 0, color: 'text-gray-400' },
     ];
 
-    const billingStats = { total: 29677, pending: 2537, overdue: 10502 };
+    const sumAmounts = (list) => list?.reduce((acc, curr) => acc + (parseFloat(curr?.amount?.replace(/[^0-9.-]+/g, '')) || 0), 0) || 0;
+
+    // Dynamically calculate billing stats
+    const billingStats = {
+        total: sumAmounts(filteredInvoices),
+        pending: sumAmounts(filteredInvoices.filter(i => i.status === 'Pending')),
+        overdue: sumAmounts(filteredInvoices.filter(i => i.status === 'Overdue' || (i.status || '').toLowerCase() === 'unpaid'))
+    };
+
     const revenueStats = [
-        { label: 'Paid', value: 150, color: 'text-emerald-500' },
-        { label: 'Unpaid', value: 45, color: 'text-red-500' },
-        { label: 'Pending', value: 20, color: 'text-amber-500' },
-        { label: 'Processing', value: 12, color: 'text-blue-500' },
+        { label: 'Paid', value: filteredInvoices.filter(i => i.status === 'Paid').length, color: 'text-emerald-500' },
+        { label: 'Unpaid', value: filteredInvoices.filter(i => (i.status || '').toLowerCase() === 'unpaid' || i.status === 'Overdue').length, color: 'text-red-500' },
+        { label: 'Pending', value: filteredInvoices.filter(i => i.status === 'Pending').length, color: 'text-amber-500' },
+        { label: 'Processing', value: filteredInvoices.filter(i => i.status === 'Processing').length, color: 'text-blue-500' },
     ];
 
     /* -------------------- USER METRICS (DYNAMIC) -------------------- */
@@ -170,19 +201,47 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
     ];
 
     const currentInactiveCounts = React.useMemo(() => ({
-        devices: (isAdmin ? fetchedDevices : userDevices).filter(d => d.status !== 'Active'),
-        meters: (isAdmin ? fetchedMeters : userMeters).filter(m => m.status !== 'Active'),
+        devices: (isAdmin ? filteredDevices : userDevices).filter(d => d.status !== 'Active'),
+        meters: (isAdmin ? filteredMeters : userMeters).filter(m => m.status !== 'Active'),
         users: fetchedUsers.filter(u => u.status !== 'Active')
-    }), [isAdmin, fetchedDevices, fetchedMeters, userDevices, userMeters, fetchedUsers]);
+    }), [isAdmin, filteredDevices, filteredMeters, userDevices, userMeters, fetchedUsers]);
 
-    const reportsStats = { ready: 5, processing: 1, total: 6 };
+    const reportsStats = {
+        ready: filteredReports.filter(r => r.status === 'Ready').length,
+        processing: filteredReports.filter(r => r.status === 'Processing').length,
+        total: filteredReports.length
+    };
 
-    const monthlyCostingData = [
-        { label: 'Solar', value: '₹1,200', numericValue: 1200, color: 'text-amber-500' },
-        { label: 'Water', value: '₹850', numericValue: 850, color: 'text-blue-500' },
-        { label: 'Energy', value: '₹2,300', numericValue: 2300, color: 'text-emerald-500' },
-        { label: 'Gas', value: '₹900', numericValue: 900, color: 'text-orange-500' },
-    ];
+    // Dynamically calculate monthly costing data
+    const monthlyCostingData = useMemo(() => {
+        const resourceMap = {
+            'ELECTRIC': { label: 'Energy', color: 'text-emerald-500', total: 0 },
+            'WATER': { label: 'Water', color: 'text-blue-500', total: 0 },
+            'GAS': { label: 'Gas', color: 'text-orange-500', total: 0 },
+            'SOLAR': { label: 'Solar', color: 'text-amber-500', total: 0 },
+            'OTHER': { label: 'Other', color: 'text-gray-500', total: 0 }
+        };
+
+        filteredInvoices.forEach(inv => {
+            let res = (inv.resourceType || '').toUpperCase();
+            if (res === 'ENERGY') res = 'ELECTRIC';
+
+            if (resourceMap[res]) {
+                resourceMap[res].total += (parseFloat(inv.amount?.replace(/[^0-9.-]+/g, '')) || 0);
+            } else {
+                resourceMap['OTHER'].total += (parseFloat(inv.amount?.replace(/[^0-9.-]+/g, '')) || 0);
+            }
+        });
+
+        return Object.values(resourceMap)
+            .filter(res => res.total > 0 || res.label !== 'Other')
+            .map(res => ({
+                label: res.label,
+                value: formatCurrency(res.total),
+                numericValue: res.total,
+                color: res.color
+            }));
+    }, [filteredInvoices]);
 
     const colorConfig = {
         purple: { bg: 'bg-purple-50/50', border: 'border-purple-100', text: 'text-purple-600', iconBg: 'bg-purple-100' },
@@ -264,6 +323,24 @@ export default function Dashboard({ setActivePage = () => { }, userRole }) {
                                 <p className="text-sm font-medium text-gray-500">Real-time monitoring and analytics</p>
                             </div>
                         </div>
+
+                        {isAdmin && (
+                            <div className="flex flex-col gap-1 min-w-[200px]">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-[#ff6e00] ml-1">User List (Optional)</label>
+                                <select
+                                    value={selectedUserId}
+                                    onChange={(e) => setSelectedUserId(e.target.value)}
+                                    className="w-full px-4 py-2.5 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-700 shadow-sm outline-none focus:ring-4 focus:ring-orange-500/10 transition-all cursor-pointer hover:border-orange-300 shadow-md shadow-orange-100"
+                                >
+                                    <option value="All">All Users</option>
+                                    {fetchedUsers.map(u => (
+                                        <option key={u.id} value={u.id}>
+                                            {u.firstName} {u.lastName} ({u.role === 'Industrial User' ? 'Industrial' : 'Domestic'})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                     </div>
                 </div>
 

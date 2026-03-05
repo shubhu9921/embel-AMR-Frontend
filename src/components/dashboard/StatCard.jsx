@@ -1,7 +1,5 @@
 import React from 'react';
 
-
-
 const colorMap = {
   blue: { text: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-100', icon: 'text-blue-600' },
   green: { text: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-100', icon: 'text-emerald-600' },
@@ -40,22 +38,24 @@ export const StatCard = React.memo(function StatCard({
       onKeyDown={handleKeyDown}
       tabIndex={onClick ? 0 : -1}
       role={onClick ? "button" : "article"}
-      className={`rounded-2xl shadow-md border border-gray-100 bg-white p-5 min-h-[120px] transition-all duration-300 h-full flex flex-col justify-between relative overflow-hidden group ${className} ${onClick ? 'hover:shadow-xl hover:-translate-y-1 hover:bg-orange-50/50 cursor-pointer active:scale-[0.98]' : ''}`}
+      className={`rounded-2xl shadow-md border border-gray-100 bg-white p-5 min-h-[120px] transition-all duration-300 h-full flex flex-col justify-between relative overflow-hidden group ${className} ${onClick ? 'hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 cursor-pointer active:scale-[0.98]' : ''}`}
     >
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/40 to-transparent rounded-bl-3xl -mr-4 -mt-4 opacity-50 group-hover:opacity-100 transition-opacity"></div>
       <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-white/40 to-transparent rounded-tr-3xl -ml-4 -mb-4 opacity-50 group-hover:opacity-100 transition-opacity"></div>
 
-      {/* Background Icon - Using watermarked large icon style */}
-      <div className={`absolute top-1/2 -translate-y-1/2 right-2 opacity-20 group-hover:opacity-100 transition-opacity duration-300 ${selectedColor.text} pointer-events-none`}>
-        {icon && React.cloneElement(icon, { size: 48, strokeWidth: 1.5 })}
+      {/* KPI Card Icon - Right Centered Overlay */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20">
+        <div className={`p-2 ${selectedColor.bg} ${selectedColor.icon} rounded-lg shadow-sm flex items-center justify-center`}>
+          {icon && React.cloneElement(icon, { size: 20, strokeWidth: 2 })}
+        </div>
       </div>
 
-      <div className="relative z-10 flex items-center justify-between mb-1">
+      <div className="relative z-10 flex items-center justify-between mb-1 pr-10">
         <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest leading-none">{title}</p>
       </div>
 
-      <div className="relative z-10">
+      <div className="relative z-10 pr-10">
         <p className="text-2xl font-bold text-gray-900 leading-none tracking-tight">{value}</p>
 
         {/* Sub-content Area */}

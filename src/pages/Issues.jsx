@@ -6,7 +6,7 @@ import SupportModal from '../components/modals/SupportModal';
 import { StatCard } from '../components/dashboard/StatCard';
 
 export default function IssuesPage({ setActivePage = () => { } }) {
-    const { tickets, deleteTicket, getKPIs } = useSupport();
+    const { tickets, resolveTicket, deleteTicket, getKPIs } = useSupport();
     const userRole = sessionStorage.getItem('userRole') || 'Industrial';
     const isAdmin = userRole === 'Admin' || userRole === 'Super Admin';
     const currentUser = sessionStorage.getItem('userName') || userRole;
@@ -72,7 +72,7 @@ export default function IssuesPage({ setActivePage = () => { } }) {
 
     const issueStats = useMemo(() => {
         return {
-            total: issueKPIs.total,
+            total: allIssues.length,
             totalBreakdown: issueKPIs.statusBreakdown,
             pending: allIssues.filter(i => i.status === 'Pending').length,
             assigned: allIssues.filter(i => i.status === 'Assigned' || i.status === 'Processing').length,
@@ -122,38 +122,38 @@ export default function IssuesPage({ setActivePage = () => { } }) {
                         <StatCard
                             title="Total Issues"
                             value={issueStats.total}
-                            icon={<MessageSquare className="w-4 h-4" />}
+                            icon={<div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><MessageSquare size={20} /></div>}
                             color="orange"
-                            compact
                             description="All reported technical issues"
                             statusBreakdown={issueStats.totalBreakdown}
+                            onClick={() => { setStatusFilter('all'); setSourceFilter('all'); }}
                         />
                         <StatCard
                             title="Pending"
                             value={issueStats.pending}
-                            icon={<Clock className="w-4 h-4" />}
+                            icon={<div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><Clock size={20} /></div>}
                             color="amber"
-                            compact
                             description="Awaiting initial review"
                             statusBreakdown={issueStats.pendingBreakdown}
+                            onClick={() => { setStatusFilter('Pending'); }}
                         />
                         <StatCard
                             title="Processing"
                             value={issueStats.assigned}
-                            icon={<Loader2 className="w-4 h-4" />}
+                            icon={<div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Loader2 size={20} /></div>}
                             color="blue"
-                            compact
                             description="Engineers working on it"
                             statusBreakdown={issueStats.assignedBreakdown}
+                            onClick={() => { setStatusFilter('Assigned'); }}
                         />
                         <StatCard
                             title="Resolved"
                             value={issueStats.resolved}
-                            icon={<CheckCircle className="w-4 h-4" />}
+                            icon={<div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><CheckCircle size={20} /></div>}
                             color="green"
-                            compact
                             description="Verified and closed"
                             statusBreakdown={issueStats.resolvedBreakdown}
+                            onClick={() => { setStatusFilter('Resolved'); }}
                         />
                     </div>
 
@@ -269,6 +269,19 @@ export default function IssuesPage({ setActivePage = () => { } }) {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2">
+                                                    {(item.status === 'Assigned' || item.status === 'Processing' || item.status === 'In Progress') && (
+                                                        <button
+                                                            onClick={() => {
+                                                                if (window.confirm('Are you sure you want to mark this issue as resolved?')) {
+                                                                    resolveTicket(item.id);
+                                                                }
+                                                            }}
+                                                            className="p-2 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-all"
+                                                            title="Mark as Completed"
+                                                        >
+                                                            <CheckCircle size={16} />
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => handleView(item)}
                                                         className="p-2 hover:bg-orange-100 text-orange-600 rounded-lg transition-all"

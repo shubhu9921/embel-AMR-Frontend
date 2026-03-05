@@ -16,7 +16,11 @@ import {
   AlertTriangle,
   AlertCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Monitor, // Added Monitor icon
+  Droplet, // Added Droplet icon
+  Sun,     // Added Sun icon
+  Flame    // Added Flame icon
 } from "lucide-react";
 import { StatCard } from "../components/dashboard/StatCard";
 import { useTable } from "../hooks/useTable";
@@ -37,8 +41,8 @@ export default function DevicesPage() {
     refreshData
   } = useData();
 
-  const [selectedSource, setSelectedSource] = useState('All');
-  const [selectedUserFilter, setSelectedUserFilter] = useState('All');
+  // Renamed selectedSource to sourceFilter for clarity and consistency with instruction
+  const [sourceFilter, setSourceFilter] = useState('All');
 
   // Modal states
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -63,11 +67,11 @@ export default function DevicesPage() {
 
   const currentData = useMemo(() => {
     let data = activeTab === 'devices' ? devicesData : metersData;
-    if (selectedSource !== 'All') {
-      data = data.filter(d => d.meterType?.toLowerCase() === selectedSource.toLowerCase());
+    if (sourceFilter !== 'All') { // Use sourceFilter here
+      data = data.filter(d => d.meterType?.toLowerCase() === sourceFilter.toLowerCase());
     }
     return data;
-  }, [activeTab, devicesData, metersData, selectedSource]);
+  }, [activeTab, devicesData, metersData, sourceFilter]); // Dependency on sourceFilter
 
   const {
     searchTerm,
@@ -92,7 +96,7 @@ export default function DevicesPage() {
     setCurrentPage(1);
     setSearchTerm("");
     setFilters('status', 'All');
-  }, [activeTab, selectedSource, setCurrentPage, setSearchTerm, setFilters]);
+  }, [activeTab, sourceFilter, setCurrentPage, setSearchTerm, setFilters]); // Dependency on sourceFilter
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -264,12 +268,6 @@ export default function DevicesPage() {
     };
   };
 
-  const totalStats = getStats(null);
-  const waterStats = getStats('water');
-  const solarStats = getStats('solar');
-  const gasStats = getStats('gas');
-  const energyStats = getStats('energy');
-
   // Specific counts for sub-headings or metadata
   const deviceCount = devicesData.length;
   const meterCount = metersData.length;
@@ -298,8 +296,8 @@ export default function DevicesPage() {
 
             <div className="flex items-center gap-4">
               <select
-                value={selectedSource}
-                onChange={(e) => setSelectedSource(e.target.value)}
+                value={sourceFilter} // Use sourceFilter here
+                onChange={(e) => setSourceFilter(e.target.value)} // Update sourceFilter
                 className="p-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 bg-white outline-none focus:ring-2 focus:ring-[#ff6e00]/20 min-w-[140px]"
               >
                 <option value="All">All Sources</option>
@@ -330,11 +328,56 @@ export default function DevicesPage() {
 
         <div className="space-y-6 w-full mt-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <StatCard title={`Total ${activeTab === 'devices' ? 'Devices' : 'Meters'}`} value={totalStats.value.toString().padStart(2, '0')} subValue={totalStats.subValue} statusBreakdown={totalStats.statusBreakdown} icon={<Cpu className="w-4 h-4" />} color="blue" compact />
-            <StatCard title="Water Source" value={waterStats.value.toString().padStart(2, '0')} subValue={waterStats.subValue} statusBreakdown={waterStats.statusBreakdown} icon={<Activity className="w-4 h-4" />} color="cyan" compact />
-            <StatCard title="Solar Source" value={solarStats.value.toString().padStart(2, '0')} subValue={solarStats.subValue} statusBreakdown={solarStats.statusBreakdown} icon={<Activity className="w-4 h-4" />} color="yellow" compact />
-            <StatCard title="Gas Source" value={gasStats.value.toString().padStart(2, '0')} subValue={gasStats.subValue} statusBreakdown={gasStats.statusBreakdown} icon={<Activity className="w-4 h-4" />} color="orange" compact />
-            <StatCard title="Energy Source" value={energyStats.value.toString().padStart(2, '0')} subValue={energyStats.subValue} statusBreakdown={energyStats.statusBreakdown} icon={<Activity className="w-4 h-4" />} color="green" compact />
+            {/* Updated StatCards */}
+            <StatCard
+              title={activeTab === 'devices' ? "Total Devices" : "Total Meters"}
+              value={(activeTab === 'devices' ? devicesData.length : metersData.length).toString().padStart(2, '0')}
+              icon={<div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Monitor size={20} /></div>}
+              description={activeTab === 'devices' ? "Connected monitoring units" : "Utility reading units"}
+              color="blue"
+              onClick={() => { setSourceFilter('All'); setFilters('status', 'All'); setSearchTerm(''); }}
+              statusBreakdown={[
+                { label: 'Active', value: (activeTab === 'devices' ? devicesData.filter(d => d.status === 'Active').length : metersData.filter(m => m.status === 'Active').length), color: 'text-emerald-500' },
+                { label: 'Warning', value: (activeTab === 'devices' ? devicesData.filter(d => d.status === 'Warning').length : metersData.filter(m => m.status === 'Warning').length), color: 'text-amber-500' }
+              ]}
+            />
+            <StatCard
+              title="Water Source"
+              value={(devicesData.filter(d => d.meterType === 'Water').length + metersData.filter(m => m.meterType === 'Water').length).toString().padStart(2, '0')}
+              icon={<div className="p-2 bg-cyan-50 text-cyan-600 rounded-lg"><Droplet size={20} /></div>}
+              description="Water management assets"
+              color="cyan"
+              onClick={() => { setActiveTab('meters'); setSourceFilter('Water'); }}
+              statusBreakdown={[
+                { label: 'Meters', value: metersData.filter(m => m.meterType === 'Water').length, color: 'text-cyan-500' },
+                { label: 'Devices', value: devicesData.filter(d => d.meterType === 'Water').length, color: 'text-blue-500' }
+              ]}
+            />
+            <StatCard
+              title="Solar Source"
+              value={(devicesData.filter(d => d.meterType === 'Solar').length + metersData.filter(m => m.meterType === 'Solar').length).toString().padStart(2, '0')}
+              icon={<div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><Sun size={20} /></div>}
+              description="Solar energy monitoring"
+              color="amber"
+              onClick={() => { setActiveTab('meters'); setSourceFilter('Solar'); }}
+              statusBreakdown={[
+                { label: 'Inverters', value: metersData.filter(m => m.meterType === 'Solar').length, color: 'text-amber-500' },
+                { label: 'Sensors', value: devicesData.filter(d => d.meterType === 'Solar').length, color: 'text-orange-500' }
+              ]}
+            />
+            <StatCard
+              title="Gas Source"
+              value={(devicesData.filter(d => d.meterType === 'Gas').length + metersData.filter(m => m.meterType === 'Gas').length).toString().padStart(2, '0')}
+              icon={<div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><Flame size={20} /></div>}
+              description="Gas flow monitoring"
+              color="orange"
+              onClick={() => { setActiveTab('meters'); setSourceFilter('Gas'); }}
+              statusBreakdown={[
+                { label: 'Meters', value: metersData.filter(m => m.meterType === 'Gas').length, color: 'text-orange-500' },
+                { label: 'Warning', value: devicesData.filter(d => d.meterType === 'Gas' && d.status === 'Warning').length, color: 'text-red-500' }
+              ]}
+            />
+            <StatCard title="Energy Source" value={(devicesData.filter(d => d.meterType === 'Energy').length + metersData.filter(m => m.meterType === 'Energy').length).toString().padStart(2, '0')} subValue={`Meters: ${metersData.filter(m => m.meterType === 'Energy').length}`} statusBreakdown={[{ label: 'Meters', value: metersData.filter(m => m.meterType === 'Energy').length, color: 'text-green-500' }]} icon={<Activity className="w-4 h-4" />} color="green" compact onClick={() => { setActiveTab('meters'); setSourceFilter('Energy'); }} />
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">
@@ -353,7 +396,7 @@ export default function DevicesPage() {
                     <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <div className={`absolute top-full right-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden text-sm transition-all duration-200 origin-top ${isFilterOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}>
-                    {['All', 'Active', 'Inactive', 'Deactivated'].map((option) => (
+                    {['All', 'Active', 'Inactive', 'Warning', 'Deactivated'].map((option) => (
                       <button key={option} onClick={() => { setFilters('status', option); setIsFilterOpen(false); }} className={`w-full text-left px-4 py-2.5 font-medium hover:bg-orange-50 ${filters.status === option ? 'text-[#ff6e00] bg-orange-50/50' : 'text-gray-600'}`}>{option === 'All' ? 'All Status' : option}</button>
                     ))}
                   </div>

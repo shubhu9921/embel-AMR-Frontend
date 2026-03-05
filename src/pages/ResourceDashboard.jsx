@@ -13,6 +13,7 @@ import {
     PieChart, Pie, Cell
 } from 'recharts';
 import AssetDetailModal from '../components/modals/AssetDetailModal';
+import ResourceConsumptionModal from '../components/modals/ResourceConsumptionModal';
 
 /* -------------------- SHARED HELPERS -------------------- */
 const CustomPieTooltip = ({ active, payload, totalBreakdown }) => {
@@ -69,6 +70,23 @@ export default function ResourceDashboard({
     const [selectedMeter, setSelectedMeter] = useState(null);
     const [selectedBreakdown, setSelectedBreakdown] = useState(null);
     const [activeAssetTab, setActiveAssetTab] = useState('Devices');
+    const [showConsumptionModal, setShowConsumptionModal] = useState(false);
+    const [consumptionModalConfig, setConsumptionModalConfig] = useState({ type: 'consumption' });
+
+    const handleKPIClick = (kpi) => {
+        if (kpi.type === 'consumption' || kpi.type === 'cost') {
+            setConsumptionModalConfig({ type: kpi.type });
+            setShowConsumptionModal(true);
+        } else if (kpi.type === 'asset_count') {
+            // Cycle through tabs: Devices -> Meters -> Inverters
+            const tabs = ['Devices', 'Meters', 'Inverters'];
+            const currentIndex = tabs.indexOf(activeAssetTab);
+            const nextIndex = (currentIndex + 1) % tabs.length;
+            setActiveAssetTab(tabs[nextIndex]);
+        } else if (isAdmin) {
+            setSelectedBreakdown(kpi);
+        }
+    };
 
     const filteredSystemAlerts = isAdmin ? alerts.filter(a => {
         const type = (a.type || a.severity || '').toLowerCase();
@@ -227,6 +245,14 @@ export default function ResourceDashboard({
                     colorClass={theme.text}
                 />
 
+                {showConsumptionModal && (
+                    <ResourceConsumptionModal
+                        onClose={() => setShowConsumptionModal(false)}
+                        resourceType={resourceType}
+                        breakdownType={consumptionModalConfig.type}
+                    />
+                )}
+
                 {/* KPI Breakdown Modal (Simple Implementation) */}
                 {selectedBreakdown && (
                     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -290,7 +316,7 @@ export default function ResourceDashboard({
                                 <StatCard
                                     key={idx}
                                     {...kpi}
-                                    onClick={() => isAdmin && setSelectedBreakdown(kpi)}
+                                    onClick={() => handleKPIClick(kpi)}
                                 />
                             ))}
                         </div>

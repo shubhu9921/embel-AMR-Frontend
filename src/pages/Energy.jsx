@@ -4,26 +4,10 @@ import ResourceDashboard from './ResourceDashboard';
 import OverallReportModal from '../components/modals/OverallReportModal';
 import { formatCurrency } from '../utils/formatters';
 import { apiService } from '../services/apiService';
+import { energyDataDay, energyDataWeek, energyDataMonth, energyDataYear } from '../data/mockData';
 
 
-/* -------------------- MOCK DATA -------------------- */
-const energyDataWeek = [
-  { time: 'Mon', usage: 145 }, { time: 'Tue', usage: 152 }, { time: 'Wed', usage: 138 },
-  { time: 'Thu', usage: 165 }, { time: 'Fri', usage: 148 }, { time: 'Sat', usage: 125 }, { time: 'Sun', usage: 110 },
-];
-const energyDataDay = [
-  { time: '00:00', usage: 5 }, { time: '04:00', usage: 8 }, { time: '08:00', usage: 25 },
-  { time: '12:00', usage: 45 }, { time: '16:00', usage: 35 }, { time: '20:00', usage: 20 },
-];
-const energyDataMonth = [
-  { time: 'Week 1', usage: 900 }, { time: 'Week 2', usage: 1100 }, { time: 'Week 3', usage: 950 }, { time: 'Week 4', usage: 1200 },
-];
-const energyDataYear = [
-  { time: 'Jan', usage: 3800 }, { time: 'Feb', usage: 3600 }, { time: 'Mar', usage: 4000 },
-  { time: 'Apr', usage: 4200 }, { time: 'May', usage: 4500 }, { time: 'Jun', usage: 5000 },
-  { time: 'Jul', usage: 5200 }, { time: 'Aug', usage: 5100 }, { time: 'Sep', usage: 4800 },
-  { time: 'Oct', usage: 4600 }, { time: 'Nov', usage: 4200 }, { time: 'Dec', usage: 4100 },
-];
+
 
 // Dynamic breakdown handles this now
 
@@ -123,18 +107,18 @@ export default function EnergyPage({ setActivePage }) {
       title: "Total Consumption",
       value: `${totalConsumption.toLocaleString(undefined, { maximumFractionDigits: 1 })} kWh`,
       icon: <Zap className="w-4 h-4" />,
-      trend: 5.4,
       color: "amber",
       description: "Monthly cumulative energy",
+      type: "consumption",
       statusBreakdown: isAdmin ? roleBreakdown : null
     },
     {
       title: "Est. Cost",
       value: formatCurrency(totalConsumption * 9.25),
       icon: <IndianRupee className="w-4 h-4" />,
-      trend: 2.1,
       color: "green",
       description: "Projected billing cycle cost",
+      type: "cost",
       statusBreakdown: isAdmin ? roleBreakdown.map(r => ({ ...r, value: formatCurrency(parseFloat(r.value.split(' ')[0]) * 9.25) })) : null
     },
     {
@@ -147,10 +131,11 @@ export default function EnergyPage({ setActivePage }) {
     },
     {
       title: "Device Count",
-      value: energyMeters.length.toString(),
+      value: `${energyMeters.length} Meters`,
       icon: <Gauge className="w-4 h-4" />,
       color: "orange",
       description: "Assigned devices",
+      type: "asset_count",
       statusBreakdown: [
         { label: 'Active', value: activeEnergy, color: 'text-green-500' },
         { label: 'Inactive', value: inactiveEnergy, color: 'text-red-500' }

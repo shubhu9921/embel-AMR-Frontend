@@ -4,24 +4,9 @@ import ResourceDashboard from './ResourceDashboard';
 import OverallReportModal from '../components/modals/OverallReportModal';
 import { formatCurrency } from '../utils/formatters';
 import { apiService } from '../services/apiService';
+import { waterDataDay, waterDataWeek, waterDataMonth, waterDataYear } from '../data/mockData';
 
-/* -------------------- MOCK DATA -------------------- */
-const waterDataWeek = [
-  { time: 'Mon', usage: 245 }, { time: 'Tue', usage: 288 }, { time: 'Wed', usage: 210 },
-  { time: 'Thu', usage: 260 }, { time: 'Fri', usage: 230 }, { time: 'Sat', usage: 190 }, { time: 'Sun', usage: 160 },
-];
-const waterDataDay = [
-  { time: '00:00', usage: 10 }, { time: '06:00', usage: 40 }, { time: '12:00', usage: 80 }, { time: '18:00', usage: 60 },
-];
-const waterDataMonth = [
-  { time: 'Week 1', usage: 1200 }, { time: 'Week 2', usage: 1350 }, { time: 'Week 3', usage: 1100 }, { time: 'Week 4', usage: 1400 },
-];
-const waterDataYear = [
-  { time: 'Jan', usage: 4500 }, { time: 'Feb', usage: 4200 }, { time: 'Mar', usage: 4800 },
-  { time: 'Apr', usage: 5000 }, { time: 'May', usage: 5200 }, { time: 'Jun', usage: 5800 },
-  { time: 'Jul', usage: 6000 }, { time: 'Aug', usage: 5900 }, { time: 'Sep', usage: 5500 },
-  { time: 'Oct', usage: 5300 }, { time: 'Nov', usage: 4900 }, { time: 'Dec', usage: 4800 },
-];
+
 
 // Dynamic breakdown handles this now
 
@@ -120,36 +105,37 @@ export default function WaterPage({ setActivePage }) {
   const kpiData = [
     {
       title: "Total Usage",
-      value: `${totalUsage.toFixed(0)} L`,
+      value: `${totalUsage.toLocaleString()} L`,
       icon: <Droplets className="w-4 h-4" />,
-      trend: 5.4,
       color: "cyan",
-      description: "Monthly cumulative usage",
+      description: "Total water consumption",
+      type: "consumption",
       statusBreakdown: isAdmin ? roleBreakdown : null
     },
     {
       title: "Est. Cost",
       value: formatCurrency(totalUsage * 0.75),
       icon: <IndianRupee className="w-4 h-4" />,
-      trend: 2.1,
       color: "blue",
-      description: "Projected billing cycle cost",
+      description: "Estimated monthly cost",
+      type: "cost",
       statusBreakdown: isAdmin ? roleBreakdown.map(r => ({ ...r, value: formatCurrency(parseFloat(r.value) * 0.75) })) : null
     },
     {
       title: "Avg Daily",
-      value: `${(totalUsage / 30).toFixed(0)} L`,
+      value: `${Math.round(totalUsage / 30).toLocaleString()} L/d`,
       icon: <Activity className="w-4 h-4" />,
       color: "emerald",
-      description: "Daily average consumption",
+      description: "Average usage per day",
       statusBreakdown: isAdmin ? roleBreakdown.map(r => ({ ...r, value: (parseFloat(r.value) / 30).toFixed(0) + ' L' })) : null
     },
     {
       title: "Device Count",
-      value: waterMeters.length.toString(),
+      value: `${waterMeters.length} Devices`,
       icon: <Gauge className="w-4 h-4" />,
       color: "orange",
       description: "Assigned devices",
+      type: "asset_count",
       statusBreakdown: [
         { label: 'Active', value: activeWater, color: 'text-green-500' },
         { label: 'Inactive', value: inactiveWater, color: 'text-red-500' }

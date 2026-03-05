@@ -5,7 +5,7 @@ import SupportModal from '../components/modals/SupportModal';
 import { SupportTicketsBreakdownCard } from '../components/dashboard/SupportTicketsBreakdownCard';
 
 export default function SupportTickets({ setActivePage = () => { } }) {
-    const { tickets, isLoading, deleteTicket, TICKET_STATUS } = useSupport();
+    const { tickets, isLoading, deleteTicket, TICKET_STATUS, resolveTicket } = useSupport();
     const userRole = sessionStorage.getItem('userRole') || 'Industrial';
 
     const currentUser = sessionStorage.getItem('userName') || userRole;
@@ -130,7 +130,7 @@ export default function SupportTickets({ setActivePage = () => { } }) {
 
             {/* KPI Cards Section */}
             <div className="mb-6 w-full">
-                <SupportTicketsBreakdownCard tickets={filteredTickets} />
+                <SupportTicketsBreakdownCard tickets={filteredTickets} onClick={setStatusFilter} />
             </div>
 
             {/* Single Table Section */}
@@ -206,6 +206,16 @@ export default function SupportTickets({ setActivePage = () => { } }) {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
+                                            {(ticket.status === 'Assigned' || ticket.status === 'In Progress' || ticket.status === 'Processing') && (
+                                                <button
+                                                    onClick={() => resolveTicket(ticket.id)}
+                                                    className="px-2 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1"
+                                                    title="Mark as Completed"
+                                                >
+                                                    <CheckCircle size={12} />
+                                                    Complete
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => handleEdit(ticket)}
                                                 className="px-2 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
