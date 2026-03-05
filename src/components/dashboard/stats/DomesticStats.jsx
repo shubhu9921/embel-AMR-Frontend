@@ -56,7 +56,7 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingD
                 <StatCard
                     title="Total Consumption"
                     value={totalConsumption.toLocaleString()}
-                    icon={<Activity className="w-4 h-4" />}
+                    icon={<Activity />}
                     color="blue"
                     description="Aggregate usage across all sources"
                     statusBreakdown={[
@@ -70,7 +70,7 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingD
                 <StatCard
                     title="Water Usage"
                     value={`${sourceBreakdown.WATER} L`}
-                    icon={<Droplet className="w-4 h-4" />}
+                    icon={<Droplet />}
                     color="cyan"
                     description="Monthly water consumption"
                     statusBreakdown={[
@@ -82,7 +82,7 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingD
                 <StatCard
                     title="Solar Generation"
                     value={`${sourceBreakdown.SOLAR} kWh`}
-                    icon={<Sun className="w-4 h-4" />}
+                    icon={<Sun />}
                     color="amber"
                     description="Monthly solar generation"
                     statusBreakdown={[
@@ -94,7 +94,7 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingD
                 <StatCard
                     title="Gas Consumption"
                     value={`${sourceBreakdown.GAS} m³`}
-                    icon={<Flame className="w-4 h-4" />}
+                    icon={<Flame />}
                     color="orange"
                     description="Monthly gas usage"
                     statusBreakdown={[
@@ -106,7 +106,7 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingD
                 <StatCard
                     title="Energy Consumption"
                     value={`${sourceBreakdown.ELECTRIC} kWh`}
-                    icon={<Zap className="w-4 h-4" />}
+                    icon={<Zap />}
                     color="green"
                     description="Monthly energy usage"
                     statusBreakdown={[
@@ -118,7 +118,7 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingD
                 <StatCard
                     title="Raise Ticket"
                     value="Support"
-                    icon={<Plus className="w-4 h-4" />}
+                    icon={<Plus />}
                     color="indigo"
                     description="Submit a detailed report"
                     statusBreakdown={[
@@ -129,7 +129,7 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingD
                 <StatCard
                     title="Issues"
                     value={domesticIssues.length}
-                    icon={<AlertTriangle className="w-4 h-4" />}
+                    icon={<AlertTriangle />}
                     color="orange"
                     description="Total Issues"
                     statusBreakdown={[
@@ -142,7 +142,7 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingD
                 <StatCard
                     title="Alerts"
                     value={domesticAlerts.length}
-                    icon={<Bell className="w-4 h-4" />}
+                    icon={<Bell />}
                     color="red"
                     description="Total Alerts"
                     statusBreakdown={[
@@ -155,7 +155,7 @@ export const DomesticStats = React.memo(({ tickets, toggleModal, monthlyCostingD
                 <StatCard
                     title="Monthly Costing"
                     value={formatCurrency(monthlyCostingData ? monthlyCostingData.reduce((acc, curr) => acc + (curr.numericValue || parseFloat(String(curr.value).replace(/[^0-9.-]+/g, "")) || 0), 0) : 0)}
-                    icon={<CreditCard className="w-4 h-4" />}
+                    icon={<CreditCard />}
                     color="emerald"
                     description="Monthly consumption cost"
                     statusBreakdown={monthlyCostingData}

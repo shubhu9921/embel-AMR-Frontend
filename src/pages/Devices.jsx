@@ -332,7 +332,7 @@ export default function DevicesPage() {
             <StatCard
               title={activeTab === 'devices' ? "Total Devices" : "Total Meters"}
               value={(activeTab === 'devices' ? devicesData.length : metersData.length).toString().padStart(2, '0')}
-              icon={<div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Monitor size={20} /></div>}
+              icon={<Monitor />}
               description={activeTab === 'devices' ? "Connected monitoring units" : "Utility reading units"}
               color="blue"
               onClick={() => { setSourceFilter('All'); setFilters('status', 'All'); setSearchTerm(''); }}
@@ -344,7 +344,7 @@ export default function DevicesPage() {
             <StatCard
               title="Water Source"
               value={(devicesData.filter(d => d.meterType === 'Water').length + metersData.filter(m => m.meterType === 'Water').length).toString().padStart(2, '0')}
-              icon={<div className="p-2 bg-cyan-50 text-cyan-600 rounded-lg"><Droplet size={20} /></div>}
+              icon={<Droplet />}
               description="Water management assets"
               color="cyan"
               onClick={() => { setActiveTab('meters'); setSourceFilter('Water'); }}
@@ -356,7 +356,7 @@ export default function DevicesPage() {
             <StatCard
               title="Solar Source"
               value={(devicesData.filter(d => d.meterType === 'Solar').length + metersData.filter(m => m.meterType === 'Solar').length).toString().padStart(2, '0')}
-              icon={<div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><Sun size={20} /></div>}
+              icon={<Sun />}
               description="Solar energy monitoring"
               color="amber"
               onClick={() => { setActiveTab('meters'); setSourceFilter('Solar'); }}
@@ -368,7 +368,7 @@ export default function DevicesPage() {
             <StatCard
               title="Gas Source"
               value={(devicesData.filter(d => d.meterType === 'Gas').length + metersData.filter(m => m.meterType === 'Gas').length).toString().padStart(2, '0')}
-              icon={<div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><Flame size={20} /></div>}
+              icon={<Flame />}
               description="Gas flow monitoring"
               color="orange"
               onClick={() => { setActiveTab('meters'); setSourceFilter('Gas'); }}
@@ -377,7 +377,7 @@ export default function DevicesPage() {
                 { label: 'Warning', value: devicesData.filter(d => d.meterType === 'Gas' && d.status === 'Warning').length, color: 'text-red-500' }
               ]}
             />
-            <StatCard title="Energy Source" value={(devicesData.filter(d => d.meterType === 'Energy').length + metersData.filter(m => m.meterType === 'Energy').length).toString().padStart(2, '0')} subValue={`Meters: ${metersData.filter(m => m.meterType === 'Energy').length}`} statusBreakdown={[{ label: 'Meters', value: metersData.filter(m => m.meterType === 'Energy').length, color: 'text-green-500' }]} icon={<Activity className="w-4 h-4" />} color="green" compact onClick={() => { setActiveTab('meters'); setSourceFilter('Energy'); }} />
+            <StatCard title="Energy Source" value={(devicesData.filter(d => d.meterType === 'Energy').length + metersData.filter(m => m.meterType === 'Energy').length).toString().padStart(2, '0')} subValue={`Meters: ${metersData.filter(m => m.meterType === 'Energy').length}`} statusBreakdown={[{ label: 'Meters', value: metersData.filter(m => m.meterType === 'Energy').length, color: 'text-green-500' }]} icon={<Activity />} color="green" compact onClick={() => { setActiveTab('meters'); setSourceFilter('Energy'); }} />
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">

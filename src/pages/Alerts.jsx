@@ -285,6 +285,19 @@ export default function AlertsPage({ setActivePage = () => { } }) {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
+                          {(item.engineer || item.assignedEngineer) && (item.status !== 'Resolved') && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm('Are you sure you want to mark this alert as resolved?')) {
+                                  resolveTicket(item.id);
+                                }
+                              }}
+                              className="p-2 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-all"
+                              title="Mark as Solved"
+                            >
+                              <CheckCircle size={16} />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleView(item)}
                             className="p-2 hover:bg-orange-100 text-orange-600 rounded-lg transition-all"

@@ -88,11 +88,25 @@ export default function AlertIssueDetailsModal({ item, onClose, setActivePage })
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12 mb-8 relative z-10">
                             <DetailItem label="Ticket ID" value={item.ticketId || item.id || "da1"} />
                             <DetailItem label="Date Raised" icon={<Calendar size={14} />} value={item.date || item.timestamp || "23 Feb 2026"} />
-                            <DetailItem label="Request Type" value="System Alert" />
+                            <DetailItem label="Request Type" value={item.type === 'alert' ? 'System Alert' : 'Support Issue'} />
                             <DetailItem label="Status" value={currentStatus} isStatus />
                             <DetailItem label="Source" icon={<Droplet size={14} />} value={item.source || item.category || "Water"} />
                             {!(item.role || item.userRole)?.toLowerCase()?.includes('domestic') && (
                                 <DetailItem label="Device/Meter" icon={<Cpu size={14} />} value={item.device || item.deviceName || "WM-Res-01"} />
+                            )}
+                            {(item.engineer || item.assignedEngineer) && (
+                                <DetailItem
+                                    label="Assigned Engineer"
+                                    icon={<User size={14} />}
+                                    value={
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
+                                                {(item.engineer || item.assignedEngineer || '').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase()}
+                                            </div>
+                                            <span className="text-sm font-bold text-gray-800">{item.engineer || item.assignedEngineer}</span>
+                                        </div>
+                                    }
+                                />
                             )}
                         </div>
 

@@ -104,7 +104,7 @@ export default function SolarPage({ setActivePage }) {
         {
             title: "Total Generation",
             value: `${totalGeneration.toLocaleString()} kWh`,
-            icon: <Sun className="w-4 h-4" />,
+            icon: <Sun />,
             color: "emerald",
             description: "Monthly cumulative energy",
             type: "consumption",
@@ -113,7 +113,7 @@ export default function SolarPage({ setActivePage }) {
         {
             title: "Cost Savings",
             value: formatCurrency(totalGeneration * 12.25),
-            icon: <IndianRupee className="w-4 h-4" />,
+            icon: <IndianRupee />,
             color: "green",
             description: "Projected billing cycle savings",
             type: "cost",
@@ -122,7 +122,7 @@ export default function SolarPage({ setActivePage }) {
         {
             title: "Current PWR",
             value: `${(totalGeneration / 720).toFixed(1)} kW`,
-            icon: <Zap className="w-4 h-4" />,
+            icon: <Zap />,
             color: "blue",
             description: "Real-time output",
             statusBreakdown: isAdmin ? roleBreakdown.map(r => ({ ...r, value: (parseFloat(r.value) / 720).toFixed(1) + ' kW' })) : null
@@ -130,7 +130,7 @@ export default function SolarPage({ setActivePage }) {
         {
             title: "Device Count",
             value: `${solarInverters.length} Inverters`,
-            icon: <Gauge className="w-4 h-4" />,
+            icon: <Gauge />,
             color: "orange",
             description: "Assigned devices",
             type: "asset_count",

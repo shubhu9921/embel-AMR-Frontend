@@ -115,7 +115,7 @@ export default function PayloadsPage() {
                         <StatCard
                             title="Total Payloads"
                             value={totalPayloads}
-                            icon={<Database className="w-4 h-4" />}
+                            icon={<Database />}
                             color="orange"
                             description="Total accepted packets"
                             compact
@@ -123,7 +123,7 @@ export default function PayloadsPage() {
                         <StatCard
                             title="Avg Signal Quality"
                             value={`${avgSignalQuality}%`}
-                            icon={<Signal className="w-4 h-4" />}
+                            icon={<Signal />}
                             color="blue"
                             description="Network signal strength"
                             compact
@@ -131,7 +131,7 @@ export default function PayloadsPage() {
                         <StatCard
                             title="Active Devices"
                             value={activeDevices}
-                            icon={<Zap className="w-4 h-4" />}
+                            icon={<Zap />}
                             color="green"
                             description="Transmitting devices"
                             compact
@@ -139,7 +139,7 @@ export default function PayloadsPage() {
                         <StatCard
                             title="Low Battery"
                             value={lowBatteryCount}
-                            icon={<Battery className="w-4 h-4" />}
+                            icon={<Battery />}
                             color="red"
                             description="Critical battery levels"
                             compact

@@ -131,7 +131,7 @@ export default function ReportsPage() {
                         <StatCard
                             title="Total Reports"
                             value={totalReports}
-                            icon={<FileText className="w-4 h-4" />}
+                            icon={<FileText />}
                             color="orange"
                             description="Available reports"
                             statusBreakdown={totalStatusBreakdown}
@@ -140,7 +140,7 @@ export default function ReportsPage() {
                         <StatCard
                             title="Ready"
                             value={readyReports}
-                            icon={<CheckCircle2 className="w-4 h-4" />}
+                            icon={<CheckCircle2 />}
                             color="green"
                             description="Completed"
                             statusBreakdown={readyBreakdown}
@@ -149,7 +149,7 @@ export default function ReportsPage() {
                         <StatCard
                             title="Processing"
                             value={processingReports}
-                            icon={<Clock className="w-4 h-4" />}
+                            icon={<Clock />}
                             color="amber"
                             description="Generating"
                             statusBreakdown={processingBreakdown}
@@ -158,7 +158,7 @@ export default function ReportsPage() {
                         <StatCard
                             title="Downloads"
                             value={downloadedReports}
-                            icon={<Download className="w-4 h-4" />}
+                            icon={<Download />}
                             color="blue"
                             description="Total downloaded"
                         />

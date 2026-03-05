@@ -49,7 +49,7 @@ export const SupportTicketsBreakdownCard = React.memo(({ tickets = [], onClick }
             <StatCard
                 title="Total Tickets"
                 value={stats.total}
-                icon={<div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><MessageSquare size={20} /></div>}
+                icon={<MessageSquare />}
                 color="indigo"
                 description="Issues & Alerts"
                 onClick={() => onClick && onClick('All')}
@@ -61,7 +61,7 @@ export const SupportTicketsBreakdownCard = React.memo(({ tickets = [], onClick }
             <StatCard
                 title="Pending"
                 value={stats.pendingCount}
-                icon={<div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><Clock size={20} /></div>}
+                icon={<Clock />}
                 color="amber"
                 description="Status Breakdown"
                 onClick={() => onClick && onClick('Pending')}
@@ -70,7 +70,7 @@ export const SupportTicketsBreakdownCard = React.memo(({ tickets = [], onClick }
             <StatCard
                 title="Assigned"
                 value={stats.processingCount}
-                icon={<div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><AlertCircle size={20} /></div>}
+                icon={<AlertCircle />}
                 color="blue"
                 description="Status Breakdown"
                 onClick={() => onClick && onClick('Assigned')}
@@ -79,7 +79,7 @@ export const SupportTicketsBreakdownCard = React.memo(({ tickets = [], onClick }
             <StatCard
                 title="Resolved"
                 value={stats.resolvedCount}
-                icon={<div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><CheckCircle size={20} /></div>}
+                icon={<CheckCircle />}
                 color="emerald"
                 description="Status Breakdown"
                 onClick={() => onClick && onClick('Resolved')}

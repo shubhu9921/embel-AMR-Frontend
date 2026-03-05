@@ -333,6 +333,7 @@ export default function DomesticConsumptionModal({ onClose, defaultView = 'Total
                                         { label: 'Active Meters', value: isolatedMeters.filter(m => m.status === 'Active').length, color: 'text-green-500' },
                                         { label: 'Inactive Meters', value: isolatedMeters.filter(m => m.status !== 'Active').length, color: 'text-red-500' }
                                     ]}
+                                    className="hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-default"
                                 />
                                 <StatCard
                                     title="Estimated Bill"
@@ -344,6 +345,7 @@ export default function DomesticConsumptionModal({ onClose, defaultView = 'Total
                                         { label: 'Paid', value: '0', color: 'text-emerald-500' },
                                         { label: 'Pending', value: '1', color: 'text-amber-500' }
                                     ]}
+                                    className="hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-default"
                                 />
                                 <StatCard
                                     title="Daily Avg"
@@ -355,6 +357,7 @@ export default function DomesticConsumptionModal({ onClose, defaultView = 'Total
                                         { label: 'Peak Day', value: '12%', color: 'text-blue-500' },
                                         { label: 'Low Day', value: '3%', color: 'text-emerald-500' }
                                     ]}
+                                    className="hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-default"
                                 />
                                 <StatCard
                                     title="Generated Reports"
@@ -366,6 +369,7 @@ export default function DomesticConsumptionModal({ onClose, defaultView = 'Total
                                         { label: 'Ready', value: reports.filter(r => r.meter === (selectedSource === 'All' ? 'ALL' : selectedSource.toUpperCase()) && r.status === 'Ready').length, color: 'text-emerald-500' },
                                         { label: 'Processing', value: reports.filter(r => r.meter === (selectedSource === 'All' ? 'ALL' : selectedSource.toUpperCase()) && r.status === 'Processing').length, color: 'text-amber-500' }
                                     ]}
+                                    className="hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-default"
                                 />
                                 <StatCard
                                     title="Active Meters"
@@ -377,6 +381,7 @@ export default function DomesticConsumptionModal({ onClose, defaultView = 'Total
                                         { label: 'Online', value: isolatedMeters.filter(m => m.status === 'Active').length, color: 'text-emerald-500' },
                                         { label: 'Offline', value: isolatedMeters.filter(m => m.status !== 'Active').length, color: 'text-red-500' }
                                     ]}
+                                    className="hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-default"
                                 />
                             </div>
 

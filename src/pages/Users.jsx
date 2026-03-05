@@ -10,7 +10,11 @@ import {
   UserCheck,
   UserX,
   UserPlus,
-  ChevronDown
+  ChevronDown,
+  CheckCircle,
+  Home,
+  Database,
+  Activity
 } from "lucide-react";
 import CreateUserModal from "../components/modals/CreateUserModal";
 import { StatCard } from "../components/dashboard/StatCard";
@@ -204,8 +208,8 @@ export default function UsersPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <StatCard
               title="Total Users"
-              value={totalStats.total}
-              icon={<div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><Users size={20} /></div>}
+              value={totalStats.total.toString().padStart(2, '0')}
+              icon={<Users />}
               color="orange"
               description="Overall registered accounts"
               statusBreakdown={totalStats.breakdown}
@@ -213,8 +217,8 @@ export default function UsersPage() {
             />
             <StatCard
               title="System Admins"
-              value={adminStats.total}
-              icon={<div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><UserCheck size={20} /></div>}
+              value={adminStats.total.toString().padStart(2, '0')}
+              icon={<CheckCircle />}
               color="purple"
               description="Total account managers"
               statusBreakdown={adminStats.breakdown}
@@ -222,8 +226,8 @@ export default function UsersPage() {
             />
             <StatCard
               title="Industrial Users"
-              value={industrialStats.total}
-              icon={<div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><UserPlus size={20} /></div>}
+              value={industrialStats.total.toString().padStart(2, '0')}
+              icon={<Database />}
               color="blue"
               description="Enterprise level accounts"
               statusBreakdown={industrialStats.breakdown}
@@ -231,8 +235,8 @@ export default function UsersPage() {
             />
             <StatCard
               title="Domestic Users"
-              value={domesticStats.total}
-              icon={<div className="p-2 bg-cyan-50 text-cyan-600 rounded-lg"><UserPlus size={20} /></div>}
+              value={domesticStats.total.toString().padStart(2, '0')}
+              icon={<Home />}
               color="cyan"
               description="Residential account holders"
               statusBreakdown={domesticStats.breakdown}

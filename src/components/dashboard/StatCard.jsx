@@ -1,15 +1,17 @@
 import React from 'react';
+import KPIIcon from './KPIIcon';
+
 
 const colorMap = {
-  blue: { text: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-100', icon: 'text-blue-600' },
-  green: { text: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-100', icon: 'text-emerald-600' },
-  amber: { text: 'text-amber-500', bg: 'bg-amber-50', border: 'border-amber-100', icon: 'text-amber-600' },
-  orange: { text: 'text-orange-500', bg: 'bg-orange-50', border: 'border-orange-100', icon: 'text-orange-600' },
-  red: { text: 'text-red-500', bg: 'bg-red-50', border: 'border-red-100', icon: 'text-red-600' },
-  purple: { text: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-100', icon: 'text-purple-600' },
-  cyan: { text: 'text-cyan-500', bg: 'bg-cyan-50', border: 'border-cyan-100', icon: 'text-cyan-600' },
-  indigo: { text: 'text-indigo-500', bg: 'bg-indigo-50', border: 'border-indigo-100', icon: 'text-indigo-600' },
-  yellow: { text: 'text-yellow-500', bg: 'bg-yellow-50', border: 'border-yellow-100', icon: 'text-yellow-600' },
+  blue: { text: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-100' },
+  green: { text: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-100' },
+  amber: { text: 'text-amber-500', bg: 'bg-amber-50', border: 'border-amber-100' },
+  orange: { text: 'text-orange-500', bg: 'bg-orange-50', border: 'border-orange-100' },
+  red: { text: 'text-red-500', bg: 'bg-red-50', border: 'border-red-100' },
+  purple: { text: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-100' },
+  cyan: { text: 'text-cyan-500', bg: 'bg-cyan-50', border: 'border-cyan-100' },
+  indigo: { text: 'text-indigo-500', bg: 'bg-indigo-50', border: 'border-indigo-100' },
+  yellow: { text: 'text-yellow-500', bg: 'bg-yellow-50', border: 'border-yellow-100' },
 };
 
 export const StatCard = React.memo(function StatCard({
@@ -23,7 +25,7 @@ export const StatCard = React.memo(function StatCard({
   onClick,
   className = ""
 }) {
-  const selectedColor = colorMap[color] || { text: 'text-slate-500', bg: 'bg-slate-50', border: 'border-slate-100', icon: 'text-slate-600' };
+  const selectedColor = colorMap[color] || { text: 'text-slate-500', bg: 'bg-slate-50', border: 'border-slate-100' };
 
   const handleKeyDown = (e) => {
     if (onClick && (e.key === 'Enter' || e.key === ' ')) {
@@ -44,12 +46,8 @@ export const StatCard = React.memo(function StatCard({
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/40 to-transparent rounded-bl-3xl -mr-4 -mt-4 opacity-50 group-hover:opacity-100 transition-opacity"></div>
       <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-white/40 to-transparent rounded-tr-3xl -ml-4 -mb-4 opacity-50 group-hover:opacity-100 transition-opacity"></div>
 
-      {/* KPI Card Icon - Right Centered Overlay */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20">
-        <div className={`p-2 ${selectedColor.bg} ${selectedColor.icon} rounded-lg shadow-sm flex items-center justify-center`}>
-          {icon && React.cloneElement(icon, { size: 20, strokeWidth: 2 })}
-        </div>
-      </div>
+      {/* Standardized KPI Icon */}
+      <KPIIcon icon={icon} />
 
       <div className="relative z-10 flex items-center justify-between mb-1 pr-10">
         <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest leading-none">{title}</p>

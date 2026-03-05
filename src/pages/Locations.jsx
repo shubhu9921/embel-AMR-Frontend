@@ -28,6 +28,7 @@ export default function LocationsPage() {
     const [isLocationFilterOpen, setIsLocationFilterOpen] = useState(false);
     const [isSourceFilterOpen, setIsSourceFilterOpen] = useState(false);
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+    const [kpiFilter, setKpiFilter] = useState('All'); // 'All', 'Active', 'Meters'
 
     const locationFilterRef = useRef(null);
     const sourceFilterRef = useRef(null);
@@ -84,7 +85,14 @@ export default function LocationsPage() {
         const deviceSource = (device.meterType || device.type || '').toLowerCase();
         const matchesSource = selectedSource === "All Sources" || deviceSource === selectedSource.toLowerCase();
 
-        return matchesSearch && matchesLocation && matchesSource;
+        let matchesKpi = true;
+        if (kpiFilter === 'Active') {
+            matchesKpi = device.status?.toLowerCase() === 'active' || device.status === 'Active';
+        } else if (kpiFilter === 'Meters') {
+            matchesKpi = device._itemType === 'meter';
+        }
+
+        return matchesSearch && matchesLocation && matchesSource && matchesKpi;
     });
 
     // Handlers
@@ -264,37 +272,45 @@ export default function LocationsPage() {
                         <StatCard
                             title="Distinct Locations"
                             value={totalLocationsCount}
-                            icon={<MapPin className="w-4 h-4" />}
+                            icon={<MapPin />}
                             color="purple"
                             compact
                             description="Unique Map Areas"
+                            onClick={() => setKpiFilter('All')}
+                            className={`hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-pointer ${kpiFilter === 'All' ? 'scale-[1.02] shadow-xl bg-slate-50/50' : ''}`}
                         />
                         <StatCard
                             title="Active Sites"
                             value={activeSitesCount}
-                            icon={<MapPin className="w-4 h-4" />}
+                            icon={<MapPin />}
                             color="emerald"
                             compact
                             description="Locations with Active Assets"
                             statusBreakdown={siteBreakdown}
+                            onClick={() => setKpiFilter('Active')}
+                            className={`hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-pointer ${kpiFilter === 'Active' ? 'scale-[1.02] shadow-xl bg-slate-50/50' : ''}`}
                         />
                         <StatCard
                             title="Mapped Devices & Meters"
                             value={devices.length}
-                            icon={<Cpu className="w-4 h-4" />}
+                            icon={<Cpu />}
                             color="blue"
                             compact
                             description={`${counts.devices} Devices + ${counts.meters} Meters`}
                             statusBreakdown={totalAssetBreakdown}
+                            onClick={() => setKpiFilter('All')}
+                            className={`hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-pointer ${kpiFilter === 'All' ? 'scale-[1.02] shadow-xl bg-slate-50/50' : ''}`}
                         />
                         <StatCard
                             title="Total Meters"
                             value={counts.meters}
-                            icon={<Gauge className="w-4 h-4" />}
+                            icon={<Gauge />}
                             color="green"
                             compact
                             description="Standalone initial meter data"
                             statusBreakdown={meterBreakdown}
+                            onClick={() => setKpiFilter('Meters')}
+                            className={`hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-pointer ${kpiFilter === 'Meters' ? 'scale-[1.02] shadow-xl bg-slate-50/50' : ''}`}
                         />
                     </div>
 

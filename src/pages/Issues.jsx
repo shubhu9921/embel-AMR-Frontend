@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { AlertCircle, Search, ChevronLeft, ChevronRight, Filter, Eye, MessageSquare, ChevronDown, CheckCircle, Info, AlertTriangle, Edit, Plus, HelpCircle, Trash2, Clock, Loader2 } from 'lucide-react';
+import { AlertCircle, Search, ChevronLeft, ChevronRight, Filter, Eye, MessageSquare, ChevronDown, CheckCircle, Info, AlertTriangle, Edit, Plus, HelpCircle, Trash2, Clock, Loader2, Activity } from 'lucide-react';
 import { useSupport } from '../context/SupportContext';
 import AlertIssueDetailsModal from '../components/modals/AlertIssueDetailsModal';
 import SupportModal from '../components/modals/SupportModal';
@@ -120,40 +120,43 @@ export default function IssuesPage({ setActivePage = () => { } }) {
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                         <StatCard
-                            title="Total Issues"
+                            title="Total Requests"
                             value={issueStats.total}
-                            icon={<div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><MessageSquare size={20} /></div>}
-                            color="orange"
-                            description="All reported technical issues"
-                            statusBreakdown={issueStats.totalBreakdown}
-                            onClick={() => { setStatusFilter('all'); setSourceFilter('all'); }}
+                            icon={<MessageSquare />}
+                            color="indigo"
+                            description="Issues & Maintenance"
+                            onClick={() => { setStatusFilter('all'); setSourceFilter('all'); setSearch(''); }}
+                            statusBreakdown={[
+                                { label: 'Open', value: issueStats.pending + issueStats.assigned, color: 'text-amber-500' },
+                                { label: 'Closed', value: issueStats.resolved, color: 'text-green-500' }
+                            ]}
                         />
                         <StatCard
                             title="Pending"
                             value={issueStats.pending}
-                            icon={<div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><Clock size={20} /></div>}
+                            icon={<Clock />}
                             color="amber"
-                            description="Awaiting initial review"
+                            description="Awaiting assignment"
+                            onClick={() => { setStatusFilter('Pending'); setSearch(''); }}
                             statusBreakdown={issueStats.pendingBreakdown}
-                            onClick={() => { setStatusFilter('Pending'); }}
                         />
                         <StatCard
-                            title="Processing"
+                            title="In Progress"
                             value={issueStats.assigned}
-                            icon={<div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Loader2 size={20} /></div>}
+                            icon={<Activity />}
                             color="blue"
-                            description="Engineers working on it"
+                            description="Being addressed"
+                            onClick={() => { setStatusFilter('Assigned'); setSearch(''); }}
                             statusBreakdown={issueStats.assignedBreakdown}
-                            onClick={() => { setStatusFilter('Assigned'); }}
                         />
                         <StatCard
                             title="Resolved"
                             value={issueStats.resolved}
-                            icon={<div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><CheckCircle size={20} /></div>}
-                            color="green"
-                            description="Verified and closed"
+                            icon={<CheckCircle />}
+                            color="emerald"
+                            description="Completed tickets"
+                            onClick={() => { setStatusFilter('Resolved'); setSearch(''); }}
                             statusBreakdown={issueStats.resolvedBreakdown}
-                            onClick={() => { setStatusFilter('Resolved'); }}
                         />
                     </div>
 
@@ -277,7 +280,7 @@ export default function IssuesPage({ setActivePage = () => { } }) {
                                                                 }
                                                             }}
                                                             className="p-2 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-all"
-                                                            title="Mark as Completed"
+                                                            title="Mark as Solved"
                                                         >
                                                             <CheckCircle size={16} />
                                                         </button>

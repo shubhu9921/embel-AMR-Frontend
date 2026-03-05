@@ -195,12 +195,13 @@ export default function MyUsage() {
     };
 
     return (
-        <main className="w-full flex flex-col gap-6 min-h-screen mb-20 px-4 md:px-6 py-6 font-sans pt-6 md:pt-8">
-            <div className="max-w-[1500px] xl:mx-auto w-full flex flex-col gap-6 lg:gap-8">
-                {/* Header */}
-                <header className="p-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white/70 backdrop-blur-xl sticky top-0 z-30 rounded-3xl shadow-sm lg:shadow-xl shadow-gray-200/50 border border-white/50 mb-4">
+        <main className="w-full flex flex-col gap-6 min-h-screen mb-20 px-4 md:px-6 py-6 font-sans pt-6 md:pt-8 bg-slate-50/30">
+
+            {/* Header */}
+            <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-30 rounded-[20px] shadow-sm mb-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     <div className="flex items-center gap-4 flex-shrink-0">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
                             <Activity size={24} />
                         </div>
                         <div>
@@ -209,8 +210,8 @@ export default function MyUsage() {
                         </div>
                     </div>
 
-                    {/* Filters Section (Center/Middle on Large) */}
-                    <div className="flex flex-wrap items-center lg:justify-center gap-4 flex-grow">
+                    {/* Filters Section */}
+                    <div className="flex flex-wrap items-center md:justify-center gap-4 flex-grow">
                         <div className="flex p-1 bg-gray-100 rounded-xl">
                             {['today', 'week', 'month', 'year'].map(t => (
                                 <button
@@ -256,8 +257,8 @@ export default function MyUsage() {
                         </div>
                     </div>
 
-                    {/* Export Button (Right Side on Large) */}
-                    <div className="flex items-center lg:justify-end flex-shrink-0">
+                    {/* Export Button */}
+                    <div className="flex items-center md:justify-end flex-shrink-0">
                         <button
                             onClick={handleExport}
                             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95 group"
@@ -266,210 +267,212 @@ export default function MyUsage() {
                             <span>Export Report</span>
                         </button>
                     </div>
-                </header>
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {Object.entries(resourceConfig).map(([key, config]) => (
-                        <StatCard
-                            key={key}
-                            title={`${key} Total`}
-                            value={`${totals[key].toFixed(1)} ${config.unit}`}
-                            icon={<config.icon />}
-                            color={config.color}
-                            description={`Total for this ${timeRange}`}
-                        />
-                    ))}
                 </div>
+            </div>
 
-                {/* Main Content: Graph & Table Side by Side (50/50 Split) */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {/* Visual Section (Graph) */}
-                    <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 flex flex-col h-full">
-                        <div className="flex items-center justify-between mb-6">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900 border-l-4 border-indigo-500 pl-3 flex items-center gap-2">
-                                    <Activity className="text-indigo-500" size={20} />
-                                    Consumption Trends
-                                </h3>
-                                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mt-1">Resource allocation over time</p>
-                            </div>
-                            <div className="flex gap-2">
-                                <div className="flex p-1 bg-gray-50 border border-gray-100 rounded-lg">
-                                    <button
-                                        onClick={() => setActiveResource('All')}
-                                        className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${activeResource === 'All' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500'}`}
-                                    >
-                                        All
-                                    </button>
-                                    {Object.keys(resourceConfig).map(res => (
-                                        <button
-                                            key={res}
-                                            onClick={() => setActiveResource(res)}
-                                            className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${activeResource === res ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500'}`}
-                                        >
-                                            {res}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                {Object.entries(resourceConfig).map(([key, config]) => (
+                    <StatCard
+                        key={key}
+                        title={`${key} Total`}
+                        value={`${totals[key].toFixed(1)} ${config.unit}`}
+                        icon={<config.icon />}
+                        color={config.color}
+                        description={`Total for this ${timeRange}`}
+                        className="hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-default"
+                    />
+                ))}
+            </div>
 
-                        <div className="h-[450px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={usageData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis
-                                        dataKey="time"
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }}
-                                        dy={10}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }}
-                                    />
-                                    <Tooltip
-                                        cursor={{ fill: '#f8fafc', radius: 4 }}
-                                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
-                                    />
-                                    <Legend verticalAlign="top" height={36} iconType="circle" />
-
-                                    {activeResource === 'All' ? (
-                                        Object.entries(resourceConfig).map(([key, config]) => (
-                                            <Bar key={key} dataKey={key} fill={config.hex} radius={[4, 4, 0, 0]} barSize={20} />
-                                        ))
-                                    ) : (
-                                        <Bar dataKey={activeResource} fill={resourceConfig[activeResource].hex} radius={[6, 6, 0, 0]} barSize={40}>
-                                            {usageData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={resourceConfig[activeResource].hex} />
-                                            ))}
-                                        </Bar>
-                                    )}
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-
-                        {/* Comparison Mini Section (if year or custom selected) */}
-                        {(timeRange === 'year' || showComparison) && (
-                            <div className="mt-8 pt-6 border-t border-gray-100">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h4 className="text-sm font-bold text-gray-800">Historical Comparison</h4>
-                                    <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded">Previous vs Current</span>
-                                </div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {Object.keys(resourceConfig).map(res => {
-                                        const diff = prevTotals[res] > 0
-                                            ? ((totals[res] - prevTotals[res]) / prevTotals[res]) * 100
-                                            : (totals[res] > 0 ? 100 : 0);
-                                        const isUp = diff > 0;
-                                        return (
-                                            <div key={res} className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{res}</p>
-                                                <div className="flex items-baseline gap-2">
-                                                    <span className="text-lg font-bold text-gray-900">{totals[res].toFixed(1)}</span>
-                                                    <span className={`flex items-center text-[10px] font-bold ${isUp ? 'text-red-500' : 'text-emerald-500'}`}>
-                                                        {isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                                                        {Math.abs(diff).toFixed(1)}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Data Section (Table) - Refactored for better alignment and no scroll */}
-                    <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 flex flex-col overflow-hidden h-full">
-                        <div className="p-6 border-b border-gray-50 bg-gray-50/50">
+            {/* Main Content: Graph & Table Side by Side (50/50 Split) */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {/* Visual Section (Graph) */}
+                <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
                             <h3 className="text-xl font-bold text-gray-900 border-l-4 border-indigo-500 pl-3 flex items-center gap-2">
                                 <Activity className="text-indigo-500" size={20} />
-                                Source Breakdown
+                                Consumption Trends
                             </h3>
-                            <p className="text-xs text-gray-500 mt-1 pl-4 uppercase tracking-wider font-medium">Consumption values for {timeRange === 'custom' ? `${startDate} to ${endDate}` : timeRange}</p>
+                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mt-1">Resource allocation over time</p>
                         </div>
-                        <div className="flex-1 overflow-auto max-h-[510px] custom-scrollbar scroll-smooth">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50 sticky top-0 z-20 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-                                    <tr>
-                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">Interval</th>
-                                        {Object.keys(resourceConfig).map(key => (
-                                            <th key={key} className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 text-right">{key}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {usageData.map((row, idx) => (
-                                        <tr key={`${row.time}-${idx}`} className="group hover:bg-indigo-50/30 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Clock size={12} className="text-indigo-500" />
-                                                    <span className="text-sm font-bold text-gray-900">{row.time}</span>
-                                                </div>
-                                            </td>
-                                            {Object.entries(resourceConfig).map(([key, config]) => (
-                                                <td key={key} className="px-4 py-4 text-right">
-                                                    <div className="flex flex-col items-end">
-                                                        <span className="text-sm font-black text-gray-900">{row[key].toFixed(1)}</span>
-                                                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">{config.unit}</span>
-                                                    </div>
-                                                </td>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        {/* Final Total Row */}
-                        <div className="p-6 bg-indigo-600 text-white rounded-t-3xl shadow-2xl mt-auto">
-                            <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-bold text-indigo-100 text-xs uppercase tracking-widest">Total Period Consumption</h4>
-                                <ChevronRight size={16} className="text-indigo-300" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                {Object.entries(totals).map(([key, val]) => (
-                                    <div key={key}>
-                                        <p className="text-[10px] font-bold text-indigo-200 uppercase">{key}</p>
-                                        <p className="text-lg font-black">{val.toFixed(1)} <span className="text-[10px] opacity-70">{resourceConfig[key].unit}</span></p>
-                                    </div>
+                        <div className="flex gap-2">
+                            <div className="flex p-1 bg-gray-50 border border-gray-100 rounded-lg">
+                                <button
+                                    onClick={() => setActiveResource('All')}
+                                    className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${activeResource === 'All' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500'}`}
+                                >
+                                    All
+                                </button>
+                                {Object.keys(resourceConfig).map(res => (
+                                    <button
+                                        key={res}
+                                        onClick={() => setActiveResource(res)}
+                                        className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${activeResource === res ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500'}`}
+                                    >
+                                        {res}
+                                    </button>
                                 ))}
                             </div>
                         </div>
                     </div>
+
+                    <div className="h-[450px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={usageData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis
+                                    dataKey="time"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }}
+                                    dy={10}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }}
+                                />
+                                <Tooltip
+                                    cursor={{ fill: '#f8fafc', radius: 4 }}
+                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
+                                />
+                                <Legend verticalAlign="top" height={36} iconType="circle" />
+
+                                {activeResource === 'All' ? (
+                                    Object.entries(resourceConfig).map(([key, config]) => (
+                                        <Bar key={key} dataKey={key} fill={config.hex} radius={[4, 4, 0, 0]} barSize={20} />
+                                    ))
+                                ) : (
+                                    <Bar dataKey={activeResource} fill={resourceConfig[activeResource].hex} radius={[6, 6, 0, 0]} barSize={40}>
+                                        {usageData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={resourceConfig[activeResource].hex} />
+                                        ))}
+                                    </Bar>
+                                )}
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Comparison Mini Section (if year or custom selected) */}
+                    {(timeRange === 'year' || showComparison) && (
+                        <div className="mt-8 pt-6 border-t border-gray-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-sm font-bold text-gray-800">Historical Comparison</h4>
+                                <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded">Previous vs Current</span>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {Object.keys(resourceConfig).map(res => {
+                                    const diff = prevTotals[res] > 0
+                                        ? ((totals[res] - prevTotals[res]) / prevTotals[res]) * 100
+                                        : (totals[res] > 0 ? 100 : 0);
+                                    const isUp = diff > 0;
+                                    return (
+                                        <div key={res} className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{res}</p>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-lg font-bold text-gray-900">{totals[res].toFixed(1)}</span>
+                                                <span className={`flex items-center text-[10px] font-bold ${isUp ? 'text-red-500' : 'text-emerald-500'}`}>
+                                                    {isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                                                    {Math.abs(diff).toFixed(1)}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* Impact Section */}
-                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl shadow-2xl p-8 relative overflow-hidden group">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                        <div className="p-5 bg-white/20 rounded-3xl backdrop-blur-xl border border-white/30 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                            <Leaf size={48} className="text-emerald-100" />
+                {/* Data Section (Table) - Refactored for better alignment and no scroll */}
+                <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 flex flex-col overflow-hidden h-full">
+                    <div className="p-6 border-b border-gray-50 bg-gray-50/50">
+                        <h3 className="text-xl font-bold text-gray-900 border-l-4 border-indigo-500 pl-3 flex items-center gap-2">
+                            <Activity className="text-indigo-500" size={20} />
+                            Source Breakdown
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1 pl-4 uppercase tracking-wider font-medium">Consumption values for {timeRange === 'custom' ? `${startDate} to ${endDate}` : timeRange}</p>
+                    </div>
+                    <div className="flex-1 overflow-auto max-h-[510px] custom-scrollbar scroll-smooth">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-gray-50 sticky top-0 z-20 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                                <tr>
+                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">Interval</th>
+                                    {Object.keys(resourceConfig).map(key => (
+                                        <th key={key} className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 text-right">{key}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {usageData.map((row, idx) => (
+                                    <tr key={`${row.time}-${idx}`} className="group hover:bg-indigo-50/30 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <Clock size={12} className="text-indigo-500" />
+                                                <span className="text-sm font-bold text-gray-900">{row.time}</span>
+                                            </div>
+                                        </td>
+                                        {Object.entries(resourceConfig).map(([key, config]) => (
+                                            <td key={key} className="px-4 py-4 text-right">
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-sm font-black text-gray-900">{row[key].toFixed(1)}</span>
+                                                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">{config.unit}</span>
+                                                </div>
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {/* Final Total Row */}
+                    <div className="p-6 bg-indigo-600 text-white rounded-t-3xl shadow-2xl mt-auto">
+                        <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-bold text-indigo-100 text-xs uppercase tracking-widest">Total Period Consumption</h4>
+                            <ChevronRight size={16} className="text-indigo-300" />
                         </div>
-                        <div className="text-center md:text-left">
-                            <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Environmental Contribution</h3>
-                            <p className="text-emerald-100 font-bold max-w-xl text-lg leading-snug opacity-90">
-                                Your commitment to solar energy and efficient resource management has significantly offset local grid demand.
-                            </p>
-                            <div className="flex flex-wrap gap-4 mt-8 justify-center md:justify-start">
-                                <div className="bg-white text-emerald-600 px-6 py-3 rounded-2xl font-black shadow-xl hover:translate-y-[-4px] transition-all">
-                                    <span className="text-2xl mr-2">45</span>
-                                    <span className="text-sm uppercase tracking-wider">Trees Equiv.</span>
+                        <div className="grid grid-cols-2 gap-4">
+                            {Object.entries(totals).map(([key, val]) => (
+                                <div key={key}>
+                                    <p className="text-[10px] font-bold text-indigo-200 uppercase">{key}</p>
+                                    <p className="text-lg font-black">{val.toFixed(1)} <span className="text-[10px] opacity-70">{resourceConfig[key].unit}</span></p>
                                 </div>
-                                <div className="bg-emerald-400/30 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-2xl font-black shadow-xl hover:translate-y-[-4px] transition-all">
-                                    <span className="text-2xl mr-2">120kg</span>
-                                    <span className="text-sm uppercase tracking-wider">CO₂ Saved</span>
-                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Impact Section */}
+            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl shadow-2xl p-8 relative overflow-hidden group">
+                <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                    <div className="p-5 bg-white/20 rounded-3xl backdrop-blur-xl border border-white/30 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                        <Leaf size={48} className="text-emerald-100" />
+                    </div>
+                    <div className="text-center md:text-left">
+                        <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Environmental Contribution</h3>
+                        <p className="text-emerald-100 font-bold max-w-xl text-lg leading-snug opacity-90">
+                            Your commitment to solar energy and efficient resource management has significantly offset local grid demand.
+                        </p>
+                        <div className="flex flex-wrap gap-4 mt-8 justify-center md:justify-start">
+                            <div className="bg-white text-emerald-600 px-6 py-3 rounded-2xl font-black shadow-xl hover:translate-y-[-4px] transition-all">
+                                <span className="text-2xl mr-2">45</span>
+                                <span className="text-sm uppercase tracking-wider">Trees Equiv.</span>
+                            </div>
+                            <div className="bg-emerald-400/30 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-2xl font-black shadow-xl hover:translate-y-[-4px] transition-all">
+                                <span className="text-2xl mr-2">120kg</span>
+                                <span className="text-sm uppercase tracking-wider">CO₂ Saved</span>
                             </div>
                         </div>
                     </div>
-                    {/* Decorative Pattern */}
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Sun size={300} strokeWidth={1} />
-                    </div>
                 </div>
+                {/* Decorative Pattern */}
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Sun size={300} strokeWidth={1} />
+                </div>
+
             </div>
         </main>
     );

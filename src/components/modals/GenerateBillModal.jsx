@@ -389,7 +389,7 @@ export default function GenerateBillModal({ onClose, userEmail = 'user@example.c
                     {step === 1 ? (
                         <button
                             onClick={handleGenerate}
-                            disabled={isInvalidRange() || (userCategory !== 'All Categories' && !selectedUser)}
+                            disabled={isInvalidRange() || (isAdmin && userCategory !== 'All Categories' && !selectedUser)}
                             className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-md shadow-orange-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Preview Bill

@@ -61,6 +61,7 @@ const mockDataYear = [
 
 export default function AnalysisPage() {
   const [activeTab, setActiveTab] = useState('All');
+  const [kpiFilter, setKpiFilter] = useState('All'); // 'All', 'Active', 'Warnings', 'Offline'
   const [timeRange, setTimeRange] = useState('week'); // 'day', 'week', 'month', 'year'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -132,9 +133,19 @@ export default function AnalysisPage() {
 
   const dynamicStatsMap = getStatsMap(devices);
 
-  // Filter data based on active tab
+  // Filter data based on active tab and KPI filter
   const getFilteredData = () => {
-    return devices.filter(d => activeTab === 'All' || d.type === activeTab);
+    return devices.filter(d => {
+      const tabMatch = activeTab === 'All' || d.type === activeTab;
+      let kpiMatch = true;
+      if (kpiFilter !== 'All') {
+        const status = (d.status || 'active').toLowerCase();
+        if (kpiFilter === 'Active') kpiMatch = status === 'active';
+        if (kpiFilter === 'Warnings') kpiMatch = status === 'warning';
+        if (kpiFilter === 'Offline') kpiMatch = status === 'offline';
+      }
+      return tabMatch && kpiMatch;
+    });
   };
   const filteredDevices = getFilteredData();
 
@@ -244,14 +255,8 @@ export default function AnalysisPage() {
           color="indigo"
           description="Deployed meters & sensors"
           subValue={`Assigned to you`}
-        />
-        <StatCard
-          title="Consumption"
-          value={`${dynamicStatsMap[activeTab].consumption.toFixed(1)}`}
-          icon={<Zap className="w-4 h-4" />}
-          color="blue"
-          description="Cumulative usage"
-          subValue={activeTab === 'All' ? 'Mixed units' : activeTab === 'Gas' ? 'm³' : activeTab === 'Water' ? 'L' : 'kWh'}
+          onClick={() => setKpiFilter('All')}
+          className={`hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-pointer ${kpiFilter === 'All' ? 'scale-[1.02] shadow-xl bg-slate-50/50' : ''}`}
         />
         <StatCard
           title="Active"
@@ -260,6 +265,8 @@ export default function AnalysisPage() {
           color="green"
           description="Running normally"
           subValue="Healthy connection"
+          onClick={() => setKpiFilter('Active')}
+          className={`hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-pointer ${kpiFilter === 'Active' ? 'scale-[1.02] shadow-xl bg-slate-50/50' : ''}`}
         />
         <StatCard
           title="Warnings"
@@ -268,6 +275,8 @@ export default function AnalysisPage() {
           color="amber"
           description="Requires attention"
           subValue="Potential Issues"
+          onClick={() => setKpiFilter('Warnings')}
+          className={`hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-pointer ${kpiFilter === 'Warnings' ? 'scale-[1.02] shadow-xl bg-slate-50/50' : ''}`}
         />
         <StatCard
           title="Offline"
@@ -276,6 +285,8 @@ export default function AnalysisPage() {
           color="red"
           description="Check connectivity"
           subValue="Unreachable units"
+          onClick={() => setKpiFilter('Offline')}
+          className={`hover:shadow-xl hover:-translate-y-1 hover:bg-slate-50/50 transition-all cursor-pointer ${kpiFilter === 'Offline' ? 'scale-[1.02] shadow-xl bg-slate-50/50' : ''}`}
         />
       </div>
 

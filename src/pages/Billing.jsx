@@ -150,7 +150,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
                     <StatCard
                         title="Total Billing"
                         value={totalBilling}
-                        icon={<CreditCard className="w-4 h-4" />}
+                        icon={<CreditCard />}
                         color="orange"
                         description="Cumulative invoiced amount"
                         statusBreakdown={totalBreakdown}
@@ -159,7 +159,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
                     <StatCard
                         title="Paid Amount"
                         value={totalPaid}
-                        icon={<CheckCircle className="w-4 h-4" />}
+                        icon={<CheckCircle />}
                         color="green"
                         description="Total collected revenue"
                         statusBreakdown={paidBreakdown}
@@ -168,7 +168,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
                     <StatCard
                         title="Pending"
                         value={totalPending}
-                        icon={<Clock className="w-4 h-4" />}
+                        icon={<Clock />}
                         color="amber"
                         description="Awaiting payment"
                         statusBreakdown={pendingBreakdown}
@@ -177,7 +177,7 @@ export default function BillingPage({ userRole = 'Admin' }) {
                     <StatCard
                         title="Overdue"
                         value={totalOverdue}
-                        icon={<AlertCircle className="w-4 h-4" />}
+                        icon={<AlertCircle />}
                         color="red"
                         description="Payment deadline crossed"
                         statusBreakdown={overdueBreakdown}
