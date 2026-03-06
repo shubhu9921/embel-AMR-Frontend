@@ -1,6 +1,6 @@
 import React, { useState, Suspense, lazy } from "react";
-import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
+import Sidebar from "./layouts/Sidebar";
+import Header from "./layouts/Header";
 
 import { apiService } from "./services/apiService";
 

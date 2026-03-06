@@ -145,27 +145,34 @@ export function DataProvider({ children }) {
         setUsers(prev => prev.filter(u => u.id !== id));
     };
 
+    const contextValue = React.useMemo(() => ({
+        devices,
+        meters,
+        users,
+        reports,
+        tickets,
+        invoices,
+        isLoading,
+        refreshData,
+        addDevice,
+        updateDevice,
+        deleteDevice,
+        addMeter,
+        updateMeter,
+        deleteMeter,
+        addReport,
+        addUser,
+        updateUser,
+        deleteUser
+    }), [
+        devices, meters, users, reports, tickets, invoices, isLoading,
+        refreshData, addDevice, updateDevice, deleteDevice,
+        addMeter, updateMeter, deleteMeter, addReport,
+        addUser, updateUser, deleteUser
+    ]);
+
     return (
-        <DataContext.Provider value={{
-            devices,
-            meters,
-            users,
-            reports,
-            tickets,
-            invoices,
-            isLoading,
-            refreshData,
-            addDevice,
-            updateDevice,
-            deleteDevice,
-            addMeter,
-            updateMeter,
-            deleteMeter,
-            addReport,
-            addUser,
-            updateUser,
-            deleteUser
-        }}>
+        <DataContext.Provider value={contextValue}>
             {children}
         </DataContext.Provider>
     );

@@ -10,13 +10,44 @@ import { multiResourceDataDay, multiResourceDataWeek, multiResourceDataMonth, mu
 // Simulate network delay for realistic debugging
 const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+const _request = async (endpoint, options = {}) => {
+    const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}/${endpoint}`;
+    const defaultHeaders = { 'Content-Type': 'application/json' };
+
+    try {
+        const response = await fetch(url, {
+            ...options,
+            headers: { ...defaultHeaders, ...options.headers }
+        });
+
+        if (response.status === 404 && options.method === 'DELETE') return true;
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({}));
+            throw new Error(errorBody.message || `API Error: ${response.status} ${response.statusText}`);
+        }
+
+        if (response.status === 204 || options.method === 'DELETE') return true;
+        return await response.json();
+    } catch (error) {
+        console.error(`API Request Failed [${options.method || 'GET'}] ${url}:`, error);
+        throw error;
+    }
+};
 
 export const apiService = {
-    // ---- KPIs & Charts ----
+    // ---- Generic Methods ----
+    get: (endpoint) => _request(endpoint, { method: 'GET' }),
+    post: (endpoint, data) => _request(endpoint, { method: 'POST', body: JSON.stringify(data) }),
+    put: (endpoint, data) => _request(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
+    patch: (endpoint, data) => _request(endpoint, { method: 'PATCH', body: JSON.stringify(data) }),
+    delete: (endpoint) => _request(endpoint, { method: 'DELETE' }),
+
+    // ---- Specialized Methods (Maintaining compatibility) ----
     fetchDashboardKPIs: async () => {
         await delay();
-        return []; // Unused currently in the app
+        return [];
     },
 
     fetchChartData: async (type = 'bar', timeRange = 'week') => {
@@ -30,305 +61,33 @@ export const apiService = {
         }
     },
 
-    // ---- Support Tickets Expansion Strategy ----
-    fetchTickets: async (queryStr = '') => {
-        try {
-            const response = await fetch(`${BASE_URL}/tickets${queryStr}`);
-            if (!response.ok) throw new Error('Failed to fetch tickets');
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching tickets:', error);
-            throw error;
-        }
-    },
+    fetchTickets: (queryStr = '') => apiService.get(`tickets${queryStr}`),
+    createTicket: (ticketPayload) => apiService.post('tickets', ticketPayload),
+    updateTicket: (ticketId, updatedData) => apiService.patch(`tickets/${ticketId}`, updatedData),
+    deleteTicket: (ticketId) => apiService.delete(`tickets/${ticketId}`),
+    updateTicketStatus: (ticketId, newStatus) => apiService.updateTicket(ticketId, { status: newStatus }),
 
-    createTicket: async (ticketPayload) => {
-        try {
-            const response = await fetch(`${BASE_URL}/tickets`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(ticketPayload)
-            });
-            if (!response.ok) throw new Error('Failed to create ticket');
-            return await response.json();
-        } catch (error) {
-            console.error('Error creating ticket:', error);
-            throw error;
-        }
-    },
+    getDevices: (queryStr = '') => apiService.get(`devices${queryStr}`),
+    getDeviceById: (id) => apiService.get(`devices/${id}`),
+    createDevice: (deviceData) => apiService.post('devices', deviceData),
+    updateDevice: (id, deviceData) => apiService.put(`devices/${id}`, deviceData),
+    deleteDevice: (id) => apiService.delete(`devices/${id}`),
 
-    updateTicket: async (ticketId, updatedData) => {
-        try {
-            // PATCH is safer as it only updates provided fields
-            const response = await fetch(`${BASE_URL}/tickets/${ticketId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedData)
-            });
-            if (!response.ok) throw new Error('Failed to update ticket');
-            return await response.json();
-        } catch (error) {
-            console.error('Error updating ticket:', error);
-            throw error;
-        }
-    },
+    getInitialMeters: (queryStr = '') => apiService.get(`meters${queryStr}`),
+    createMeter: (meterData) => apiService.post('meters', meterData),
+    updateMeter: (id, meterData) => apiService.put(`meters/${id}`, meterData),
+    deleteMeter: (id) => apiService.delete(`meters/${id}`),
 
-    deleteTicket: async (ticketId) => {
-        try {
-            const response = await fetch(`${BASE_URL}/tickets/${ticketId}`, {
-                method: 'DELETE'
-            });
-            if (response.status === 404) return true; // Already deleted
-            if (!response.ok) throw new Error('Failed to delete ticket');
-            return true;
-        } catch (error) {
-            console.error('Error deleting ticket:', error);
-            throw error;
-        }
-    },
+    getInvoices: (queryStr = '') => apiService.get(`invoices${queryStr}`),
+    createInvoice: (invoiceData) => apiService.post('invoices', invoiceData),
 
-    updateTicketStatus: async (ticketId, newStatus) => {
-        return apiService.updateTicket(ticketId, { status: newStatus });
-    },
+    getReports: (queryStr = '') => apiService.get(`reports${queryStr}`),
+    createReport: (reportData) => apiService.post('reports', reportData),
 
-    // ---- Device Management APIs using json-server ----
-    getDevices: async (queryStr = '') => {
-        try {
-            const response = await fetch(`${BASE_URL}/devices${queryStr}`);
-            if (!response.ok) throw new Error('Failed to fetch devices');
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching devices:', error);
-            throw error;
-        }
-    },
-
-    getInitialMeters: async (queryStr = '') => {
-        try {
-            const response = await fetch(`${BASE_URL}/meters${queryStr}`);
-            if (!response.ok) throw new Error('Failed to fetch initialMetersData');
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching initialMetersData:', error);
-            throw error;
-        }
-    },
-
-    getInvoices: async (queryStr = '') => {
-        try {
-            const response = await fetch(`${BASE_URL}/invoices${queryStr}`);
-            if (!response.ok) throw new Error('Failed to fetch invoices');
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching invoices:', error);
-            throw error;
-        }
-    },
-
-    createInvoice: async (invoiceData) => {
-        try {
-            const response = await fetch(`${BASE_URL}/invoices`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(invoiceData)
-            });
-            if (!response.ok) throw new Error('Failed to create invoice');
-            return await response.json();
-        } catch (error) {
-            console.error('Error creating invoice:', error);
-            throw error;
-        }
-    },
-
-    getReports: async (queryStr = '') => {
-        try {
-            const response = await fetch(`${BASE_URL}/reports${queryStr}`);
-            if (!response.ok) throw new Error('Failed to fetch reports');
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching reports:', error);
-            throw error;
-        }
-    },
-
-    createReport: async (reportData) => {
-        try {
-            const response = await fetch(`${BASE_URL}/reports`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(reportData)
-            });
-            if (!response.ok) throw new Error('Failed to create report');
-            return await response.json();
-        } catch (error) {
-            console.error('Error creating report:', error);
-            throw error;
-        }
-    },
-
-    getDeviceById: async (id) => {
-        try {
-            const response = await fetch(`${BASE_URL}/devices/${id}`);
-            if (!response.ok) throw new Error('Failed to fetch device');
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching device:', error);
-            throw error;
-        }
-    },
-
-    createDevice: async (deviceData) => {
-        try {
-            const response = await fetch(`${BASE_URL}/devices`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(deviceData)
-            });
-            if (!response.ok) throw new Error('Failed to create device');
-            return await response.json();
-        } catch (error) {
-            console.error('Error creating device:', error);
-            throw error;
-        }
-    },
-
-    updateDevice: async (id, deviceData) => {
-        try {
-            const response = await fetch(`${BASE_URL}/devices/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(deviceData)
-            });
-            if (!response.ok) throw new Error('Failed to update device');
-            return await response.json();
-        } catch (error) {
-            console.error('Error updating device:', error);
-            throw error;
-        }
-    },
-
-    deleteDevice: async (id) => {
-        try {
-            const response = await fetch(`${BASE_URL}/devices/${id}`, {
-                method: 'DELETE'
-            });
-            if (response.status === 404) return { success: true }; // Already deleted
-            if (!response.ok) throw new Error('Failed to delete device');
-            return await response.json();
-        } catch (error) {
-            console.error('Error deleting device:', error);
-            throw error;
-        }
-    },
-
-    createMeter: async (meterData) => {
-        try {
-            const response = await fetch(`${BASE_URL}/meters`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(meterData)
-            });
-            if (!response.ok) throw new Error('Failed to create meter');
-            return await response.json();
-        } catch (error) {
-            console.error('Error creating meter:', error);
-            throw error;
-        }
-    },
-
-    updateMeter: async (id, meterData) => {
-        try {
-            const response = await fetch(`${BASE_URL}/meters/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(meterData)
-            });
-            if (!response.ok) throw new Error('Failed to update meter');
-            return await response.json();
-        } catch (error) {
-            console.error('Error updating meter:', error);
-            throw error;
-        }
-    },
-
-    deleteMeter: async (id) => {
-        try {
-            const response = await fetch(`${BASE_URL}/meters/${id}`, {
-                method: 'DELETE'
-            });
-            if (response.status === 404) return { success: true }; // Already deleted
-            if (!response.ok) throw new Error('Failed to delete meter');
-            return await response.json();
-        } catch (error) {
-            console.error('Error deleting meter:', error);
-            throw error;
-        }
-    },
-
-    // ---- User Management APIs using json-server ----
-    getUsers: async () => {
-        try {
-            const response = await fetch(`${BASE_URL}/users`);
-            if (!response.ok) throw new Error('Failed to fetch users');
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            throw error;
-        }
-    },
-
-    getUserById: async (id) => {
-        try {
-            const response = await fetch(`${BASE_URL}/users/${id}`);
-            if (!response.ok) throw new Error('Failed to fetch user');
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching user:', error);
-            throw error;
-        }
-    },
-
-    createUser: async (userData) => {
-        try {
-            const response = await fetch(`${BASE_URL}/users`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            });
-            if (!response.ok) throw new Error('Failed to create user');
-            return await response.json();
-        } catch (error) {
-            console.error('Error creating user:', error);
-            throw error;
-        }
-    },
-
-    updateUser: async (id, userData) => {
-        try {
-            const response = await fetch(`${BASE_URL}/users/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            });
-            if (!response.ok) throw new Error('Failed to update user');
-            return await response.json();
-        } catch (error) {
-            console.error('Error updating user:', error);
-            throw error;
-        }
-    },
-
-    deleteUser: async (id) => {
-        try {
-            const response = await fetch(`${BASE_URL}/users/${id}`, {
-                method: 'DELETE'
-            });
-            if (response.status === 404) return { success: true }; // Already deleted
-            if (!response.ok) throw new Error('Failed to delete user');
-            return await response.json();
-        } catch (error) {
-            console.error('Error deleting user:', error);
-            throw error;
-        }
-    },
+    getUsers: () => apiService.get('users'),
+    getUserById: (id) => apiService.get(`users/${id}`),
+    createUser: (userData) => apiService.post('users', userData),
+    updateUser: (id, userData) => apiService.put(`users/${id}`, userData),
+    deleteUser: (id) => apiService.delete(`users/${id}`),
 };
+

@@ -153,7 +153,7 @@ export default function DeviceDetailsModal({ isOpen, onClose, item, type, onEdit
                                 })}
 
                                 <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 flex flex-col justify-center">
-                                    <span className="block text-[11px] font-bold text-gray-500 mb-0.5 uppercase tracking-wider flex items-center gap-1"><Clock size={10} /> Added</span>
+                                    <span className=" text-[11px] font-bold text-gray-500 mb-0.5 uppercase tracking-wider flex items-center gap-1"><Clock size={10} /> Added</span>
                                     <span className="block text-sm font-black text-gray-900 truncate">{item.createdAt || 'N/A'}</span>
                                 </div>
                             </div>
